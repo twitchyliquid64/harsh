@@ -47,6 +47,7 @@ type TypeDecl interface {
 	String() string
 }
 
+//A kind of named primitive variable
 type PrimitiveType struct {
 	Kind TypeKind
 	Name string

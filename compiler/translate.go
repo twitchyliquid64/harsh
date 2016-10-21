@@ -11,7 +11,7 @@ import (
 )
 
 func testCrap(in int, bro, crap string) int {
-	return 2*(1+2) - 4
+	return (3 + 1) * 3
 }
 
 func translateGoAST(fset *token.FileSet, inp *goast.File) (ast.Node, *Context) {
