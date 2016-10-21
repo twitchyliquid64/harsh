@@ -11,7 +11,7 @@ import (
 )
 
 func testCrap(in int, bro, crap string) int {
-	return 3
+	return 2*(1+2) - 4
 }
 
 func translateGoAST(fset *token.FileSet, inp *goast.File) (ast.Node, *Context) {
@@ -52,6 +52,16 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 			}
 			return sl
 
+		case goast.BinaryExpr:
+			return &ast.BinaryOp{
+				LHS: translateGoNode(fset, context, reflect.ValueOf(v.X)),
+				RHS: translateGoNode(fset, context, reflect.ValueOf(v.Y)),
+				Op:  translateGoBinop(v.Op),
+			}
+
+		case goast.ParenExpr:
+			return translateGoNode(fset, context, reflect.ValueOf(v.X))
+
 		case goast.AssignStmt:
 			fmt.Println("Not implemented - ASSIGN: ", len(v.Lhs), len(v.Rhs))
 
@@ -86,11 +96,25 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 	return nil
 }
 
+func translateGoBinop(tok token.Token) ast.BinOpType {
+	switch tok {
+	case token.ADD:
+		return ast.BINOP_ADD
+	case token.SUB:
+		return ast.BINOP_SUB
+	case token.MUL:
+		return ast.BINOP_MUL
+	default:
+		fmt.Println("Unknown binop token.Token: ", reflect.TypeOf(tok))
+		return ast.BINOP_UNK
+	}
+}
+
 func translateType(typ *goast.Field) []ast.TypeDecl {
 	var output []ast.TypeDecl
 	switch node := typ.Type.(type) {
 	case *goast.Ident:
-		var kind int
+		var kind ast.TypeKind
 		if node.Name == "string" {
 			kind = ast.PRIMITIVE_TYPE_STRING
 		}

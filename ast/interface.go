@@ -16,11 +16,31 @@ type ReturnStmt struct {
 	Expr Node
 }
 
-// Types
+type BinaryOp struct {
+	LHS Node
+	RHS Node
+	Op  BinOpType
+}
+
+// BinaryOp Ops
+type BinOpType int
 
 const (
-	PRIMITIVE_TYPE_INT    = 0
-	PRIMITIVE_TYPE_STRING = 1
+	BINOP_ADD BinOpType = iota
+	BINOP_SUB
+	BINOP_MUL
+	BINOP_DIV
+	BINOP_MOD
+	BINOP_UNK
+)
+
+// Types
+
+type TypeKind int
+
+const (
+	PRIMITIVE_TYPE_INT TypeKind = iota
+	PRIMITIVE_TYPE_STRING
 )
 
 type TypeDecl interface {
@@ -28,6 +48,6 @@ type TypeDecl interface {
 }
 
 type PrimitiveType struct {
-	Kind int
+	Kind TypeKind
 	Name string
 }

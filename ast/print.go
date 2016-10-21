@@ -31,6 +31,31 @@ func (node *IntegerLiteral) Print(level int) {
 	printLeveled(strconv.FormatInt(node.Val, 10)+" int64", level)
 }
 
+func (node *BinaryOp) Print(level int) {
+	printLeveled(node.Op.String()+" {", level)
+	node.LHS.Print(level + 1)
+	node.RHS.Print(level + 1)
+	printLeveled("}", level)
+}
+
+func (op *BinOpType) String() string {
+	switch *op {
+	case BINOP_ADD:
+		return "+"
+	case BINOP_SUB:
+		return "-"
+	case BINOP_MUL:
+		return "*"
+	case BINOP_DIV:
+		return "/"
+	case BINOP_UNK:
+		return "UNK?"
+	case BINOP_MOD:
+		return "%"
+	}
+	return "BINOP?"
+}
+
 func printLeveled(str string, level int) {
 	for i := 0; i < level; i++ {
 		fmt.Print(" ")
@@ -40,11 +65,15 @@ func printLeveled(str string, level int) {
 
 //TypeDecl
 func (t *PrimitiveType) String() string {
-	if t.Kind == PRIMITIVE_TYPE_INT {
-		return "int{" + t.Name + "}"
+	return t.Kind.String() + "{" + t.Name + "}"
+}
+
+func (tk *TypeKind) String() string {
+	switch *tk {
+	case PRIMITIVE_TYPE_INT:
+		return "int"
+	case PRIMITIVE_TYPE_STRING:
+		return "string"
 	}
-	if t.Kind == PRIMITIVE_TYPE_STRING {
-		return "string{" + t.Name + "}"
-	}
-	return "?{" + t.Name + "}"
+	return "?"
 }

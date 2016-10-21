@@ -10,7 +10,7 @@ import (
 func main() {
 	fmt.Println("harsh: shiz.go")
 	if len(os.Args) < 2 {
-		fmt.Println("USAGE: ./shiz <harsh file>")
+		fmt.Println("USAGE: ./debugprint <harsh file>")
 		return
 	}
 

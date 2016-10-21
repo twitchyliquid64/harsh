@@ -34,7 +34,7 @@ func setupTestGetAST(context *Context, inCode string, t *testing.T) (ast.Node, *
 	return a, context
 }
 
-func TestLiteralReturn(t *testing.T) {
+func TestLiteralReturnASTStructure(t *testing.T) {
 	_, context := setupTestGetAST(nil, `
     package test
 
@@ -65,7 +65,117 @@ func TestLiteralReturn(t *testing.T) {
 	}
 }
 
-func TestFunctionParamsResults(t *testing.T) {
+func TestBasicArithmeticASTStructure(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    func TestBasicArithmetic()int{
+      return 3+1
+    }`, t)
+
+	if len(context.Declarations) != 1 {
+		t.Error("Unexpected number of declarations")
+	}
+	if context.Declarations[0].Identifier != "TestBasicArithmetic" {
+		t.Error("Unexpected declaration name")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList")
+	}
+	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+		t.Error("Unexpected number of declarations in root node StatementList")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt); !ok {
+		t.Error("ReturnStmt node expected")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.BinaryOp); !ok {
+		t.Error("BinaryOp node expected")
+	}
+	op := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.BinaryOp)
+	if op.Op != ast.BINOP_ADD {
+		t.Error("Addition operation expected")
+	}
+	if _, ok := op.LHS.(*ast.IntegerLiteral); !ok {
+		t.Error("IntegerLiteral node expected")
+	}
+	if _, ok := op.RHS.(*ast.IntegerLiteral); !ok {
+		t.Error("IntegerLiteral node expected")
+	}
+	if op.RHS.(*ast.IntegerLiteral).Val != 1 || op.LHS.(*ast.IntegerLiteral).Val != 3 {
+		t.Error("Values incorrect")
+	}
+}
+
+func TestComplexArithmeticASTStructure(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    func TestComplexArithmetic()int{
+      return 2*(1+2)-4
+    }`, t)
+
+	if len(context.Declarations) != 1 {
+		t.Error("Unexpected number of declarations")
+	}
+	if context.Declarations[0].Identifier != "TestComplexArithmetic" {
+		t.Error("Unexpected declaration name")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList")
+	}
+	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+		t.Error("Unexpected number of declarations in root node StatementList")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt); !ok {
+		t.Error("ReturnStmt node expected")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.BinaryOp); !ok {
+		t.Error("BinaryOp node expected")
+	}
+	op := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.BinaryOp)
+	if op.Op != ast.BINOP_SUB {
+		t.Error("Subtraction operation expected")
+	}
+	if _, ok := op.LHS.(*ast.BinaryOp); !ok {
+		t.Error("BinaryOp node expected")
+	}
+	if op.LHS.(*ast.BinaryOp).Op != ast.BINOP_MUL {
+		t.Error("Multiplication operation expected")
+	}
+	if _, ok := op.RHS.(*ast.IntegerLiteral); !ok {
+		t.Error("IntegerLiteral node expected")
+	}
+	if op.RHS.(*ast.IntegerLiteral).Val != 4 {
+		t.Error("Value incorrect")
+	}
+
+	op = op.LHS.(*ast.BinaryOp)
+	if _, ok := op.LHS.(*ast.IntegerLiteral); !ok {
+		t.Error("IntegerLiteral node expected")
+	}
+	if op.LHS.(*ast.IntegerLiteral).Val != 2 {
+		t.Error("Values incorrect")
+	}
+
+	if _, ok := op.RHS.(*ast.BinaryOp); !ok {
+		t.Error("BinaryOp node expected")
+	}
+	if op.RHS.(*ast.BinaryOp).Op != ast.BINOP_ADD {
+		t.Error("Multiplication operation expected")
+	}
+	op = op.RHS.(*ast.BinaryOp)
+	if _, ok := op.LHS.(*ast.IntegerLiteral); !ok {
+		t.Error("IntegerLiteral node expected")
+	}
+	if _, ok := op.RHS.(*ast.IntegerLiteral); !ok {
+		t.Error("IntegerLiteral node expected")
+	}
+	if op.RHS.(*ast.IntegerLiteral).Val != 2 || op.LHS.(*ast.IntegerLiteral).Val != 1 {
+		t.Error("Values incorrect")
+	}
+}
+
+func TestFunctionParamsAndResultsAreTypedAndNamedCorrectly(t *testing.T) {
 	_, context := setupTestGetAST(nil, `
     package test
 
