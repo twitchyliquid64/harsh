@@ -2,11 +2,15 @@ package compiler
 
 import (
 	//goast "go/ast"
+	"errors"
 	"go/parser"
 	"go/token"
+	"reflect"
 
 	"github.com/twitchyliquid64/harsh/ast"
 )
+
+var ErrFuncNotFound = errors.New("No function found")
 
 func ParseFile(fname string) (ast.Node, *Context, error) {
 	fset := token.NewFileSet()
@@ -19,4 +23,41 @@ func ParseFile(fname string) (ast.Node, *Context, error) {
 
 	//goast.Print(fset, goAstFile)
 	return rootNode, context, nil
+}
+
+func ParseLiteral(fname, inCode string) (context *Context, err error) {
+	fset := token.NewFileSet()
+	goAst, err := parser.ParseFile(fset, fname, inCode, 0)
+	if err != nil {
+		return nil, err
+	}
+	if context == nil {
+		context = &Context{
+			ConType: CONTEXT_ADHOC,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	a := translateGoNode(fset, context, reflect.ValueOf(goAst))
+	if a != nil {
+		return nil, err
+	}
+	return context, nil
+}
+
+func (c *Context) CallFunc(name string, args interface{}) (ast.Variant, error) {
+	for _, decl := range c.Declarations {
+		if decl.Identifier == name {
+			execContext := &ast.ExecContext{
+				IsFuncContext: true,
+			}
+			return decl.Code.Exec(execContext), nil
+		}
+	}
+	return ast.Variant{
+		Type: ast.PrimitiveType{
+			Kind: ast.PRIMITIVE_TYPE_UNDEFINED,
+		},
+	}, ErrFuncNotFound
 }

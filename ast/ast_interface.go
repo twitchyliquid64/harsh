@@ -2,6 +2,7 @@ package ast
 
 type Node interface {
 	Print(level int)
+	Exec(context *ExecContext) Variant
 }
 
 type StatementList struct {
@@ -41,6 +42,7 @@ type TypeKind int
 const (
 	PRIMITIVE_TYPE_INT TypeKind = iota
 	PRIMITIVE_TYPE_STRING
+	PRIMITIVE_TYPE_UNDEFINED
 )
 
 type TypeDecl interface {

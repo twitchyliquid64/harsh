@@ -35,3 +35,13 @@ func TestPrimitiveTypeInteger(t *testing.T) {
 		t.Error("PrimitiveType string .String() is incorrect")
 	}
 }
+
+func TestPrimitiveTypeUndefined(t *testing.T) {
+	pt := PrimitiveType{
+		Kind: PRIMITIVE_TYPE_UNDEFINED,
+		Name: "dsfsdfds",
+	}
+	if pt.String() != "undefined{dsfsdfds}" {
+		t.Error("PrimitiveType undef .String() is incorrect")
+	}
+}

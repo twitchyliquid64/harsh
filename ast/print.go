@@ -74,6 +74,8 @@ func (tk *TypeKind) String() string {
 		return "int"
 	case PRIMITIVE_TYPE_STRING:
 		return "string"
+	case PRIMITIVE_TYPE_UNDEFINED:
+		return "undefined"
 	}
 	return "?"
 }
