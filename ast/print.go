@@ -42,6 +42,10 @@ func (node *BinaryOp) Print(level int) {
 	printLeveled("}", level)
 }
 
+func (node *VariableReference) Print(level int) {
+	printLeveled("{"+node.Name+"}", level)
+}
+
 func (op *BinOpType) String() string {
 	switch *op {
 	case BINOP_ADD:

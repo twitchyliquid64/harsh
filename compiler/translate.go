@@ -62,6 +62,11 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 		case goast.ParenExpr:
 			return translateGoNode(fset, context, reflect.ValueOf(v.X))
 
+		case goast.Ident:
+			return &ast.VariableReference{
+				Name: v.Name,
+			}
+
 		case goast.AssignStmt:
 			fmt.Println("Not implemented - ASSIGN: ", len(v.Lhs), len(v.Rhs))
 

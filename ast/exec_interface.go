@@ -1,7 +1,8 @@
 package ast
 
 type ExecContext struct {
-	IsFuncContext bool
+	IsFuncContext     bool
+	FunctionNamespace map[string]Variant
 }
 
 type Variant struct {

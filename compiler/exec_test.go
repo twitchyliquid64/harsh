@@ -170,6 +170,68 @@ func TestBasicCallFuncReturnsArithmeticResult(t *testing.T) {
 		t.Error("Expected PRIMITIVE_TYPE_INT")
 	}
 	if r.Int != 7 {
-		t.Error("Expected value 1")
+		t.Error("Expected value 7")
+	}
+}
+
+func TestBasicCallFuncReturnsParameters(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+    func TestIntParam(a_input int){
+      return a_input
+    }
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, err := c.CallFunc("TestIntParam", map[string]interface{}{
+		"a_input": 4,
+	})
+	if err != nil {
+		t.Error("CallFunc(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+	if r.Type.Kind != ast.PRIMITIVE_TYPE_INT {
+		t.Error("Expected PRIMITIVE_TYPE_INT")
+	}
+	if r.Int != 4 {
+		t.Error("Expected value 4")
+	}
+}
+
+func TestBasicCallFuncReturnsArithmeticFromParam(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+    func TestIntParam(a_input int){
+      return (a_input * 3) + 1
+    }
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, err := c.CallFunc("TestIntParam", map[string]interface{}{
+		"a_input": 4,
+	})
+	if err != nil {
+		t.Error("CallFunc(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+	if r.Type.Kind != ast.PRIMITIVE_TYPE_INT {
+		t.Error("Expected PRIMITIVE_TYPE_INT")
+	}
+	if r.Int != 13 {
+		t.Error("Expected value 4")
 	}
 }

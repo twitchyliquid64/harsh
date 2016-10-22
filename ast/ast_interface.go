@@ -21,6 +21,10 @@ type ReturnStmt struct {
 	Expr Node
 }
 
+type VariableReference struct {
+	Name string
+}
+
 type BinaryOp struct {
 	LHS Node
 	RHS Node

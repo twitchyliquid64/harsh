@@ -65,7 +65,38 @@ func TestLiteralReturnASTStructure(t *testing.T) {
 	}
 }
 
-func TestBasicArithmeticASTStructure(t *testing.T) {
+func TestFuncParamReturnASTStructure(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    func testParamReturn(in int)int{
+      return in
+    }`, t)
+
+	if len(context.Declarations) != 1 {
+		t.Error("Unexpected number of declarations")
+	}
+	if context.Declarations[0].Identifier != "testParamReturn" {
+		t.Error("Unexpected declaration name")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList")
+	}
+	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+		t.Error("Unexpected number of declarations in root node StatementList")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt); !ok {
+		t.Error("ReturnStmt node expected")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.VariableReference); !ok {
+		t.Error("VariableReference node expected")
+	}
+	if context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.VariableReference).Name != "in" {
+		t.Error("Incorrect ident value, expected \"in\"")
+	}
+}
+
+func TestBasicArithmeticASTStructureCorrectness(t *testing.T) {
 	_, context := setupTestGetAST(nil, `
     package test
 
@@ -106,7 +137,7 @@ func TestBasicArithmeticASTStructure(t *testing.T) {
 	}
 }
 
-func TestComplexArithmeticASTStructure(t *testing.T) {
+func TestComplexArithmeticASTStructureCorrectness(t *testing.T) {
 	_, context := setupTestGetAST(nil, `
     package test
 
@@ -217,7 +248,7 @@ func TestFunctionParamsAndResultsAreTypedAndNamedCorrectly(t *testing.T) {
 	}
 }
 
-func TestContextMetadata(t *testing.T) {
+func TestContextMetadataCorrectness(t *testing.T) {
 	_, context := setupTestGetAST(nil, `
     package test
 
@@ -232,7 +263,7 @@ func TestContextMetadata(t *testing.T) {
 	}
 }
 
-func TestFileContext(t *testing.T) {
+func TestFileContextCorrectness(t *testing.T) {
 	_, context := setupTestGetAST(&Context{
 		ConType: CONTEXT_FILE,
 	}, `

@@ -46,12 +46,19 @@ func ParseLiteral(fname, inCode string) (context *Context, err error) {
 	return context, nil
 }
 
-func (c *Context) CallFunc(name string, args interface{}) (ast.Variant, error) {
+func (c *Context) CallFunc(name string, args map[string]interface{}) (ast.Variant, error) {
 	for _, decl := range c.Declarations {
 		if decl.Identifier == name {
 			execContext := &ast.ExecContext{
-				IsFuncContext: true,
+				IsFuncContext:     true,
+				FunctionNamespace: map[string]ast.Variant{},
 			}
+			if args != nil {
+				for name, arg := range args {
+					execContext.FunctionNamespace[name] = ast.MakeVariant(arg)
+				}
+			}
+
 			return decl.Code.Exec(execContext), nil
 		}
 	}

@@ -81,3 +81,14 @@ func (n *BinaryOp) Exec(context *ExecContext) Variant {
 
 	return ret
 }
+
+func (n *VariableReference) Exec(context *ExecContext) Variant {
+	if v, ok := context.FunctionNamespace[n.Name]; ok {
+		return v
+	}
+	return Variant{
+		Type: PrimitiveType{
+			Kind: PRIMITIVE_TYPE_UNDEFINED,
+		},
+	}
+}

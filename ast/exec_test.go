@@ -166,3 +166,42 @@ func TestEmptyStatementListReturnsNoValue(t *testing.T) {
 		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return, got " + r.Type.String())
 	}
 }
+
+func TestVariableReferenceReturnsFunctionParameter(t *testing.T) {
+	vr := VariableReference{
+		Name: "inInt",
+	}
+	context := ExecContext{
+		IsFuncContext: true,
+		FunctionNamespace: map[string]Variant{
+			"inInt": Variant{
+				Type: PrimitiveType{
+					Kind: PRIMITIVE_TYPE_INT,
+				},
+				Int: 42,
+			},
+		},
+	}
+
+	r := vr.Exec(&context)
+	if r.Type.Kind != PRIMITIVE_TYPE_INT {
+		t.Error("Expected PRIMITIVE_TYPE_INT return, got " + r.Type.String())
+	}
+	if r.Int != 42 {
+		t.Error("Incorrect value")
+	}
+}
+
+func TestVariableReferenceReturnsUndefinedWhenNoMatch(t *testing.T) {
+	vr := VariableReference{
+		Name: "inInt",
+	}
+	context := ExecContext{
+		IsFuncContext: true,
+	}
+
+	r := vr.Exec(&context)
+	if r.Type.Kind != PRIMITIVE_TYPE_UNDEFINED {
+		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return, got " + r.Type.String())
+	}
+}
