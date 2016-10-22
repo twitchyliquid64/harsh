@@ -86,6 +86,11 @@ func (n *VariableReference) Exec(context *ExecContext) Variant {
 	if v, ok := context.FunctionNamespace[n.Name]; ok {
 		return v
 	}
+	if context.GlobalNamespace != nil {
+		if v, ok := (*context.GlobalNamespace)[n.Name]; ok {
+			return v
+		}
+	}
 	return Variant{
 		Type: PrimitiveType{
 			Kind: PRIMITIVE_TYPE_UNDEFINED,

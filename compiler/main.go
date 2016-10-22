@@ -31,9 +31,11 @@ func ParseLiteral(fname, inCode string) (context *Context, err error) {
 	if err != nil {
 		return nil, err
 	}
+	ns := ast.Namespace(map[string]ast.Variant{})
 	if context == nil {
 		context = &Context{
 			ConType: CONTEXT_ADHOC,
+			Globals: &ns,
 		}
 	}
 	if err != nil {

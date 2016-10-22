@@ -17,6 +17,7 @@ func testCrap(in int, bro, crap string) int {
 func translateGoAST(fset *token.FileSet, inp *goast.File) (ast.Node, *Context) {
 	context := &Context{
 		ConType: CONTEXT_ADHOC,
+		Globals: new(ast.Namespace),
 	}
 	return translateGoNode(fset, context, reflect.ValueOf(inp)), context
 }

@@ -18,8 +18,10 @@ func setupTestGetAST(context *Context, inCode string, t *testing.T) (ast.Node, *
 		t.FailNow()
 	}
 	if context == nil {
+		ns := ast.Namespace(map[string]ast.Variant{})
 		context = &Context{
 			ConType: CONTEXT_ADHOC,
+			Globals: &ns,
 		}
 	}
 	if err != nil {

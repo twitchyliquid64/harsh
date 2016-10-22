@@ -192,6 +192,54 @@ func TestVariableReferenceReturnsFunctionParameter(t *testing.T) {
 	}
 }
 
+func TestVariableReferenceReturnsGlobal(t *testing.T) {
+	vr := VariableReference{
+		Name: "glo",
+	}
+	ns := Namespace(map[string]Variant{})
+	context := ExecContext{
+		IsFuncContext:   true,
+		GlobalNamespace: &ns,
+	}
+	context.GlobalNamespace.Save("glo", -42)
+
+	r := vr.Exec(&context)
+	if r.Type.Kind != PRIMITIVE_TYPE_INT {
+		t.Error("Expected PRIMITIVE_TYPE_INT return, got " + r.Type.String())
+	}
+	if r.Int != -42 {
+		t.Error("Incorrect value")
+	}
+}
+
+func TestVariableReferenceReturnsParamFirst(t *testing.T) {
+	vr := VariableReference{
+		Name: "inInt",
+	}
+	ns := Namespace(map[string]Variant{})
+	context := ExecContext{
+		IsFuncContext:   true,
+		GlobalNamespace: &ns,
+		FunctionNamespace: map[string]Variant{
+			"inInt": Variant{
+				Type: PrimitiveType{
+					Kind: PRIMITIVE_TYPE_INT,
+				},
+				Int: 1234,
+			},
+		},
+	}
+	context.GlobalNamespace.Save("inInt", -42)
+
+	r := vr.Exec(&context)
+	if r.Type.Kind != PRIMITIVE_TYPE_INT {
+		t.Error("Expected PRIMITIVE_TYPE_INT return, got " + r.Type.String())
+	}
+	if r.Int != 1234 {
+		t.Error("Incorrect value")
+	}
+}
+
 func TestVariableReferenceReturnsUndefinedWhenNoMatch(t *testing.T) {
 	vr := VariableReference{
 		Name: "inInt",
