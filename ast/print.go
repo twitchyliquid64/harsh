@@ -31,6 +31,10 @@ func (node *IntegerLiteral) Print(level int) {
 	printLeveled(strconv.FormatInt(node.Val, 10)+" int64", level)
 }
 
+func (node *StringLiteral) Print(level int) {
+	printLeveled(node.Str+" string", level)
+}
+
 func (node *BinaryOp) Print(level int) {
 	printLeveled(node.Op.String()+" {", level)
 	node.LHS.Print(level + 1)

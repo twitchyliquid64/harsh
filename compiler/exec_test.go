@@ -58,7 +58,7 @@ func TestBasicCallFuncBadNameFails(t *testing.T) {
 	}
 }
 
-func TestBasicCallFuncReturnsLiteral(t *testing.T) {
+func TestBasicCallFuncReturnsIntLiteral(t *testing.T) {
 	c, err := ParseLiteral("test.go", `
     package test
 
@@ -84,6 +84,64 @@ func TestBasicCallFuncReturnsLiteral(t *testing.T) {
 	}
 	if r.Int != 1 {
 		t.Error("Expected value 1")
+	}
+}
+
+func TestBasicCallFuncReturnsStringLiteral(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+    func Test(){
+      return "bantz"
+    }
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, err := c.CallFunc("Test", nil)
+	if err != nil {
+		t.Error("CallFunc(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+	if r.Type.Kind != ast.PRIMITIVE_TYPE_STRING {
+		t.Error("Expected PRIMITIVE_TYPE_STRING")
+	}
+	if r.String != "bantz" {
+		t.Error("Expected value \"bantz\"")
+	}
+}
+
+func TestStringConcatCallFuncReturnsStringLiteral(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+    func Test(){
+      return "bantz" + " :D"
+    }
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, err := c.CallFunc("Test", nil)
+	if err != nil {
+		t.Error("CallFunc(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+	if r.Type.Kind != ast.PRIMITIVE_TYPE_STRING {
+		t.Error("Expected PRIMITIVE_TYPE_STRING")
+	}
+	if r.String != "bantz :D" {
+		t.Error("Expected value \"bantz :D\"")
 	}
 }
 

@@ -9,6 +9,15 @@ func (n *IntegerLiteral) Exec(context *ExecContext) Variant {
 	}
 }
 
+func (n *StringLiteral) Exec(context *ExecContext) Variant {
+	return Variant{
+		Type: PrimitiveType{
+			Kind: PRIMITIVE_TYPE_STRING,
+		},
+		String: n.Str,
+	}
+}
+
 func (n *StatementList) Exec(context *ExecContext) Variant {
 	callingContext := (*context)
 	newContext := callingContext
@@ -56,6 +65,17 @@ func (n *BinaryOp) Exec(context *ExecContext) Variant {
 			ret.Int = l.Int * r.Int
 		case BINOP_DIV:
 			ret.Int = l.Int / r.Int
+		case BINOP_MOD:
+			ret.Int = l.Int % r.Int
+		}
+	} else if l.Type.Kind == PRIMITIVE_TYPE_STRING && r.Type.Kind == PRIMITIVE_TYPE_STRING {
+		ret.Type = PrimitiveType{
+			Kind: PRIMITIVE_TYPE_STRING,
+		}
+		switch n.Op {
+		case BINOP_ADD:
+			ret.String = l.String + r.String
+			//TODO: Add default case which adds an error to the context
 		}
 	}
 

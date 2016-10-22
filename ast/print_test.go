@@ -2,21 +2,21 @@ package ast
 
 import "testing"
 
-func TestTypeKindIntegerString(t *testing.T) {
+func TestPrintTypeKindIntegerString(t *testing.T) {
 	p := PRIMITIVE_TYPE_INT
 	if p.String() != "int" {
 		t.FailNow()
 	}
 }
 
-func TestTypeKindStringString(t *testing.T) {
+func TestPrintTypeKindStringString(t *testing.T) {
 	p := PRIMITIVE_TYPE_STRING
 	if p.String() != "string" {
 		t.FailNow()
 	}
 }
 
-func TestPrimitiveTypeString(t *testing.T) {
+func TestPrintPrimitiveTypeString(t *testing.T) {
 	pt := PrimitiveType{
 		Kind: PRIMITIVE_TYPE_INT,
 		Name: "dsfsdfds",
@@ -26,7 +26,7 @@ func TestPrimitiveTypeString(t *testing.T) {
 	}
 }
 
-func TestPrimitiveTypeInteger(t *testing.T) {
+func TestPrintPrimitiveTypeInteger(t *testing.T) {
 	pt := PrimitiveType{
 		Kind: PRIMITIVE_TYPE_STRING,
 		Name: "dsfsdfds",
@@ -36,7 +36,7 @@ func TestPrimitiveTypeInteger(t *testing.T) {
 	}
 }
 
-func TestPrimitiveTypeUndefined(t *testing.T) {
+func TestPrintPrimitiveTypeUndefined(t *testing.T) {
 	pt := PrimitiveType{
 		Kind: PRIMITIVE_TYPE_UNDEFINED,
 		Name: "dsfsdfds",

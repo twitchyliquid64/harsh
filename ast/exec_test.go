@@ -16,6 +16,20 @@ func TestIntLiteralExecReturnsCorrectValue(t *testing.T) {
 	}
 }
 
+func TestStringLiteralExecReturnsCorrectValue(t *testing.T) {
+	il := StringLiteral{
+		Str: "Strdfjlkj_ fgklfjlgfjlkjlkj 'dd '",
+	}
+	context := ExecContext{}
+	r := il.Exec(&context)
+	if r.Type.Kind != PRIMITIVE_TYPE_STRING {
+		t.Error("Expected PRIMITIVE_TYPE_STRING return")
+	}
+	if r.String != "Strdfjlkj_ fgklfjlgfjlkjlkj 'dd '" {
+		t.Error("Incorrect value")
+	}
+}
+
 func TestReturnReturnsUpstreamValue(t *testing.T) {
 	il := ReturnStmt{
 		Expr: &IntegerLiteral{
@@ -48,6 +62,26 @@ func TestBinaryOpAdditionReturnsCorrectValue(t *testing.T) {
 		t.Error("Expected PRIMITIVE_TYPE_INT return")
 	}
 	if r.Int != 497 {
+		t.Error("Incorrect value")
+	}
+}
+
+func TestBinaryOpConcatenationReturnsCorrectValue(t *testing.T) {
+	il := BinaryOp{
+		LHS: &StringLiteral{
+			Str: "ab",
+		},
+		RHS: &StringLiteral{
+			Str: "cd",
+		},
+		Op: BINOP_ADD,
+	}
+	context := ExecContext{}
+	r := il.Exec(&context)
+	if r.Type.Kind != PRIMITIVE_TYPE_STRING {
+		t.Error("Expected PRIMITIVE_TYPE_STRING return")
+	}
+	if r.String != "abcd" {
 		t.Error("Incorrect value")
 	}
 }

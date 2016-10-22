@@ -71,6 +71,11 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 				return &ast.IntegerLiteral{
 					Val: int64(v),
 				}
+			} else if v.Kind == token.STRING {
+				s, _ := strconv.Unquote(v.Value)
+				return &ast.StringLiteral{
+					Str: s,
+				}
 			}
 			fmt.Println("Not implemented - BASICLIT: ", v.Value)
 

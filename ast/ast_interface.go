@@ -13,6 +13,10 @@ type IntegerLiteral struct {
 	Val int64
 }
 
+type StringLiteral struct {
+	Str string
+}
+
 type ReturnStmt struct {
 	Expr Node
 }
