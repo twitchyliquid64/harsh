@@ -22,7 +22,7 @@ func main() {
 
 	fmt.Print("Globals: {")
 	for i, name := range context.Globals.Names() {
-		v := (*context.Globals)[name]
+		v := context.Globals[name]
 		fmt.Print(name, v.Type.Kind.String())
 		if i+1 < len(context.Globals.Names()) {
 			fmt.Print(", ")

@@ -87,7 +87,7 @@ func (n *VariableReference) Exec(context *ExecContext) Variant {
 		return v
 	}
 	if context.GlobalNamespace != nil {
-		if v, ok := (*context.GlobalNamespace)[n.Name]; ok {
+		if v, ok := context.GlobalNamespace[n.Name]; ok {
 			return v
 		}
 	}

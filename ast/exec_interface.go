@@ -3,7 +3,7 @@ package ast
 type ExecContext struct {
 	IsFuncContext     bool
 	FunctionNamespace Namespace
-	GlobalNamespace   *Namespace
+	GlobalNamespace   Namespace
 }
 
 type Variant struct {
@@ -15,8 +15,8 @@ type Variant struct {
 
 type Namespace map[string]Variant
 
-func (n *Namespace) Save(name string, v interface{}) {
-	(*n)[name] = MakeVariant(v)
+func (n Namespace) Save(name string, v interface{}) {
+	n[name] = MakeVariant(v)
 }
 
 func (n *Namespace) Names() []string {

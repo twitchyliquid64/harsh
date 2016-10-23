@@ -8,7 +8,7 @@ type Context struct {
 	Declarations  []declaration
 	ChildContexts []*Context
 	Debug         bool
-	Globals       *ast.Namespace
+	Globals       ast.Namespace
 }
 
 type declaration struct {

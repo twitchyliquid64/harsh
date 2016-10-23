@@ -235,3 +235,35 @@ func TestBasicCallFuncReturnsArithmeticFromParam(t *testing.T) {
 		t.Error("Expected value 4")
 	}
 }
+
+func TestGlobalReadCorrectly(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+		var testVar string
+
+    func testFetch()string{
+      return testVar
+    }
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+	c.Globals.Save("testVar", "testData121")
+
+	r, err := c.CallFunc("testFetch", nil)
+	if err != nil {
+		t.Error("CallFunc(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+	if r.Type.Kind != ast.PRIMITIVE_TYPE_STRING {
+		t.Error("Expected PRIMITIVE_TYPE_STRING, got " + r.Type.Kind.String())
+	}
+	if r.String != "testData121" {
+		t.Error("Expected value testData121, got '" + r.String + "'")
+	}
+}

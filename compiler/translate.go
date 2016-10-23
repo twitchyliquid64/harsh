@@ -19,7 +19,7 @@ func translateGoAST(fset *token.FileSet, inp *goast.File) (ast.Node, *Context) {
 
 	context := &Context{
 		ConType: CONTEXT_ADHOC,
-		Globals: &ns,
+		Globals: ns,
 		Debug:   true,
 	}
 	return translateGoNode(fset, context, reflect.ValueOf(inp)), context

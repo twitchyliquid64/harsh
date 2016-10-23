@@ -199,7 +199,7 @@ func TestVariableReferenceReturnsGlobal(t *testing.T) {
 	ns := Namespace(map[string]Variant{})
 	context := ExecContext{
 		IsFuncContext:   true,
-		GlobalNamespace: &ns,
+		GlobalNamespace: ns,
 	}
 	context.GlobalNamespace.Save("glo", -42)
 
@@ -219,7 +219,7 @@ func TestVariableReferenceReturnsParamFirst(t *testing.T) {
 	ns := Namespace(map[string]Variant{})
 	context := ExecContext{
 		IsFuncContext:   true,
-		GlobalNamespace: &ns,
+		GlobalNamespace: ns,
 		FunctionNamespace: map[string]Variant{
 			"inInt": Variant{
 				Type: PrimitiveType{
