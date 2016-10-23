@@ -43,6 +43,12 @@ const (
 	BINOP_UNK
 )
 
+type Assign struct {
+	Value      Node
+	Identifier string
+	NewLocal   bool
+}
+
 // Types
 
 type TypeKind int

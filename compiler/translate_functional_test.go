@@ -360,3 +360,41 @@ func TestGlobalStringSavedCorrectly(t *testing.T) {
 		t.Error("Default value not \"\"")
 	}
 }
+
+func TestAssignReturnsASTStructure(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+		var a int
+
+    func test(){
+      a = 3
+    }`, t)
+
+	if len(context.Declarations) != 1 {
+		t.Error("Unexpected number of declarations")
+	}
+	if context.Declarations[0].Identifier != "test" {
+		t.Error("Unexpected declaration name")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList")
+	}
+	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+		t.Error("Unexpected number of declarations in root node StatementList")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.Assign); !ok {
+		t.Error("Assign node expected")
+	}
+
+	if context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.Assign).NewLocal == true {
+		t.Error("NewLocal flag truth expected")
+	}
+
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.Assign).Value.(*ast.IntegerLiteral); !ok {
+		t.Error("IntegerLiteral node expected")
+	}
+	if context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.Assign).Value.(*ast.IntegerLiteral).Val != 3 {
+		t.Error("Incorrect literal value, expected 3")
+	}
+}

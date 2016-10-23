@@ -267,3 +267,106 @@ func TestGlobalReadCorrectly(t *testing.T) {
 		t.Error("Expected value testData121, got '" + r.String + "'")
 	}
 }
+
+func TestNewLocalWriteCorrectly(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+    func testFetch()string{
+			testVar := "abc"
+      return testVar
+    }
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, err := c.CallFunc("testFetch", nil)
+	if err != nil {
+		t.Error("CallFunc(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	if r.Type.Kind != ast.PRIMITIVE_TYPE_STRING {
+		t.Error("Expected PRIMITIVE_TYPE_STRING, got " + r.Type.Kind.String())
+	}
+	if r.String != "abc" {
+		t.Error("Expected value abc, got '" + r.String + "'")
+	}
+}
+
+func TestGlobalWriteCorrectly(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+		var testVar string
+		var test2 string
+
+    func testFetch()string{
+			testVar = "abbc"
+			test2 = "1234"
+			testVar = test2 + testVar
+      return testVar
+    }
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, err := c.CallFunc("testFetch", nil)
+	if err != nil {
+		t.Error("CallFunc(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	if r.Type.Kind != ast.PRIMITIVE_TYPE_STRING {
+		t.Error("Expected PRIMITIVE_TYPE_STRING, got " + r.Type.Kind.String())
+	}
+	if r.String != "1234abbc" {
+		t.Error("Expected value abc, got '" + r.String + "'")
+	}
+}
+
+func TestAssignScopePrecedenceCorrectness(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+		var testVar string
+		var crap string
+
+    func testFetch()string{
+			testVar = "abbc"
+			crap = "abc"
+			crap := "123"
+      return testVar + crap
+    }
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, err := c.CallFunc("testFetch", nil)
+	if err != nil {
+		t.Error("CallFunc(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	if r.Type.Kind != ast.PRIMITIVE_TYPE_STRING {
+		t.Error("Expected PRIMITIVE_TYPE_STRING, got " + r.Type.Kind.String())
+	}
+	if r.String != "abbc123" {
+		t.Error("Expected value abc, got '" + r.String + "'")
+	}
+}

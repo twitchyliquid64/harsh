@@ -72,7 +72,24 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 			}
 
 		case goast.AssignStmt:
-			fmt.Println("Not implemented - ASSIGN: ", len(v.Lhs), len(v.Rhs))
+			for _, l := range v.Lhs {
+				if ident, ok := l.(*goast.Ident); ok {
+					if _, ok := ident.Obj.Decl.(*goast.AssignStmt); ok { //new local variable
+						return &ast.Assign{
+							NewLocal:   true,
+							Identifier: ident.Name,
+							Value:      translateGoNode(fset, context, reflect.ValueOf(v.Rhs[0])),
+						}
+					} else if _, ok := ident.Obj.Decl.(*goast.ValueSpec); ok {
+						return &ast.Assign{
+							NewLocal:   false,
+							Identifier: ident.Name,
+							Value:      translateGoNode(fset, context, reflect.ValueOf(v.Rhs[0])),
+						}
+					}
+					fmt.Println("Assignment object unknown: ", ident.Name, reflect.TypeOf(ident.Obj.Decl))
+				}
+			}
 
 		case goast.BasicLit:
 			if v.Kind == token.INT {

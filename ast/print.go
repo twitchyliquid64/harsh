@@ -32,13 +32,19 @@ func (node *IntegerLiteral) Print(level int) {
 }
 
 func (node *StringLiteral) Print(level int) {
-	printLeveled(node.Str+" string", level)
+	printLeveled(strconv.Quote(node.Str)+" string", level)
 }
 
 func (node *BinaryOp) Print(level int) {
 	printLeveled(node.Op.String()+" {", level)
 	node.LHS.Print(level + 1)
 	node.RHS.Print(level + 1)
+	printLeveled("}", level)
+}
+
+func (node *Assign) Print(level int) {
+	printLeveled(node.Identifier+" <= {", level)
+	node.Value.Print(level + 1)
 	printLeveled("}", level)
 }
 

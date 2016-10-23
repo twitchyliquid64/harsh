@@ -97,3 +97,27 @@ func (n *VariableReference) Exec(context *ExecContext) Variant {
 		},
 	}
 }
+
+func (n *Assign) Exec(context *ExecContext) Variant {
+	if n.NewLocal {
+		context.FunctionNamespace.Save(n.Identifier, n.Value.Exec(context))
+	} else {
+		if _, ok := context.FunctionNamespace[n.Identifier]; ok && context.IsFuncContext {
+			context.FunctionNamespace.Save(n.Identifier, n.Value.Exec(context))
+		} else if _, ok := context.GlobalNamespace[n.Identifier]; ok {
+			context.GlobalNamespace.Save(n.Identifier, n.Value.Exec(context))
+		} else {
+			if context.IsFuncContext {
+				context.FunctionNamespace.Save(n.Identifier, n.Value.Exec(context))
+			} else {
+				context.GlobalNamespace.Save(n.Identifier, n.Value.Exec(context))
+			}
+		}
+	}
+
+	return Variant{
+		Type: PrimitiveType{
+			Kind: PRIMITIVE_TYPE_UNDEFINED,
+		},
+	}
+}

@@ -253,3 +253,111 @@ func TestVariableReferenceReturnsUndefinedWhenNoMatch(t *testing.T) {
 		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return, got " + r.Type.String())
 	}
 }
+
+func TestLocalVariableWrite(t *testing.T) {
+	ass := Assign{
+		Identifier: "testVar",
+		NewLocal:   true,
+		Value: &StringLiteral{
+			Str: "abc",
+		},
+	}
+	context := ExecContext{
+		IsFuncContext:     true,
+		FunctionNamespace: Namespace(map[string]Variant{}),
+		GlobalNamespace:   Namespace(map[string]Variant{}),
+	}
+
+	ass.Exec(&context)
+	v := context.FunctionNamespace["testVar"]
+	if v.Type.Kind != PRIMITIVE_TYPE_STRING {
+		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
+	}
+	if v.String != "abc" {
+		t.Error("Incorrect value")
+	}
+	if _, ok := context.GlobalNamespace["testVar"]; ok {
+		t.Error("Object should not be in global namespace")
+	}
+}
+
+func TestGlobalVariableWrite(t *testing.T) {
+	ass := Assign{
+		Identifier: "testVar",
+		Value: &StringLiteral{
+			Str: "abc",
+		},
+	}
+	context := ExecContext{
+		IsFuncContext:     true,
+		FunctionNamespace: Namespace(map[string]Variant{}),
+		GlobalNamespace:   Namespace(map[string]Variant{}),
+	}
+	context.GlobalNamespace.Save("testVar", "asdsb")
+
+	ass.Exec(&context)
+
+	if _, ok := context.FunctionNamespace["testVar"]; ok {
+		t.Error("Object should not be in function namespace")
+	}
+
+	v := context.GlobalNamespace["testVar"]
+	if v.Type.Kind != PRIMITIVE_TYPE_STRING {
+		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
+	}
+	if v.String != "abc" {
+		t.Error("Incorrect value")
+	}
+}
+
+func TestNewVariableAssignGoesToFunc(t *testing.T) {
+	ass := Assign{
+		Identifier: "testVar",
+		Value: &StringLiteral{
+			Str: "abc",
+		},
+	}
+	context := ExecContext{
+		IsFuncContext:     true,
+		FunctionNamespace: Namespace(map[string]Variant{}),
+		GlobalNamespace:   Namespace(map[string]Variant{}),
+	}
+
+	ass.Exec(&context)
+	v := context.FunctionNamespace["testVar"]
+	if v.Type.Kind != PRIMITIVE_TYPE_STRING {
+		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
+	}
+	if v.String != "abc" {
+		t.Error("Incorrect value")
+	}
+	if _, ok := context.GlobalNamespace["testVar"]; ok {
+		t.Error("Object should not be in global namespace")
+	}
+}
+
+func TestNewVariableAssignGoesToGlobalWhenNotFuncContext(t *testing.T) {
+	ass := Assign{
+		Identifier: "testVar",
+		Value: &StringLiteral{
+			Str: "abc",
+		},
+	}
+	context := ExecContext{
+		IsFuncContext:     false,
+		FunctionNamespace: Namespace(map[string]Variant{}),
+		GlobalNamespace:   Namespace(map[string]Variant{}),
+	}
+
+	ass.Exec(&context)
+	v := context.GlobalNamespace["testVar"]
+	if v.Type.Kind != PRIMITIVE_TYPE_STRING {
+		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
+	}
+	if v.String != "abc" {
+		t.Error("Incorrect value")
+	}
+	if _, ok := context.FunctionNamespace["testVar"]; ok {
+		t.Error("Object should not be in global namespace")
+	}
+}
