@@ -15,9 +15,12 @@ func testCrap(in int, bro, crap string) int {
 }
 
 func translateGoAST(fset *token.FileSet, inp *goast.File) (ast.Node, *Context) {
+	ns := ast.Namespace(map[string]ast.Variant{})
+
 	context := &Context{
 		ConType: CONTEXT_ADHOC,
-		Globals: new(ast.Namespace),
+		Globals: &ns,
+		Debug:   true,
 	}
 	return translateGoNode(fset, context, reflect.ValueOf(inp)), context
 }
@@ -158,10 +161,47 @@ func translateGoDecl(fset *token.FileSet, context *Context, decls []goast.Decl) 
 			if context.Debug {
 				fmt.Println("GEN DECL: ", node)
 			}
+			translateGoGenDecl(fset, context, node)
 		default:
 			fmt.Println("Unknown ast.Decl: ", reflect.TypeOf(decl))
 		}
 	}
+}
+
+func translateGoGenDecl(fset *token.FileSet, context *Context, node *goast.GenDecl) declaration {
+	for _, spec := range node.Specs {
+		switch n := spec.(type) {
+		case *goast.ImportSpec:
+			if context.Debug {
+				fmt.Println("IMPORT", n.Path)
+			}
+			fmt.Println("Imports not yet supported")
+		case *goast.ValueSpec:
+			if context.Debug {
+				fmt.Println("GLOBAL: ", n.Type, n.Names, n.Values, reflect.TypeOf(n.Type))
+			}
+			//global initializer expressions currently ignored.
+			for _, name := range n.Names {
+				switch t := n.Type.(type) {
+				case *goast.Ident:
+					switch t.Name {
+					case "int":
+						context.Globals.Save(name.Name, 0)
+					case "string":
+						context.Globals.Save(name.Name, "")
+					default:
+						context.Globals.Save(name.Name, ast.Variant{Type: ast.PrimitiveType{Kind: ast.PRIMITIVE_TYPE_UNDEFINED}})
+						fmt.Println("Unknown goast.Ident.Type: ", t.Name)
+					}
+				}
+				//TODO: Save default value based on type
+			}
+		default:
+			fmt.Println("Unknown GenDecl subspec: ", reflect.TypeOf(node.Specs[0]))
+		}
+	}
+
+	return declaration{}
 }
 
 func translateGoFuncDecl(fset *token.FileSet, context *Context, node *goast.FuncDecl) declaration {

@@ -320,3 +320,49 @@ func TestFileContextCorrectness(t *testing.T) {
 		t.Error("Declarations in child context named incorrectly")
 	}
 }
+
+func TestGlobalIntSavedCorrectly(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    var testVar int`, t)
+	if context.Name != "test" {
+		t.Error("Context name incorrect")
+	}
+
+	var v ast.Variant
+	var ok bool
+	if v, ok = (*context.Globals)["testVar"]; !ok {
+		t.Error("Global expected")
+		t.FailNow()
+	}
+	if v.Type.Kind != ast.PRIMITIVE_TYPE_INT {
+		t.Error("Integer type for variable expected, got ", v.Type.Kind.String())
+	}
+	if v.Int != 0 {
+		t.Error("Default value not 0")
+	}
+}
+
+func TestGlobalStringSavedCorrectly(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    var testVar string`, t)
+	if context.Name != "test" {
+		t.Error("Context name incorrect")
+	}
+
+	var v ast.Variant
+	var ok bool
+	if v, ok = (*context.Globals)["testVar"]; !ok {
+		t.Error("Global expected")
+		t.FailNow()
+	}
+	if v.Type.Kind != ast.PRIMITIVE_TYPE_STRING {
+		t.Error("String type for variable expected, got ", v.Type.Kind.String())
+	}
+	if v.String != "" {
+		t.Error("Default value not \"\"")
+	}
+}

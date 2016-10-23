@@ -20,6 +20,16 @@ func main() {
 		return
 	}
 
+	fmt.Print("Globals: {")
+	for i, name := range context.Globals.Names() {
+		v := (*context.Globals)[name]
+		fmt.Print(name, v.Type.Kind.String())
+		if i+1 < len(context.Globals.Names()) {
+			fmt.Print(", ")
+		}
+	}
+	fmt.Println("}")
+
 	for _, decl := range context.Declarations {
 		fmt.Println("FUNCTION: ", decl.Identifier)
 		fmt.Print("Params: {")

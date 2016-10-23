@@ -2,6 +2,8 @@ package ast
 
 func MakeVariant(in interface{}) Variant {
 	switch v := in.(type) {
+	case Variant:
+		return v
 	case int:
 		return Variant{
 			Type: PrimitiveType{
