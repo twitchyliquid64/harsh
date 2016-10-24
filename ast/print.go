@@ -35,6 +35,10 @@ func (node *StringLiteral) Print(level int) {
 	printLeveled(strconv.Quote(node.Str)+" string", level)
 }
 
+func (node *BoolLiteral) Print(level int) {
+	printLeveled(strconv.FormatBool(node.Val)+" bool", level)
+}
+
 func (node *BinaryOp) Print(level int) {
 	printLeveled(node.Op.String()+" {", level)
 	node.LHS.Print(level + 1)
@@ -50,6 +54,27 @@ func (node *Assign) Print(level int) {
 
 func (node *VariableReference) Print(level int) {
 	printLeveled("{"+node.Name+"}", level)
+}
+
+func (node *IfStmt) Print(level int) {
+	printLeveled("if {", level)
+	if node.Init != nil {
+		printLeveled("init {", level+2)
+		node.Init.Print(level + 3)
+		printLeveled("}", level+2)
+	}
+	printLeveled("condition {", level+2)
+	node.Conditional.Print(level + 3)
+	printLeveled("}", level+2)
+	printLeveled("code {", level+2)
+	node.Code.Print(level + 3)
+	printLeveled("}", level+2)
+	if node.Else != nil {
+		printLeveled("else {", level+2)
+		node.Else.Print(level + 3)
+		printLeveled("}", level+2)
+	}
+	printLeveled("}", level)
 }
 
 func (op *BinOpType) String() string {
@@ -88,6 +113,8 @@ func (tk *TypeKind) String() string {
 		return "int"
 	case PRIMITIVE_TYPE_STRING:
 		return "string"
+	case PRIMITIVE_TYPE_BOOL:
+		return "bool"
 	case PRIMITIVE_TYPE_UNDEFINED:
 		return "undefined"
 	}

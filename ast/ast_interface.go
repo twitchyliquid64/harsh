@@ -17,8 +17,19 @@ type StringLiteral struct {
 	Str string
 }
 
+type BoolLiteral struct {
+	Val bool
+}
+
 type ReturnStmt struct {
 	Expr Node
+}
+
+type IfStmt struct {
+	Conditional Node
+	Code        Node
+	Init        Node
+	Else        Node
 }
 
 type VariableReference struct {
@@ -56,6 +67,7 @@ type TypeKind int
 const (
 	PRIMITIVE_TYPE_INT TypeKind = iota
 	PRIMITIVE_TYPE_STRING
+	PRIMITIVE_TYPE_BOOL
 	PRIMITIVE_TYPE_UNDEFINED
 )
 

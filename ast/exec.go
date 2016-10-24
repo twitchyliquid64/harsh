@@ -9,6 +9,15 @@ func (n *IntegerLiteral) Exec(context *ExecContext) Variant {
 	}
 }
 
+func (n *BoolLiteral) Exec(context *ExecContext) Variant {
+	return Variant{
+		Type: PrimitiveType{
+			Kind: PRIMITIVE_TYPE_BOOL,
+		},
+		Bool: n.Val,
+	}
+}
+
 func (n *StringLiteral) Exec(context *ExecContext) Variant {
 	return Variant{
 		Type: PrimitiveType{
@@ -25,8 +34,7 @@ func (n *StatementList) Exec(context *ExecContext) Variant {
 
 	for _, node := range n.Stmts {
 		v := node.Exec(&newContext)
-		if v.IsReturn && context.IsFuncContext {
-			v.IsReturn = false
+		if v.IsReturn {
 			return v
 		}
 	}
@@ -113,6 +121,25 @@ func (n *Assign) Exec(context *ExecContext) Variant {
 				context.GlobalNamespace.Save(n.Identifier, n.Value.Exec(context))
 			}
 		}
+	}
+
+	return Variant{
+		Type: PrimitiveType{
+			Kind: PRIMITIVE_TYPE_UNDEFINED,
+		},
+	}
+}
+
+func (n *IfStmt) Exec(context *ExecContext) Variant {
+	if n.Init != nil {
+		n.Init.Exec(context)
+	}
+
+	conditionResult := n.Conditional.Exec(context)
+	if conditionResult.Type.Kind == PRIMITIVE_TYPE_BOOL && conditionResult.Bool {
+		return n.Code.Exec(context)
+	} else if n.Else != nil {
+		return n.Else.Exec(context)
 	}
 
 	return Variant{

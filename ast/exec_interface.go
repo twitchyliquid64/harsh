@@ -10,6 +10,7 @@ type Variant struct {
 	Type     PrimitiveType
 	Int      int64
 	String   string
+	Bool     bool
 	IsReturn bool
 }
 

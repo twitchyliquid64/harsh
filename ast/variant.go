@@ -18,6 +18,13 @@ func MakeVariant(in interface{}) Variant {
 			},
 			Int: v,
 		}
+	case bool:
+		return Variant{
+			Type: PrimitiveType{
+				Kind: PRIMITIVE_TYPE_BOOL,
+			},
+			Bool: v,
+		}
 	case string:
 		return Variant{
 			Type: PrimitiveType{

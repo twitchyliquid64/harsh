@@ -67,6 +67,12 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 			return translateGoNode(fset, context, reflect.ValueOf(v.X))
 
 		case goast.Ident:
+			if v.Name == "true" || v.Name == "false" {
+				b, _ := strconv.ParseBool(v.Name) //TODO: Process error`
+				return &ast.BoolLiteral{
+					Val: b,
+				}
+			}
 			return &ast.VariableReference{
 				Name: v.Name,
 			}
@@ -136,7 +142,12 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 			fmt.Println("Not implemented - RETURN: ", len(v.Results))
 
 		case goast.IfStmt:
-			fmt.Println("Not implemented - IF: ") //whole lot of nodes (init, condition, else, main)
+			return &ast.IfStmt{
+				Init:        translateGoNode(fset, context, reflect.ValueOf(v.Init)),
+				Code:        translateGoNode(fset, context, reflect.ValueOf(v.Body)),
+				Else:        translateGoNode(fset, context, reflect.ValueOf(v.Else)),
+				Conditional: translateGoNode(fset, context, reflect.ValueOf(v.Cond)),
+			}
 
 		case goast.SwitchStmt:
 			fmt.Println("Not implemented - SWITCH: ", len(v.Body.List))
@@ -180,6 +191,9 @@ func convertTypeToTypeKind(t goast.Expr) ast.TypeKind {
 		}
 		if node.Name == "int" {
 			return ast.PRIMITIVE_TYPE_INT
+		}
+		if node.Name == "bool" {
+			return ast.PRIMITIVE_TYPE_BOOL
 		}
 	}
 	return ast.PRIMITIVE_TYPE_UNDEFINED
@@ -242,6 +256,8 @@ func translateGoGenDecl(fset *token.FileSet, context *Context, node *goast.GenDe
 					switch t.Name {
 					case "int":
 						context.Globals.Save(name.Name, 0)
+					case "bool":
+						context.Globals.Save(name.Name, false)
 					case "string":
 						context.Globals.Save(name.Name, "")
 					default:
@@ -249,7 +265,6 @@ func translateGoGenDecl(fset *token.FileSet, context *Context, node *goast.GenDe
 						fmt.Println("Unknown goast.Ident.Type: ", t.Name)
 					}
 				}
-				//TODO: Save default value based on type
 			}
 		default:
 			fmt.Println("Unknown GenDecl subspec: ", reflect.TypeOf(node.Specs[0]))

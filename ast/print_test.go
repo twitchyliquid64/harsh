@@ -36,6 +36,16 @@ func TestPrintPrimitiveTypeInteger(t *testing.T) {
 	}
 }
 
+func TestPrintPrimitiveTypeBool(t *testing.T) {
+	pt := PrimitiveType{
+		Kind: PRIMITIVE_TYPE_BOOL,
+		Name: "dsfsdfds",
+	}
+	if pt.String() != "bool{dsfsdfds}" {
+		t.Error("PrimitiveType bool .String() is incorrect")
+	}
+}
+
 func TestPrintPrimitiveTypeUndefined(t *testing.T) {
 	pt := PrimitiveType{
 		Kind: PRIMITIVE_TYPE_UNDEFINED,

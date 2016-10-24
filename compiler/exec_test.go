@@ -370,3 +370,152 @@ func TestAssignScopePrecedenceCorrectness(t *testing.T) {
 		t.Error("Expected value abc, got '" + r.String + "'")
 	}
 }
+
+func TestLocalDeclarationDefaultsInt(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+    func test()int{
+			var t1 int
+			var t2 int = 44
+      return t1 + t2
+    }
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, err := c.CallFunc("test", nil)
+	if err != nil {
+		t.Error("CallFunc(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	if r.Type.Kind != ast.PRIMITIVE_TYPE_INT {
+		t.Error("Expected PRIMITIVE_TYPE_INT, got " + r.Type.Kind.String())
+	}
+	if r.Int != 44 {
+		t.Error("Expected value 44, got ", r.Int)
+	}
+}
+
+func TestLocalDeclarationDefaultsString(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+    func test()string{
+			var t1 string
+			var t2 string = "abc"
+      return t1 + t2
+    }
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, err := c.CallFunc("test", nil)
+	if err != nil {
+		t.Error("CallFunc(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	if r.Type.Kind != ast.PRIMITIVE_TYPE_STRING {
+		t.Error("Expected PRIMITIVE_TYPE_STRING, got " + r.Type.Kind.String())
+	}
+	if r.String != "abc" {
+		t.Error("Expected value abc, got ", r.Int)
+	}
+}
+
+func TestBasicBoolType(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+    func TestBoolParam(a_input bool)bool{
+      return a_input
+    }
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, err := c.CallFunc("TestBoolParam", map[string]interface{}{
+		"a_input": true,
+	})
+	if err != nil {
+		t.Error("CallFunc(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+	if r.Type.Kind != ast.PRIMITIVE_TYPE_BOOL {
+		t.Error("Expected PRIMITIVE_TYPE_BOOL")
+	}
+	if r.Bool != true {
+		t.Error("Expected value false")
+	}
+}
+
+func TestIfStatementReturnsCorrectly(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+		var didRunInit bool
+
+    func TestIF(a_input bool)bool{
+      if didRunInit = true; a_input {
+				return true
+			} else {
+				return false
+			}
+    }
+
+		func getInitVar()bool{
+			return didRunInit
+		}
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, err := c.CallFunc("TestIF", map[string]interface{}{
+		"a_input": true,
+	})
+	if err != nil {
+		t.Error("CallFunc(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+	if r.Type.Kind != ast.PRIMITIVE_TYPE_BOOL {
+		t.Error("Expected PRIMITIVE_TYPE_BOOL, got ", r.Type.Kind.String())
+	}
+	if r.Bool != true {
+		t.Error("Expected value true")
+	}
+
+	r, err = c.CallFunc("getInitVar", map[string]interface{}{})
+	if err != nil {
+		t.Error("CallFunc(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+	if r.Type.Kind != ast.PRIMITIVE_TYPE_BOOL {
+		t.Error("Expected PRIMITIVE_TYPE_BOOL, got ", r.Type.Kind.String())
+	}
+	if r.Bool != true {
+		t.Error("Expected value true")
+	}
+}

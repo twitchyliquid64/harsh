@@ -16,6 +16,20 @@ func TestIntLiteralExecReturnsCorrectValue(t *testing.T) {
 	}
 }
 
+func TestBoolLiteralExecReturnsCorrectValue(t *testing.T) {
+	il := BoolLiteral{
+		Val: true,
+	}
+	context := ExecContext{}
+	r := il.Exec(&context)
+	if r.Type.Kind != PRIMITIVE_TYPE_BOOL {
+		t.Error("Expected PRIMITIVE_TYPE_BOOL return")
+	}
+	if r.Bool != true {
+		t.Error("Incorrect value")
+	}
+}
+
 func TestStringLiteralExecReturnsCorrectValue(t *testing.T) {
 	il := StringLiteral{
 		Str: "Strdfjlkj_ fgklfjlgfjlkjlkj 'dd '",
@@ -358,6 +372,80 @@ func TestNewVariableAssignGoesToGlobalWhenNotFuncContext(t *testing.T) {
 		t.Error("Incorrect value")
 	}
 	if _, ok := context.FunctionNamespace["testVar"]; ok {
-		t.Error("Object should not be in global namespace")
+		t.Error("Object should not be in functional namespace")
+	}
+}
+
+func TestIfStatementTruthExecutesElseNotMain(t *testing.T) {
+	ifNode := IfStmt{
+		Conditional: &BoolLiteral{},
+		Code: &Assign{
+			Identifier: "testVar",
+			Value: &StringLiteral{
+				Str: "main",
+			},
+		},
+		Else: &Assign{
+			Identifier: "testVar",
+			Value: &StringLiteral{
+				Str: "else",
+			},
+		},
+	}
+	context := ExecContext{
+		IsFuncContext:     false,
+		FunctionNamespace: Namespace(map[string]Variant{}),
+		GlobalNamespace:   Namespace(map[string]Variant{}),
+	}
+
+	ifNode.Exec(&context)
+	v := context.GlobalNamespace["testVar"]
+	if v.Type.Kind != PRIMITIVE_TYPE_STRING {
+		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
+	}
+	if v.String != "else" {
+		t.Error("Incorrect value")
+	}
+}
+
+func TestIfStatementTruthExecutesMainNotElse_alsoTestInit(t *testing.T) {
+	ifNode := IfStmt{
+		Conditional: &BoolLiteral{Val: true},
+		Init: &Assign{
+			Identifier: "init",
+			Value: &StringLiteral{
+				Str: "init has been run",
+			},
+		},
+		Code: &Assign{
+			Identifier: "testVar",
+			Value: &StringLiteral{
+				Str: "main",
+			},
+		},
+		Else: &Assign{
+			Identifier: "testVar",
+			Value: &StringLiteral{
+				Str: "else",
+			},
+		},
+	}
+	context := ExecContext{
+		IsFuncContext:     false,
+		FunctionNamespace: Namespace(map[string]Variant{}),
+		GlobalNamespace:   Namespace(map[string]Variant{}),
+	}
+
+	ifNode.Exec(&context)
+	v := context.GlobalNamespace["testVar"]
+	if v.Type.Kind != PRIMITIVE_TYPE_STRING {
+		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
+	}
+	if v.String != "main" {
+		t.Error("Incorrect value")
+	}
+
+	if _, ok := context.GlobalNamespace["init"]; !ok {
+		t.Error("Init AST node was not executed")
 	}
 }
