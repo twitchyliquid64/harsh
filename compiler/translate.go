@@ -91,6 +91,28 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 				}
 			}
 
+		case goast.DeclStmt:
+			switch d := v.Decl.(type) {
+			case *goast.GenDecl:
+				ln := ast.StatementList{}
+				for _, spec := range d.Specs {
+					if s, ok := spec.(*goast.ValueSpec); ok {
+						for i, _ := range s.Names {
+							assignNode := defaultValue(convertTypeToTypeKind(s.Type))
+							if i < len(s.Values) {
+								assignNode = translateGoNode(fset, context, reflect.ValueOf(s.Values[i]))
+							}
+							ln.Stmts = append(ln.Stmts, &ast.Assign{
+								NewLocal:   true,
+								Identifier: s.Names[i].Name,
+								Value:      assignNode,
+							})
+						}
+					}
+				}
+				return &ln
+			}
+
 		case goast.BasicLit:
 			if v.Kind == token.INT {
 				v, _ := strconv.ParseInt(v.Value, 10, 64)
@@ -141,17 +163,33 @@ func translateGoBinop(tok token.Token) ast.BinOpType {
 	}
 }
 
-func translateType(typ *goast.Field) []ast.TypeDecl {
-	var output []ast.TypeDecl
-	switch node := typ.Type.(type) {
-	case *goast.Ident:
-		var kind ast.TypeKind
+func defaultValue(k ast.TypeKind) ast.Node {
+	if k == ast.PRIMITIVE_TYPE_INT {
+		return &ast.IntegerLiteral{}
+	}
+	if k == ast.PRIMITIVE_TYPE_STRING {
+		return &ast.StringLiteral{}
+	}
+	return &ast.IntegerLiteral{Val: -1}
+}
+
+func convertTypeToTypeKind(t goast.Expr) ast.TypeKind {
+	if node, ok := t.(*goast.Ident); ok {
 		if node.Name == "string" {
-			kind = ast.PRIMITIVE_TYPE_STRING
+			return ast.PRIMITIVE_TYPE_STRING
 		}
 		if node.Name == "int" {
-			kind = ast.PRIMITIVE_TYPE_INT
+			return ast.PRIMITIVE_TYPE_INT
 		}
+	}
+	return ast.PRIMITIVE_TYPE_UNDEFINED
+}
+
+func translateType(typ *goast.Field) []ast.TypeDecl {
+	var output []ast.TypeDecl
+	switch typ.Type.(type) {
+	case *goast.Ident:
+		kind := convertTypeToTypeKind(typ.Type)
 		for _, name := range typ.Names {
 			output = append(output, &ast.PrimitiveType{Kind: kind, Name: name.Name})
 		}
