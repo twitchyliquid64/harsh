@@ -85,6 +85,12 @@ func (n *BinaryOp) Exec(context *ExecContext) Variant {
 			ret.String = l.String + r.String
 			//TODO: Add default case which adds an error to the context
 		}
+	} else {
+		context.Errors = append(context.Errors, ExecutionError{
+			Class:        TYPE_ERR,
+			CreatingNode: n,
+			Text:         "Invalid types for operands: " + l.Type.Kind.String() + " and " + r.Type.Kind.String(),
+		})
 	}
 
 	return ret

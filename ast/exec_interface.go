@@ -4,6 +4,7 @@ type ExecContext struct {
 	IsFuncContext     bool
 	FunctionNamespace Namespace
 	GlobalNamespace   Namespace
+	Errors            []ExecutionError
 }
 
 type Variant struct {

@@ -80,6 +80,33 @@ func TestBinaryOpAdditionReturnsCorrectValue(t *testing.T) {
 	}
 }
 
+func TestBinaryOpInvalidOperandsErrors(t *testing.T) {
+	il := BinaryOp{
+		LHS: &IntegerLiteral{
+			Val: 493,
+		},
+		RHS: &StringLiteral{
+			Str: "4",
+		},
+		Op: BINOP_ADD,
+	}
+	context := ExecContext{}
+	r := il.Exec(&context)
+	if r.Type.Kind != PRIMITIVE_TYPE_UNDEFINED {
+		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return")
+	}
+	if len(context.Errors) != 1 {
+		t.Error("Errors expected")
+		t.Fail()
+	}
+	if context.Errors[0].Class != TYPE_ERR {
+		t.Error("Expected error of type TYPE_ERR")
+	}
+	if context.Errors[0].Text != "Invalid types for operands: int and string" {
+		t.Error("Got unexpected error text: " + context.Errors[0].Error())
+	}
+}
+
 func TestBinaryOpConcatenationReturnsCorrectValue(t *testing.T) {
 	il := BinaryOp{
 		LHS: &StringLiteral{
