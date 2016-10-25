@@ -17,41 +17,32 @@ func TestPrintTypeKindStringString(t *testing.T) {
 }
 
 func TestPrintPrimitiveTypeString(t *testing.T) {
-	pt := PrimitiveType{
-		Kind: PRIMITIVE_TYPE_INT,
-		Name: "dsfsdfds",
-	}
-	if pt.String() != "int{dsfsdfds}" {
+	pt := PRIMITIVE_TYPE_INT
+	if pt.String() != "int" {
 		t.Error("PrimitiveType integer .String() is incorrect")
 	}
 }
 
 func TestPrintPrimitiveTypeInteger(t *testing.T) {
-	pt := PrimitiveType{
-		Kind: PRIMITIVE_TYPE_STRING,
-		Name: "dsfsdfds",
-	}
-	if pt.String() != "string{dsfsdfds}" {
+	pt := PRIMITIVE_TYPE_STRING
+
+	if pt.String() != "string" {
 		t.Error("PrimitiveType string .String() is incorrect")
 	}
 }
 
 func TestPrintPrimitiveTypeBool(t *testing.T) {
-	pt := PrimitiveType{
-		Kind: PRIMITIVE_TYPE_BOOL,
-		Name: "dsfsdfds",
-	}
-	if pt.String() != "bool{dsfsdfds}" {
+	pt := PRIMITIVE_TYPE_BOOL
+
+	if pt.String() != "bool" {
 		t.Error("PrimitiveType bool .String() is incorrect")
 	}
 }
 
 func TestPrintPrimitiveTypeUndefined(t *testing.T) {
-	pt := PrimitiveType{
-		Kind: PRIMITIVE_TYPE_UNDEFINED,
-		Name: "dsfsdfds",
-	}
-	if pt.String() != "undefined{dsfsdfds}" {
+	pt := PRIMITIVE_TYPE_UNDEFINED
+
+	if pt.String() != "undefined" {
 		t.Error("PrimitiveType undef .String() is incorrect")
 	}
 }

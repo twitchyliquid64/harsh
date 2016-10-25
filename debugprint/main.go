@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	goast "go/ast"
 	"os"
 
 	"github.com/twitchyliquid64/harsh/compiler"
@@ -24,7 +23,7 @@ func main() {
 	fmt.Print("Globals: {")
 	for i, name := range context.Globals.Names() {
 		v := context.Globals[name]
-		fmt.Print(name, v.Type.Kind.String())
+		fmt.Print(name, v.Type.String())
 		if i+1 < len(context.Globals.Names()) {
 			fmt.Print(", ")
 		}
@@ -48,8 +47,6 @@ func main() {
 			fmt.Println("-", ret.String(), "(return)")
 		}
 	}
-
-	goast.Print(nil, context.Errors)
 
 	if len(context.Errors) > 0 {
 		fmt.Println("Errors:")

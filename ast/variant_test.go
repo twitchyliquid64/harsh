@@ -4,7 +4,7 @@ import "testing"
 
 func TestMakeVariantString(t *testing.T) {
 	v := MakeVariant("abc")
-	if v.Type.Kind != PRIMITIVE_TYPE_STRING {
+	if v.Type != PRIMITIVE_TYPE_STRING {
 		t.Error("Expected string type")
 	}
 	if v.String != "abc" {
@@ -14,7 +14,7 @@ func TestMakeVariantString(t *testing.T) {
 
 func TestMakeVariantInt(t *testing.T) {
 	v := MakeVariant(123)
-	if v.Type.Kind != PRIMITIVE_TYPE_INT {
+	if v.Type != PRIMITIVE_TYPE_INT {
 		t.Error("Expected int type")
 	}
 	if v.Int != 123 {
@@ -24,7 +24,7 @@ func TestMakeVariantInt(t *testing.T) {
 
 func TestMakeVariantInt64(t *testing.T) {
 	v := MakeVariant(int64(-53))
-	if v.Type.Kind != PRIMITIVE_TYPE_INT {
+	if v.Type != PRIMITIVE_TYPE_INT {
 		t.Error("Expected int type")
 	}
 	if v.Int != -53 {
@@ -36,7 +36,7 @@ type WierdUnknownTypeMock int
 
 func TestMakeVariantUndefined(t *testing.T) {
 	v := MakeVariant(WierdUnknownTypeMock(1))
-	if v.Type.Kind != PRIMITIVE_TYPE_UNDEFINED {
+	if v.Type != PRIMITIVE_TYPE_UNDEFINED {
 		t.Error("Expected undefined type")
 	}
 }

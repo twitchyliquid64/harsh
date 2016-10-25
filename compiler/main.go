@@ -65,8 +65,6 @@ func (c *Context) CallFunc(name string, args map[string]interface{}) (ast.Varian
 		}
 	}
 	return ast.Variant{
-		Type: ast.PrimitiveType{
-			Kind: ast.PRIMITIVE_TYPE_UNDEFINED,
-		},
+		Type: ast.PRIMITIVE_TYPE_UNDEFINED,
 	}, ErrFuncNotFound
 }

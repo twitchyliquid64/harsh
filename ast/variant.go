@@ -6,37 +6,27 @@ func MakeVariant(in interface{}) Variant {
 		return v
 	case int:
 		return Variant{
-			Type: PrimitiveType{
-				Kind: PRIMITIVE_TYPE_INT,
-			},
-			Int: int64(v),
+			Type: PRIMITIVE_TYPE_INT,
+			Int:  int64(v),
 		}
 	case int64:
 		return Variant{
-			Type: PrimitiveType{
-				Kind: PRIMITIVE_TYPE_INT,
-			},
-			Int: v,
+			Type: PRIMITIVE_TYPE_INT,
+			Int:  v,
 		}
 	case bool:
 		return Variant{
-			Type: PrimitiveType{
-				Kind: PRIMITIVE_TYPE_BOOL,
-			},
+			Type: PRIMITIVE_TYPE_BOOL,
 			Bool: v,
 		}
 	case string:
 		return Variant{
-			Type: PrimitiveType{
-				Kind: PRIMITIVE_TYPE_STRING,
-			},
+			Type:   PRIMITIVE_TYPE_STRING,
 			String: v,
 		}
 	}
 
 	return Variant{
-		Type: PrimitiveType{
-			Kind: PRIMITIVE_TYPE_UNDEFINED,
-		},
+		Type: PRIMITIVE_TYPE_UNDEFINED,
 	}
 }

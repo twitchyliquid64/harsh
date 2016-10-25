@@ -8,7 +8,7 @@ func TestIntLiteralExecReturnsCorrectValue(t *testing.T) {
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type.Kind != PRIMITIVE_TYPE_INT {
+	if r.Type != PRIMITIVE_TYPE_INT {
 		t.Error("Expected PRIMITIVE_TYPE_INT return")
 	}
 	if r.Int != 493 {
@@ -22,7 +22,7 @@ func TestBoolLiteralExecReturnsCorrectValue(t *testing.T) {
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type.Kind != PRIMITIVE_TYPE_BOOL {
+	if r.Type != PRIMITIVE_TYPE_BOOL {
 		t.Error("Expected PRIMITIVE_TYPE_BOOL return")
 	}
 	if r.Bool != true {
@@ -36,7 +36,7 @@ func TestStringLiteralExecReturnsCorrectValue(t *testing.T) {
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type.Kind != PRIMITIVE_TYPE_STRING {
+	if r.Type != PRIMITIVE_TYPE_STRING {
 		t.Error("Expected PRIMITIVE_TYPE_STRING return")
 	}
 	if r.String != "Strdfjlkj_ fgklfjlgfjlkjlkj 'dd '" {
@@ -52,7 +52,7 @@ func TestReturnReturnsUpstreamValue(t *testing.T) {
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type.Kind != PRIMITIVE_TYPE_INT {
+	if r.Type != PRIMITIVE_TYPE_INT {
 		t.Error("Expected PRIMITIVE_TYPE_INT return")
 	}
 	if r.Int != 493 {
@@ -72,7 +72,7 @@ func TestBinaryOpAdditionReturnsCorrectValue(t *testing.T) {
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type.Kind != PRIMITIVE_TYPE_INT {
+	if r.Type != PRIMITIVE_TYPE_INT {
 		t.Error("Expected PRIMITIVE_TYPE_INT return")
 	}
 	if r.Int != 497 {
@@ -92,7 +92,7 @@ func TestBinaryOpInvalidOperandsErrors(t *testing.T) {
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type.Kind != PRIMITIVE_TYPE_UNDEFINED {
+	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
 		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return")
 	}
 	if len(context.Errors) != 1 {
@@ -119,7 +119,7 @@ func TestBinaryOpConcatenationReturnsCorrectValue(t *testing.T) {
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type.Kind != PRIMITIVE_TYPE_STRING {
+	if r.Type != PRIMITIVE_TYPE_STRING {
 		t.Error("Expected PRIMITIVE_TYPE_STRING return")
 	}
 	if r.String != "abcd" {
@@ -139,7 +139,7 @@ func TestBinaryOpSubtractionReturnsCorrectValue(t *testing.T) {
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type.Kind != PRIMITIVE_TYPE_INT {
+	if r.Type != PRIMITIVE_TYPE_INT {
 		t.Error("Expected PRIMITIVE_TYPE_INT return")
 	}
 	if r.Int != 489 {
@@ -159,7 +159,7 @@ func TestBinaryOpMultiplicationReturnsCorrectValue(t *testing.T) {
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type.Kind != PRIMITIVE_TYPE_INT {
+	if r.Type != PRIMITIVE_TYPE_INT {
 		t.Error("Expected PRIMITIVE_TYPE_INT return")
 	}
 	if r.Int != 986 {
@@ -188,7 +188,7 @@ func TestStatementListReturnsShortCircuitValue(t *testing.T) {
 		IsFuncContext: true,
 	}
 	r := n.Exec(&context)
-	if r.Type.Kind != PRIMITIVE_TYPE_INT {
+	if r.Type != PRIMITIVE_TYPE_INT {
 		t.Error("Expected PRIMITIVE_TYPE_INT return, got " + r.Type.String())
 	}
 	if r.Int != 44 {
@@ -203,7 +203,7 @@ func TestEmptyStatementListReturnsNoValue(t *testing.T) {
 		IsFuncContext: true,
 	}
 	r := n.Exec(&context)
-	if r.Type.Kind != PRIMITIVE_TYPE_UNDEFINED {
+	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
 		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return, got " + r.Type.String())
 	}
 }
@@ -216,16 +216,14 @@ func TestVariableReferenceReturnsFunctionParameter(t *testing.T) {
 		IsFuncContext: true,
 		FunctionNamespace: map[string]Variant{
 			"inInt": Variant{
-				Type: PrimitiveType{
-					Kind: PRIMITIVE_TYPE_INT,
-				},
-				Int: 42,
+				Type: PRIMITIVE_TYPE_INT,
+				Int:  42,
 			},
 		},
 	}
 
 	r := vr.Exec(&context)
-	if r.Type.Kind != PRIMITIVE_TYPE_INT {
+	if r.Type != PRIMITIVE_TYPE_INT {
 		t.Error("Expected PRIMITIVE_TYPE_INT return, got " + r.Type.String())
 	}
 	if r.Int != 42 {
@@ -245,7 +243,7 @@ func TestVariableReferenceReturnsGlobal(t *testing.T) {
 	context.GlobalNamespace.Save("glo", -42)
 
 	r := vr.Exec(&context)
-	if r.Type.Kind != PRIMITIVE_TYPE_INT {
+	if r.Type != PRIMITIVE_TYPE_INT {
 		t.Error("Expected PRIMITIVE_TYPE_INT return, got " + r.Type.String())
 	}
 	if r.Int != -42 {
@@ -263,17 +261,15 @@ func TestVariableReferenceReturnsParamFirst(t *testing.T) {
 		GlobalNamespace: ns,
 		FunctionNamespace: map[string]Variant{
 			"inInt": Variant{
-				Type: PrimitiveType{
-					Kind: PRIMITIVE_TYPE_INT,
-				},
-				Int: 1234,
+				Type: PRIMITIVE_TYPE_INT,
+				Int:  1234,
 			},
 		},
 	}
 	context.GlobalNamespace.Save("inInt", -42)
 
 	r := vr.Exec(&context)
-	if r.Type.Kind != PRIMITIVE_TYPE_INT {
+	if r.Type != PRIMITIVE_TYPE_INT {
 		t.Error("Expected PRIMITIVE_TYPE_INT return, got " + r.Type.String())
 	}
 	if r.Int != 1234 {
@@ -290,7 +286,7 @@ func TestVariableReferenceReturnsUndefinedWhenNoMatch(t *testing.T) {
 	}
 
 	r := vr.Exec(&context)
-	if r.Type.Kind != PRIMITIVE_TYPE_UNDEFINED {
+	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
 		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return, got " + r.Type.String())
 	}
 }
@@ -311,7 +307,7 @@ func TestLocalVariableWrite(t *testing.T) {
 
 	ass.Exec(&context)
 	v := context.FunctionNamespace["testVar"]
-	if v.Type.Kind != PRIMITIVE_TYPE_STRING {
+	if v.Type != PRIMITIVE_TYPE_STRING {
 		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
 	}
 	if v.String != "abc" {
@@ -343,7 +339,7 @@ func TestGlobalVariableWrite(t *testing.T) {
 	}
 
 	v := context.GlobalNamespace["testVar"]
-	if v.Type.Kind != PRIMITIVE_TYPE_STRING {
+	if v.Type != PRIMITIVE_TYPE_STRING {
 		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
 	}
 	if v.String != "abc" {
@@ -366,7 +362,7 @@ func TestNewVariableAssignGoesToFunc(t *testing.T) {
 
 	ass.Exec(&context)
 	v := context.FunctionNamespace["testVar"]
-	if v.Type.Kind != PRIMITIVE_TYPE_STRING {
+	if v.Type != PRIMITIVE_TYPE_STRING {
 		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
 	}
 	if v.String != "abc" {
@@ -392,7 +388,7 @@ func TestNewVariableAssignGoesToGlobalWhenNotFuncContext(t *testing.T) {
 
 	ass.Exec(&context)
 	v := context.GlobalNamespace["testVar"]
-	if v.Type.Kind != PRIMITIVE_TYPE_STRING {
+	if v.Type != PRIMITIVE_TYPE_STRING {
 		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
 	}
 	if v.String != "abc" {
@@ -427,7 +423,7 @@ func TestIfStatementTruthExecutesElseNotMain(t *testing.T) {
 
 	ifNode.Exec(&context)
 	v := context.GlobalNamespace["testVar"]
-	if v.Type.Kind != PRIMITIVE_TYPE_STRING {
+	if v.Type != PRIMITIVE_TYPE_STRING {
 		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
 	}
 	if v.String != "else" {
@@ -465,7 +461,7 @@ func TestIfStatementTruthExecutesMainNotElse_alsoTestInit(t *testing.T) {
 
 	ifNode.Exec(&context)
 	v := context.GlobalNamespace["testVar"]
-	if v.Type.Kind != PRIMITIVE_TYPE_STRING {
+	if v.Type != PRIMITIVE_TYPE_STRING {
 		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
 	}
 	if v.String != "main" {

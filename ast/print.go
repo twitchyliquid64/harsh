@@ -35,6 +35,16 @@ func (node *StringLiteral) Print(level int) {
 	printLeveled(strconv.Quote(node.Str)+" string", level)
 }
 
+func (node *ArrayLiteral) Print(level int) {
+	if node.Type.(ArrayType).Len != nil {
+		printLeveled("len{", level)
+		node.Type.(ArrayType).Len.Print(level + 1)
+		printLeveled("}"+node.Type.String(), level)
+		return
+	}
+	printLeveled(node.Type.String(), level)
+}
+
 func (node *BoolLiteral) Print(level int) {
 	printLeveled(strconv.FormatBool(node.Val)+" bool", level)
 }
@@ -102,19 +112,22 @@ func printLeveled(str string, level int) {
 	fmt.Println(str)
 }
 
-//TypeDecl
-func (t *PrimitiveType) String() string {
-	return t.Kind.String() + "{" + t.Name + "}"
+//Type system
+
+func (t NamedType) String() string {
+	return t.Type.String() + "{" + t.Ident + "}"
 }
 
-func (tk *TypeKind) String() string {
-	switch *tk {
+func (tk TypeKindDescription) String() string {
+	switch tk {
 	case PRIMITIVE_TYPE_INT:
 		return "int"
 	case PRIMITIVE_TYPE_STRING:
 		return "string"
 	case PRIMITIVE_TYPE_BOOL:
 		return "bool"
+	case COMPLEX_TYPE_ARRAY:
+		return "[?]"
 	case PRIMITIVE_TYPE_UNDEFINED:
 		return "undefined"
 	}

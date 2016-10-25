@@ -108,7 +108,7 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 				for _, spec := range d.Specs {
 					if s, ok := spec.(*goast.ValueSpec); ok {
 						for i, _ := range s.Names {
-							assignNode := defaultValue(convertTypeToTypeKind(s.Type))
+							assignNode := defaultValue(convertTypeToTypeKind(fset, s.Type, context))
 							if i < len(s.Values) {
 								assignNode = translateGoNode(fset, context, reflect.ValueOf(s.Values[i]))
 							}
@@ -210,10 +210,16 @@ func defaultValue(k ast.TypeKind) ast.Node {
 	if k == ast.PRIMITIVE_TYPE_STRING {
 		return &ast.StringLiteral{}
 	}
+	if _, ok := k.(ast.ArrayType); ok {
+		return &ast.ArrayLiteral{
+			Type:    k,
+			Literal: nil,
+		}
+	}
 	return &ast.IntegerLiteral{Val: -1}
 }
 
-func convertTypeToTypeKind(t goast.Expr) ast.TypeKind {
+func convertTypeToTypeKind(fset *token.FileSet, t goast.Expr, context *Context) ast.TypeKind {
 	if node, ok := t.(*goast.Ident); ok {
 		if node.Name == "string" {
 			return ast.PRIMITIVE_TYPE_STRING
@@ -224,20 +230,50 @@ func convertTypeToTypeKind(t goast.Expr) ast.TypeKind {
 		if node.Name == "bool" {
 			return ast.PRIMITIVE_TYPE_BOOL
 		}
+		context.Errors = append(context.Errors, TranslateError{
+			Class: NOT_SUPPORTED,
+			Text:  "Cannot convert go/ast.Ident to TypeKind: " + node.Name,
+		})
+	} else if node, ok := t.(*goast.ArrayType); ok {
+		childTypeKind := convertTypeToTypeKind(fset, node.Elt, context)
+		if childTypeKind == ast.PRIMITIVE_TYPE_UNDEFINED {
+			context.Errors = append(context.Errors, TranslateError{
+				Class: NOT_SUPPORTED,
+				Text:  "Array uses unsupported type: " + reflect.TypeOf(node.Elt).String(),
+			})
+		} else { //build an array type based on it
+			var lenNode goast.Expr = node.Len
+			if lenNode == nil {
+				context.Errors = append(context.Errors, TranslateError{
+					Class: NOT_SUPPORTED,
+					Text:  "Slices are not yet supported",
+				})
+			} else {
+				return ast.ArrayType{
+					SubType: childTypeKind,
+					Len:     translateGoNode(fset, context, reflect.ValueOf(node.Len)),
+				}
+			}
+		}
+	} else {
+		context.Errors = append(context.Errors, TranslateError{
+			Class: NOT_SUPPORTED,
+			Text:  "Cannot convert go/ast node to TypeKind: " + reflect.TypeOf(t).String(),
+		})
 	}
 	return ast.PRIMITIVE_TYPE_UNDEFINED
 }
 
-func translateType(typ *goast.Field) []ast.TypeDecl {
+func translateType(fset *token.FileSet, typ *goast.Field, context *Context) []ast.TypeDecl {
 	var output []ast.TypeDecl
 	switch typ.Type.(type) {
 	case *goast.Ident:
-		kind := convertTypeToTypeKind(typ.Type)
+		kind := convertTypeToTypeKind(fset, typ.Type, context)
 		for _, name := range typ.Names {
-			output = append(output, &ast.PrimitiveType{Kind: kind, Name: name.Name})
+			output = append(output, ast.NamedType{Type: kind, Ident: name.Name})
 		}
 		if len(typ.Names) == 0 {
-			output = append(output, &ast.PrimitiveType{Kind: kind})
+			output = append(output, kind)
 		}
 	default:
 		fmt.Println("translateType() unknown type: ", reflect.TypeOf(typ.Type))
@@ -294,7 +330,7 @@ func translateGoGenDecl(fset *token.FileSet, context *Context, node *goast.GenDe
 					case "string":
 						context.Globals.Save(name.Name, "")
 					default:
-						context.Globals.Save(name.Name, ast.Variant{Type: ast.PrimitiveType{Kind: ast.PRIMITIVE_TYPE_UNDEFINED}})
+						context.Globals.Save(name.Name, ast.PRIMITIVE_TYPE_UNDEFINED)
 						context.Errors = append(context.Errors, TranslateError{
 							Class: NOT_SUPPORTED,
 							Pos:   fset.Position(spec.Pos()),
@@ -317,7 +353,7 @@ func translateGoFuncDecl(fset *token.FileSet, context *Context, node *goast.Func
 
 	if node.Type.Results != nil {
 		for _, ret := range node.Type.Results.List {
-			if t := translateType(ret); t != nil {
+			if t := translateType(fset, ret, context); t != nil {
 				for _, ret := range t {
 					returnVars = append(returnVars, ret)
 				}
@@ -326,7 +362,7 @@ func translateGoFuncDecl(fset *token.FileSet, context *Context, node *goast.Func
 	}
 	if node.Type.Params != nil {
 		for _, p := range node.Type.Params.List {
-			if t := translateType(p); t != nil {
+			if t := translateType(fset, p, context); t != nil {
 				for _, pm := range t {
 					parameters = append(parameters, pm)
 				}

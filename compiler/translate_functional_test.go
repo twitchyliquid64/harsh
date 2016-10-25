@@ -226,26 +226,41 @@ func TestFunctionParamsAndResultsAreTypedAndNamedCorrectly(t *testing.T) {
 		t.Error("Expected 2 parameters")
 	}
 	p := context.Declarations[0].Parameters
-	if _, ok := p[0].(*ast.PrimitiveType); !ok {
-		t.Error("First parameter not a primitive")
+	if _, ok := p[0].(ast.NamedType); !ok {
+		t.Error("First parameter not a NamedType:", reflect.TypeOf(p[0]))
 	}
-	if p[0].(*ast.PrimitiveType).Kind != ast.PRIMITIVE_TYPE_INT || p[0].(*ast.PrimitiveType).Name != "inp1" {
+	if p1, ok := p[0].(ast.NamedType); !ok {
+		t.Error("Parameter one is not named")
+	} else {
+		if p1.Name() != "inp1" {
+			t.Error("First parameter is named incorrectly")
+		}
+	}
+	if p2, ok := p[1].(ast.NamedType); !ok {
+		t.Error("Parameter two is not named")
+	} else {
+		if p2.Name() != "inp2" {
+			t.Error("Second parameter is named incorrectly")
+		}
+	}
+
+	if p[0].ConcreteType() != ast.PRIMITIVE_TYPE_INT {
 		t.Error("First parameter incorrect")
 	}
-	if _, ok := p[1].(*ast.PrimitiveType); !ok {
-		t.Error("Second parameter not a primitive")
+	if _, ok := p[1].(ast.NamedType); !ok {
+		t.Error("Second parameter not a NamedType:", reflect.TypeOf(p[0]))
 	}
-	if p[1].(*ast.PrimitiveType).Kind != ast.PRIMITIVE_TYPE_INT || p[1].(*ast.PrimitiveType).Name != "inp2" {
+	if p[1].ConcreteType() != ast.PRIMITIVE_TYPE_INT {
 		t.Error("Second parameter incorrect")
 	}
 	if len(context.Declarations[0].Results) != 1 {
 		t.Error("Incorrect number of results")
 	}
-	if _, ok := context.Declarations[0].Results[0].(*ast.PrimitiveType); !ok {
+	if _, ok := context.Declarations[0].Results[0].(ast.TypeKindDescription); !ok {
 		t.Error("Unexpected return type")
 	}
 	r := context.Declarations[0].Results
-	if r[0].(*ast.PrimitiveType).Kind != ast.PRIMITIVE_TYPE_STRING || r[0].(*ast.PrimitiveType).Name != "" {
+	if r[0] != ast.PRIMITIVE_TYPE_STRING {
 		t.Error("Return incorrect")
 	}
 }
@@ -333,8 +348,8 @@ func TestGlobalIntSavedCorrectly(t *testing.T) {
 		t.Error("Global expected")
 		t.FailNow()
 	}
-	if v.Type.Kind != ast.PRIMITIVE_TYPE_INT {
-		t.Error("Integer type for variable expected, got ", v.Type.Kind.String())
+	if v.Type != ast.PRIMITIVE_TYPE_INT {
+		t.Error("Integer type for variable expected, got ", v.Type.String())
 	}
 	if v.Int != 0 {
 		t.Error("Default value not 0")
@@ -353,8 +368,8 @@ func TestGlobalStringSavedCorrectly(t *testing.T) {
 		t.Error("Global expected")
 		t.FailNow()
 	}
-	if v.Type.Kind != ast.PRIMITIVE_TYPE_STRING {
-		t.Error("String type for variable expected, got ", v.Type.Kind.String())
+	if v.Type != ast.PRIMITIVE_TYPE_STRING {
+		t.Error("String type for variable expected, got ", v.Type.String())
 	}
 	if v.String != "" {
 		t.Error("Default value not \"\"")

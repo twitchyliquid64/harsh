@@ -2,28 +2,28 @@ package ast
 
 func (n *IntegerLiteral) Exec(context *ExecContext) Variant {
 	return Variant{
-		Type: PrimitiveType{
-			Kind: PRIMITIVE_TYPE_INT,
-		},
-		Int: n.Val,
+		Type: PRIMITIVE_TYPE_INT,
+		Int:  n.Val,
 	}
 }
 
 func (n *BoolLiteral) Exec(context *ExecContext) Variant {
 	return Variant{
-		Type: PrimitiveType{
-			Kind: PRIMITIVE_TYPE_BOOL,
-		},
+		Type: PRIMITIVE_TYPE_BOOL,
 		Bool: n.Val,
 	}
 }
 
 func (n *StringLiteral) Exec(context *ExecContext) Variant {
 	return Variant{
-		Type: PrimitiveType{
-			Kind: PRIMITIVE_TYPE_STRING,
-		},
+		Type:   PRIMITIVE_TYPE_STRING,
 		String: n.Str,
+	}
+}
+
+func (n *ArrayLiteral) Exec(context *ExecContext) Variant {
+	return Variant{
+		Type: n.Type,
 	}
 }
 
@@ -40,9 +40,7 @@ func (n *StatementList) Exec(context *ExecContext) Variant {
 	}
 
 	return Variant{
-		Type: PrimitiveType{
-			Kind: PRIMITIVE_TYPE_UNDEFINED,
-		},
+		Type: PRIMITIVE_TYPE_UNDEFINED,
 	}
 }
 
@@ -56,14 +54,10 @@ func (n *BinaryOp) Exec(context *ExecContext) Variant {
 	l := n.LHS.Exec(context)
 	r := n.RHS.Exec(context)
 	ret := Variant{
-		Type: PrimitiveType{
-			Kind: PRIMITIVE_TYPE_UNDEFINED,
-		},
+		Type: PRIMITIVE_TYPE_UNDEFINED,
 	}
-	if l.Type.Kind == PRIMITIVE_TYPE_INT && r.Type.Kind == PRIMITIVE_TYPE_INT {
-		ret.Type = PrimitiveType{
-			Kind: PRIMITIVE_TYPE_INT,
-		}
+	if l.Type == PRIMITIVE_TYPE_INT && r.Type == PRIMITIVE_TYPE_INT {
+		ret.Type = PRIMITIVE_TYPE_INT
 		switch n.Op {
 		case BINOP_ADD:
 			ret.Int = l.Int + r.Int
@@ -76,10 +70,8 @@ func (n *BinaryOp) Exec(context *ExecContext) Variant {
 		case BINOP_MOD:
 			ret.Int = l.Int % r.Int
 		}
-	} else if l.Type.Kind == PRIMITIVE_TYPE_STRING && r.Type.Kind == PRIMITIVE_TYPE_STRING {
-		ret.Type = PrimitiveType{
-			Kind: PRIMITIVE_TYPE_STRING,
-		}
+	} else if l.Type == PRIMITIVE_TYPE_STRING && r.Type == PRIMITIVE_TYPE_STRING {
+		ret.Type = PRIMITIVE_TYPE_STRING
 		switch n.Op {
 		case BINOP_ADD:
 			ret.String = l.String + r.String
@@ -89,7 +81,7 @@ func (n *BinaryOp) Exec(context *ExecContext) Variant {
 		context.Errors = append(context.Errors, ExecutionError{
 			Class:        TYPE_ERR,
 			CreatingNode: n,
-			Text:         "Invalid types for operands: " + l.Type.Kind.String() + " and " + r.Type.Kind.String(),
+			Text:         "Invalid types for operands: " + l.Type.String() + " and " + r.Type.String(),
 		})
 	}
 
@@ -106,9 +98,7 @@ func (n *VariableReference) Exec(context *ExecContext) Variant {
 		}
 	}
 	return Variant{
-		Type: PrimitiveType{
-			Kind: PRIMITIVE_TYPE_UNDEFINED,
-		},
+		Type: PRIMITIVE_TYPE_UNDEFINED,
 	}
 }
 
@@ -130,9 +120,7 @@ func (n *Assign) Exec(context *ExecContext) Variant {
 	}
 
 	return Variant{
-		Type: PrimitiveType{
-			Kind: PRIMITIVE_TYPE_UNDEFINED,
-		},
+		Type: PRIMITIVE_TYPE_UNDEFINED,
 	}
 }
 
@@ -142,15 +130,13 @@ func (n *IfStmt) Exec(context *ExecContext) Variant {
 	}
 
 	conditionResult := n.Conditional.Exec(context)
-	if conditionResult.Type.Kind == PRIMITIVE_TYPE_BOOL && conditionResult.Bool {
+	if conditionResult.Type == PRIMITIVE_TYPE_BOOL && conditionResult.Bool {
 		return n.Code.Exec(context)
 	} else if n.Else != nil {
 		return n.Else.Exec(context)
 	}
 
 	return Variant{
-		Type: PrimitiveType{
-			Kind: PRIMITIVE_TYPE_UNDEFINED,
-		},
+		Type: PRIMITIVE_TYPE_UNDEFINED,
 	}
 }

@@ -8,7 +8,7 @@ type ExecContext struct {
 }
 
 type Variant struct {
-	Type     PrimitiveType
+	Type     TypeKind
 	Int      int64
 	String   string
 	Bool     bool
