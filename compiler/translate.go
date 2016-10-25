@@ -93,7 +93,11 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 							Value:      translateGoNode(fset, context, reflect.ValueOf(v.Rhs[0])),
 						}
 					}
-					fmt.Println("Assignment object unknown: ", ident.Name, reflect.TypeOf(ident.Obj.Decl))
+					context.Errors = append(context.Errors, TranslateError{
+						Class: NOT_SUPPORTED,
+						Pos:   fset.Position(v.Pos()),
+						Text:  "Assignment object unknown: " + ident.Name + " (" + reflect.TypeOf(ident.Obj.Decl).Name() + ")",
+					})
 				}
 			}
 
@@ -114,6 +118,12 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 								Value:      assignNode,
 							})
 						}
+					} else {
+						context.Errors = append(context.Errors, TranslateError{
+							Class: NOT_SUPPORTED,
+							Pos:   fset.Position(v.Pos()),
+							Text:  "Spec in Declaration unknown: (" + reflect.TypeOf(spec).Name() + ")",
+						})
 					}
 				}
 				return &ln
@@ -130,16 +140,31 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 				return &ast.StringLiteral{
 					Str: s,
 				}
+			} else {
+				context.Errors = append(context.Errors, TranslateError{
+					Class: NOT_SUPPORTED,
+					Pos:   fset.Position(v.Pos()),
+					Text:  "BasicLit Kind is not recognised: " + v.Kind.String(),
+				})
 			}
 			fmt.Println("Not implemented - BASICLIT: ", v.Value)
 
 		case goast.ReturnStmt:
-			if len(v.Results) > 0 { //only one return supported for now
+			if len(v.Results) == 1 { //only one return supported for now
 				return &ast.ReturnStmt{
 					Expr: translateGoNode(fset, context, reflect.ValueOf(v.Results[0])),
 				}
+			} else if len(v.Results) == 0 { //TODO: make a undefined node and return it
+				return &ast.ReturnStmt{
+					Expr: &ast.IntegerLiteral{},
+				}
+			} else {
+				context.Errors = append(context.Errors, TranslateError{
+					Class: NOT_SUPPORTED,
+					Pos:   fset.Position(v.Pos()),
+					Text:  "Returning multiple values is not supported.",
+				})
 			}
-			fmt.Println("Not implemented - RETURN: ", len(v.Results))
 
 		case goast.IfStmt:
 			return &ast.IfStmt{
@@ -154,6 +179,10 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 
 		default:
 			fmt.Println("Got unknown struct type: ", t.Type())
+			context.Errors = append(context.Errors, TranslateError{
+				Class: NOT_SUPPORTED,
+				Text:  "Translation of go/ast node not supported: " + t.Type().Name(),
+			})
 		}
 
 	}
@@ -244,7 +273,11 @@ func translateGoGenDecl(fset *token.FileSet, context *Context, node *goast.GenDe
 			if context.Debug {
 				fmt.Println("IMPORT", n.Path)
 			}
-			fmt.Println("Imports not yet supported")
+			context.Errors = append(context.Errors, TranslateError{
+				Class: NOT_SUPPORTED,
+				Pos:   fset.Position(node.Pos()),
+				Text:  "Import statements are not yet supported",
+			})
 		case *goast.ValueSpec:
 			if context.Debug {
 				fmt.Println("GLOBAL: ", n.Type, n.Names, n.Values, reflect.TypeOf(n.Type))
@@ -262,7 +295,11 @@ func translateGoGenDecl(fset *token.FileSet, context *Context, node *goast.GenDe
 						context.Globals.Save(name.Name, "")
 					default:
 						context.Globals.Save(name.Name, ast.Variant{Type: ast.PrimitiveType{Kind: ast.PRIMITIVE_TYPE_UNDEFINED}})
-						fmt.Println("Unknown goast.Ident.Type: ", t.Name)
+						context.Errors = append(context.Errors, TranslateError{
+							Class: NOT_SUPPORTED,
+							Pos:   fset.Position(spec.Pos()),
+							Text:  "Unknown global type: " + t.Name,
+						})
 					}
 				}
 			}

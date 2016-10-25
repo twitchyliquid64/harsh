@@ -1,6 +1,10 @@
 package compiler
 
-import "github.com/twitchyliquid64/harsh/ast"
+import (
+	"go/token"
+
+	"github.com/twitchyliquid64/harsh/ast"
+)
 
 type Context struct {
 	Name          string
@@ -9,6 +13,7 @@ type Context struct {
 	ChildContexts []*Context
 	Debug         bool
 	Globals       ast.Namespace
+	Errors        []TranslateError
 }
 
 type declaration struct {
@@ -24,3 +29,15 @@ const (
 	CONTEXT_ADHOC = 0
 	CONTEXT_FILE  = 1
 )
+
+type translateErrClass int
+
+const (
+	NOT_SUPPORTED translateErrClass = iota
+)
+
+type TranslateError struct {
+	Pos   token.Position
+	Class translateErrClass
+	Text  string
+}

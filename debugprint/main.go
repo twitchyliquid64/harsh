@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	goast "go/ast"
 	"os"
 
 	"github.com/twitchyliquid64/harsh/compiler"
@@ -45,6 +46,15 @@ func main() {
 		}
 		for _, ret := range decl.Results {
 			fmt.Println("-", ret.String(), "(return)")
+		}
+	}
+
+	goast.Print(nil, context.Errors)
+
+	if len(context.Errors) > 0 {
+		fmt.Println("Errors:")
+		for i, err := range context.Errors {
+			fmt.Printf("%02d: %s (%s)\r\n", i+1, err.Text, err.Pos.String())
 		}
 	}
 }
