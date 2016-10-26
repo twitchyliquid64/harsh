@@ -6,6 +6,7 @@ import (
 	"go/parser"
 	"go/token"
 	"reflect"
+	"strconv"
 
 	"github.com/twitchyliquid64/harsh/ast"
 )
@@ -47,6 +48,14 @@ func ParseLiteral(fname, inCode string) (context *Context, err error) {
 	return context, nil
 }
 
+type ExecutionError struct {
+	Errors []ast.ExecutionError
+}
+
+func (e ExecutionError) Error() string {
+	return strconv.Itoa(len(e.Errors)) + " execution errors"
+}
+
 func (c *Context) CallFunc(name string, args map[string]interface{}) (ast.Variant, error) {
 	for _, decl := range c.Declarations {
 		if decl.Identifier == name {
@@ -61,7 +70,12 @@ func (c *Context) CallFunc(name string, args map[string]interface{}) (ast.Varian
 				}
 			}
 
-			return decl.Code.Exec(execContext), nil
+			retValue := decl.Code.Exec(execContext)
+			if len(execContext.Errors) == 0 {
+				return retValue, nil
+			} else {
+				return retValue, ExecutionError{Errors: execContext.Errors}
+			}
 		}
 	}
 	return ast.Variant{

@@ -35,10 +35,16 @@ func (n *StatementList) Exec(context *ExecContext) Variant {
 	for _, node := range n.Stmts {
 		v := node.Exec(&newContext)
 		if v.IsReturn {
+			for _, err := range newContext.Errors {
+				context.Errors = append(context.Errors, err)
+			}
 			return v
 		}
 	}
 
+	for _, err := range newContext.Errors {
+		context.Errors = append(context.Errors, err)
+	}
 	return Variant{
 		Type: PRIMITIVE_TYPE_UNDEFINED,
 	}
@@ -83,6 +89,7 @@ func (n *BinaryOp) Exec(context *ExecContext) Variant {
 			CreatingNode: n,
 			Text:         "Invalid types for operands: " + l.Type.String() + " and " + r.Type.String(),
 		})
+
 	}
 
 	return ret
