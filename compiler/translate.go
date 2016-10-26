@@ -11,7 +11,7 @@ import (
 )
 
 func translateGoAST(fset *token.FileSet, inp *goast.File) (ast.Node, *Context) {
-	ns := ast.Namespace(map[string]ast.Variant{})
+	ns := ast.Namespace(map[string]*ast.Variant{})
 
 	context := &Context{
 		ConType: CONTEXT_ADHOC,
@@ -133,6 +133,12 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 				compLit.Literal = append(compLit.Literal, translateGoNode(fset, context, reflect.ValueOf(n)))
 			}
 			return compLit
+
+		case goast.IndexExpr:
+			return &ast.Subscript{
+				Expr:      translateGoNode(fset, context, reflect.ValueOf(v.X)),
+				Subscript: translateGoNode(fset, context, reflect.ValueOf(v.Index)),
+			}
 
 		case goast.BasicLit:
 			if v.Kind == token.INT {

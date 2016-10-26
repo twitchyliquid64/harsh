@@ -32,7 +32,7 @@ func ParseLiteral(fname, inCode string) (context *Context, err error) {
 	if err != nil {
 		return nil, err
 	}
-	ns := ast.Namespace(map[string]ast.Variant{})
+	ns := ast.Namespace(map[string]*ast.Variant{})
 	context = &Context{
 		ConType: CONTEXT_ADHOC,
 		Globals: ns,
@@ -56,12 +56,12 @@ func (e ExecutionError) Error() string {
 	return strconv.Itoa(len(e.Errors)) + " execution errors"
 }
 
-func (c *Context) CallFunc(name string, args map[string]interface{}) (ast.Variant, error) {
+func (c *Context) CallFunc(name string, args map[string]interface{}) (*ast.Variant, error) {
 	for _, decl := range c.Declarations {
 		if decl.Identifier == name {
 			execContext := &ast.ExecContext{
 				IsFuncContext:     true,
-				FunctionNamespace: map[string]ast.Variant{},
+				FunctionNamespace: map[string]*ast.Variant{},
 				GlobalNamespace:   c.Globals,
 			}
 			if args != nil {
@@ -78,7 +78,7 @@ func (c *Context) CallFunc(name string, args map[string]interface{}) (ast.Varian
 			}
 		}
 	}
-	return ast.Variant{
+	return &ast.Variant{
 		Type: ast.PRIMITIVE_TYPE_UNDEFINED,
 	}, ErrFuncNotFound
 }

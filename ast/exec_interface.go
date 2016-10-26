@@ -7,10 +7,11 @@ type ExecContext struct {
 	Errors            []ExecutionError
 }
 
-type Namespace map[string]Variant
+type Namespace map[string]*Variant
 
+// Save constructs a Variant from v and saves it. If a *variant is given, a shallow copy is performed.
 func (n Namespace) Save(name string, v interface{}) {
-	n[name] = MakeVariant(v)
+	n[name] = MakeVariant(v) //makes a copy
 }
 
 func (n *Namespace) Names() []string {

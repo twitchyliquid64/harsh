@@ -1,27 +1,27 @@
 package ast
 
-func (n *IntegerLiteral) Exec(context *ExecContext) Variant {
-	return Variant{
+func (n *IntegerLiteral) Exec(context *ExecContext) *Variant {
+	return &Variant{
 		Type: PRIMITIVE_TYPE_INT,
 		Int:  n.Val,
 	}
 }
 
-func (n *BoolLiteral) Exec(context *ExecContext) Variant {
-	return Variant{
+func (n *BoolLiteral) Exec(context *ExecContext) *Variant {
+	return &Variant{
 		Type: PRIMITIVE_TYPE_BOOL,
 		Bool: n.Val,
 	}
 }
 
-func (n *StringLiteral) Exec(context *ExecContext) Variant {
-	return Variant{
+func (n *StringLiteral) Exec(context *ExecContext) *Variant {
+	return &Variant{
 		Type:   PRIMITIVE_TYPE_STRING,
 		String: n.Str,
 	}
 }
 
-func (n *ArrayLiteral) Exec(context *ExecContext) Variant {
+func (n *ArrayLiteral) Exec(context *ExecContext) *Variant {
 	sizeNode := n.Type.(ArrayType).Len.Exec(context)
 	if sizeNode.Type != PRIMITIVE_TYPE_INT {
 		context.Errors = append(context.Errors, ExecutionError{
@@ -29,17 +29,17 @@ func (n *ArrayLiteral) Exec(context *ExecContext) Variant {
 			CreatingNode: n,
 			Text:         "Non-integer len used for array",
 		})
-		return Variant{Type: PRIMITIVE_TYPE_UNDEFINED}
+		return &Variant{Type: PRIMITIVE_TYPE_UNDEFINED}
 	}
 
-	var values []Variant = make([]Variant, sizeNode.Int)
+	var values []*Variant = make([]*Variant, sizeNode.Int)
 	if len(values) != len(n.Literal) && len(n.Literal) != 0 {
 		context.Errors = append(context.Errors, ExecutionError{
 			Class:        BOUNDS_ERR,
 			CreatingNode: n,
 			Text:         "Literal used in array assignment does not match the size of the underlying array",
 		})
-		return Variant{Type: PRIMITIVE_TYPE_UNDEFINED}
+		return &Variant{Type: PRIMITIVE_TYPE_UNDEFINED}
 	}
 
 	var i int
@@ -47,16 +47,16 @@ func (n *ArrayLiteral) Exec(context *ExecContext) Variant {
 		values[i] = n.Literal[i].Exec(context)
 	}
 	for ; i < len(values); i++ {
-		values[i] = Variant{Type: PRIMITIVE_TYPE_UNDEFINED}
+		values[i] = &Variant{Type: PRIMITIVE_TYPE_UNDEFINED}
 	}
 
-	return Variant{
+	return &Variant{
 		Type:       COMPLEX_TYPE_ARRAY,
 		VectorData: values,
 	}
 }
 
-func (n *StatementList) Exec(context *ExecContext) Variant {
+func (n *StatementList) Exec(context *ExecContext) *Variant {
 	callingContext := (*context)
 	newContext := callingContext
 	newContext.IsFuncContext = false
@@ -74,18 +74,19 @@ func (n *StatementList) Exec(context *ExecContext) Variant {
 	for _, err := range newContext.Errors {
 		context.Errors = append(context.Errors, err)
 	}
-	return Variant{
+	return &Variant{
 		Type: PRIMITIVE_TYPE_UNDEFINED,
 	}
 }
 
-func (n *ReturnStmt) Exec(context *ExecContext) Variant {
+func (n *ReturnStmt) Exec(context *ExecContext) *Variant {
 	v := n.Expr.Exec(context)
-	v.IsReturn = true
-	return v
+	temp := *v
+	temp.IsReturn = true
+	return &temp
 }
 
-func (n *BinaryOp) Exec(context *ExecContext) Variant {
+func (n *BinaryOp) Exec(context *ExecContext) *Variant {
 	l := n.LHS.Exec(context)
 	r := n.RHS.Exec(context)
 	ret := Variant{
@@ -148,10 +149,10 @@ func (n *BinaryOp) Exec(context *ExecContext) Variant {
 
 	}
 
-	return ret
+	return &ret
 }
 
-func (n *VariableReference) Exec(context *ExecContext) Variant {
+func (n *VariableReference) Exec(context *ExecContext) *Variant {
 	if v, ok := context.FunctionNamespace[n.Name]; ok {
 		return v
 	}
@@ -160,12 +161,12 @@ func (n *VariableReference) Exec(context *ExecContext) Variant {
 			return v
 		}
 	}
-	return Variant{
+	return &Variant{
 		Type: PRIMITIVE_TYPE_UNDEFINED,
 	}
 }
 
-func (n *Assign) Exec(context *ExecContext) Variant {
+func (n *Assign) Exec(context *ExecContext) *Variant {
 	v := n.Value.Exec(context)
 	if n.NewLocal {
 		context.FunctionNamespace.Save(n.Identifier, v)
@@ -183,12 +184,12 @@ func (n *Assign) Exec(context *ExecContext) Variant {
 		}
 	}
 
-	return Variant{
+	return &Variant{
 		Type: PRIMITIVE_TYPE_UNDEFINED,
 	}
 }
 
-func (n *IfStmt) Exec(context *ExecContext) Variant {
+func (n *IfStmt) Exec(context *ExecContext) *Variant {
 	if n.Init != nil {
 		n.Init.Exec(context)
 	}
@@ -200,7 +201,44 @@ func (n *IfStmt) Exec(context *ExecContext) Variant {
 		return n.Else.Exec(context)
 	}
 
-	return Variant{
+	return &Variant{
 		Type: PRIMITIVE_TYPE_UNDEFINED,
 	}
+}
+
+func (n *Subscript) Exec(context *ExecContext) *Variant {
+	baseVar := n.Expr.Exec(context)
+	subscript := n.Subscript.Exec(context)
+	if baseVar.Type != COMPLEX_TYPE_ARRAY {
+		context.Errors = append(context.Errors, ExecutionError{
+			Class:        TYPE_ERR,
+			CreatingNode: n,
+			Text:         "Cannot perform subscript operation on type " + baseVar.Type.String(),
+		})
+		return &Variant{
+			Type: PRIMITIVE_TYPE_UNDEFINED,
+		}
+	}
+	if subscript.Type != PRIMITIVE_TYPE_INT {
+		context.Errors = append(context.Errors, ExecutionError{
+			Class:        TYPE_ERR,
+			CreatingNode: n,
+			Text:         "Cannot perform subscript operation on type " + baseVar.Type.String(),
+		})
+		return &Variant{
+			Type: PRIMITIVE_TYPE_UNDEFINED,
+		}
+	}
+	if int(subscript.Int) >= len(baseVar.VectorData) {
+		context.Errors = append(context.Errors, ExecutionError{
+			Class:        BOUNDS_ERR,
+			CreatingNode: n,
+			Text:         "Subscript out of bounds",
+		})
+		return &Variant{
+			Type: PRIMITIVE_TYPE_UNDEFINED,
+		}
+	}
+
+	return baseVar.VectorData[subscript.Int]
 }

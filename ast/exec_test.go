@@ -396,8 +396,8 @@ func TestVariableReferenceReturnsFunctionParameter(t *testing.T) {
 	}
 	context := ExecContext{
 		IsFuncContext: true,
-		FunctionNamespace: map[string]Variant{
-			"inInt": Variant{
+		FunctionNamespace: map[string]*Variant{
+			"inInt": &Variant{
 				Type: PRIMITIVE_TYPE_INT,
 				Int:  42,
 			},
@@ -417,7 +417,7 @@ func TestVariableReferenceReturnsGlobal(t *testing.T) {
 	vr := VariableReference{
 		Name: "glo",
 	}
-	ns := Namespace(map[string]Variant{})
+	ns := Namespace(map[string]*Variant{})
 	context := ExecContext{
 		IsFuncContext:   true,
 		GlobalNamespace: ns,
@@ -437,12 +437,12 @@ func TestVariableReferenceReturnsParamFirst(t *testing.T) {
 	vr := VariableReference{
 		Name: "inInt",
 	}
-	ns := Namespace(map[string]Variant{})
+	ns := Namespace(map[string]*Variant{})
 	context := ExecContext{
 		IsFuncContext:   true,
 		GlobalNamespace: ns,
-		FunctionNamespace: map[string]Variant{
-			"inInt": Variant{
+		FunctionNamespace: map[string]*Variant{
+			"inInt": &Variant{
 				Type: PRIMITIVE_TYPE_INT,
 				Int:  1234,
 			},
@@ -483,8 +483,8 @@ func TestLocalVariableWrite(t *testing.T) {
 	}
 	context := ExecContext{
 		IsFuncContext:     true,
-		FunctionNamespace: Namespace(map[string]Variant{}),
-		GlobalNamespace:   Namespace(map[string]Variant{}),
+		FunctionNamespace: Namespace(map[string]*Variant{}),
+		GlobalNamespace:   Namespace(map[string]*Variant{}),
 	}
 
 	ass.Exec(&context)
@@ -510,10 +510,10 @@ func TestLocalVariableWriteWhenAlreadyExists(t *testing.T) {
 	}
 	context := ExecContext{
 		IsFuncContext: true,
-		FunctionNamespace: Namespace(map[string]Variant{
-			"testVar": Variant{Type: PRIMITIVE_TYPE_STRING, String: "cba"},
+		FunctionNamespace: Namespace(map[string]*Variant{
+			"testVar": &Variant{Type: PRIMITIVE_TYPE_STRING, String: "cba"},
 		}),
-		GlobalNamespace: Namespace(map[string]Variant{}),
+		GlobalNamespace: Namespace(map[string]*Variant{}),
 	}
 
 	ass.Exec(&context)
@@ -538,8 +538,8 @@ func TestGlobalVariableWrite(t *testing.T) {
 	}
 	context := ExecContext{
 		IsFuncContext:     true,
-		FunctionNamespace: Namespace(map[string]Variant{}),
-		GlobalNamespace:   Namespace(map[string]Variant{}),
+		FunctionNamespace: Namespace(map[string]*Variant{}),
+		GlobalNamespace:   Namespace(map[string]*Variant{}),
 	}
 	context.GlobalNamespace.Save("testVar", "asdsb")
 
@@ -567,8 +567,8 @@ func TestNewVariableAssignGoesToFunc(t *testing.T) {
 	}
 	context := ExecContext{
 		IsFuncContext:     true,
-		FunctionNamespace: Namespace(map[string]Variant{}),
-		GlobalNamespace:   Namespace(map[string]Variant{}),
+		FunctionNamespace: Namespace(map[string]*Variant{}),
+		GlobalNamespace:   Namespace(map[string]*Variant{}),
 	}
 
 	ass.Exec(&context)
@@ -593,8 +593,8 @@ func TestNewVariableAssignGoesToGlobalWhenNotFuncContext(t *testing.T) {
 	}
 	context := ExecContext{
 		IsFuncContext:     false,
-		FunctionNamespace: Namespace(map[string]Variant{}),
-		GlobalNamespace:   Namespace(map[string]Variant{}),
+		FunctionNamespace: Namespace(map[string]*Variant{}),
+		GlobalNamespace:   Namespace(map[string]*Variant{}),
 	}
 
 	ass.Exec(&context)
@@ -628,8 +628,8 @@ func TestIfStatementTruthExecutesElseNotMain(t *testing.T) {
 	}
 	context := ExecContext{
 		IsFuncContext:     false,
-		FunctionNamespace: Namespace(map[string]Variant{}),
-		GlobalNamespace:   Namespace(map[string]Variant{}),
+		FunctionNamespace: Namespace(map[string]*Variant{}),
+		GlobalNamespace:   Namespace(map[string]*Variant{}),
 	}
 
 	ifNode.Exec(&context)
@@ -666,8 +666,8 @@ func TestIfStatementTruthExecutesMainNotElse_alsoTestInit(t *testing.T) {
 	}
 	context := ExecContext{
 		IsFuncContext:     false,
-		FunctionNamespace: Namespace(map[string]Variant{}),
-		GlobalNamespace:   Namespace(map[string]Variant{}),
+		FunctionNamespace: Namespace(map[string]*Variant{}),
+		GlobalNamespace:   Namespace(map[string]*Variant{}),
 	}
 
 	ifNode.Exec(&context)

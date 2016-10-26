@@ -2,7 +2,7 @@ package ast
 
 type Node interface {
 	Print(level int)
-	Exec(context *ExecContext) Variant
+	Exec(context *ExecContext) *Variant
 }
 
 type StatementList struct {
@@ -45,6 +45,11 @@ type BinaryOp struct {
 	LHS Node
 	RHS Node
 	Op  BinOpType
+}
+
+type Subscript struct {
+	Subscript Node
+	Expr      Node
 }
 
 // BinaryOp Ops

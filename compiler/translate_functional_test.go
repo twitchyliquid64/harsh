@@ -18,7 +18,7 @@ func setupTestGetAST(context *Context, inCode string, t *testing.T) (ast.Node, *
 		t.FailNow()
 	}
 	if context == nil {
-		ns := ast.Namespace(map[string]ast.Variant{})
+		ns := ast.Namespace(map[string]*ast.Variant{})
 		context = &Context{
 			ConType: CONTEXT_ADHOC,
 			Globals: ns,
@@ -342,7 +342,7 @@ func TestGlobalIntSavedCorrectly(t *testing.T) {
 
     var testVar int`, t)
 
-	var v ast.Variant
+	var v *ast.Variant
 	var ok bool
 	if v, ok = context.Globals["testVar"]; !ok {
 		t.Error("Global expected")
@@ -362,7 +362,7 @@ func TestGlobalStringSavedCorrectly(t *testing.T) {
 
     var testVar string`, t)
 
-	var v ast.Variant
+	var v *ast.Variant
 	var ok bool
 	if v, ok = context.Globals["testVar"]; !ok {
 		t.Error("Global expected")

@@ -6,36 +6,38 @@ type Variant struct {
 	String     string
 	Bool       bool
 	IsReturn   bool
-	VectorData []Variant
+	VectorData []*Variant
 }
 
-func MakeVariant(in interface{}) Variant {
+func MakeVariant(in interface{}) *Variant {
 	switch v := in.(type) {
-	case Variant:
-		return v
+	case *Variant:
+		temp := *v
+		temp.IsReturn = false
+		return &temp
 	case int:
-		return Variant{
+		return &Variant{
 			Type: PRIMITIVE_TYPE_INT,
 			Int:  int64(v),
 		}
 	case int64:
-		return Variant{
+		return &Variant{
 			Type: PRIMITIVE_TYPE_INT,
 			Int:  v,
 		}
 	case bool:
-		return Variant{
+		return &Variant{
 			Type: PRIMITIVE_TYPE_BOOL,
 			Bool: v,
 		}
 	case string:
-		return Variant{
+		return &Variant{
 			Type:   PRIMITIVE_TYPE_STRING,
 			String: v,
 		}
 	}
 
-	return Variant{
+	return &Variant{
 		Type: PRIMITIVE_TYPE_UNDEFINED,
 	}
 }

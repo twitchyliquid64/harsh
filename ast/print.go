@@ -56,8 +56,35 @@ func (node *BoolLiteral) Print(level int) {
 
 func (node *BinaryOp) Print(level int) {
 	printLeveled(node.Op.String()+" {", level)
-	node.LHS.Print(level + 1)
-	node.RHS.Print(level + 1)
+	if node.LHS != nil {
+		node.LHS.Print(level + 1)
+	} else {
+		printLeveled("NIL", level+1)
+	}
+	if node.RHS != nil {
+		node.RHS.Print(level + 1)
+	} else {
+		printLeveled("NIL", level+1)
+	}
+	printLeveled("}", level)
+}
+
+func (node *Subscript) Print(level int) {
+	printLeveled("subscript {", level)
+	printLeveled("Index {", level+1)
+	if node.Subscript != nil {
+		node.Subscript.Print(level + 2)
+	} else {
+		printLeveled("NIL", level+2)
+	}
+	printLeveled("}", level+1)
+	printLeveled("Expr {", level+1)
+	if node.Expr != nil {
+		node.Expr.Print(level + 2)
+	} else {
+		printLeveled("NIL", level+2)
+	}
+	printLeveled("}", level+1)
 	printLeveled("}", level)
 }
 

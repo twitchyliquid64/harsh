@@ -25,9 +25,9 @@ Planned features, in various states are:
 
  - [x] Testing for new type system - arrays, array declaration, array subtype etc
  - [ ] Testing for type structure of parameters
- - [ ] Testing for boolean
+ - [ ] e2e test for new bool operators & arrays
  - [ ] Testing for exec errors
  - [ ] Testing for translate errors
- - [ ] Implement array use
- - [ ] Boolean operators
+ - [ ] Implement array use - move Exec to user *Variant instead of Variant. Write tests.
+ - [x] Boolean operators
  - [ ] Unary operators (!)
