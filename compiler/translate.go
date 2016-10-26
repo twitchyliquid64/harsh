@@ -129,6 +129,15 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 				return &ln
 			}
 
+		case goast.CompositeLit: //composite literal: <type>{<values>...}
+			compLit := &ast.ArrayLiteral{
+				Type: convertTypeToTypeKind(fset, v.Type, context),
+			}
+			for _, n := range v.Elts {
+				compLit.Literal = append(compLit.Literal, translateGoNode(fset, context, reflect.ValueOf(n)))
+			}
+			return compLit
+
 		case goast.BasicLit:
 			if v.Kind == token.INT {
 				v, _ := strconv.ParseInt(v.Value, 10, 64)
@@ -239,6 +248,7 @@ func convertTypeToTypeKind(fset *token.FileSet, t goast.Expr, context *Context) 
 		if childTypeKind == ast.PRIMITIVE_TYPE_UNDEFINED {
 			context.Errors = append(context.Errors, TranslateError{
 				Class: NOT_SUPPORTED,
+				Pos:   fset.Position(node.Pos()),
 				Text:  "Array uses unsupported type: " + reflect.TypeOf(node.Elt).String(),
 			})
 		} else { //build an array type based on it
@@ -246,6 +256,7 @@ func convertTypeToTypeKind(fset *token.FileSet, t goast.Expr, context *Context) 
 			if lenNode == nil {
 				context.Errors = append(context.Errors, TranslateError{
 					Class: NOT_SUPPORTED,
+					Pos:   fset.Position(node.Pos()),
 					Text:  "Slices are not yet supported",
 				})
 			} else {
@@ -258,6 +269,7 @@ func convertTypeToTypeKind(fset *token.FileSet, t goast.Expr, context *Context) 
 	} else {
 		context.Errors = append(context.Errors, TranslateError{
 			Class: NOT_SUPPORTED,
+			Pos:   fset.Position(node.Pos()),
 			Text:  "Cannot convert go/ast node to TypeKind: " + reflect.TypeOf(t).String(),
 		})
 	}
@@ -276,8 +288,11 @@ func translateType(fset *token.FileSet, typ *goast.Field, context *Context) []as
 			output = append(output, kind)
 		}
 	default:
-		fmt.Println("translateType() unknown type: ", reflect.TypeOf(typ.Type))
-		//goast.Print(nil, typ.Type)
+		context.Errors = append(context.Errors, TranslateError{
+			Class: NOT_SUPPORTED,
+			Pos:   fset.Position(typ.Type.Pos()),
+			Text:  "Translate type encounted unexpected type: " + reflect.TypeOf(typ.Type).String(),
+		}) //goast.Print(nil, typ.Type)
 	}
 	return output
 }

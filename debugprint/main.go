@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"os"
 
 	"github.com/twitchyliquid64/harsh/compiler"
@@ -52,5 +55,14 @@ func main() {
 		for i, err := range context.Errors {
 			fmt.Printf("%02d: %s (%s)\r\n", i+1, err.Text, err.Pos.String())
 		}
+	}
+
+	if len(os.Args) > 2 && os.Args[2] == "--goast" {
+		fset := token.NewFileSet() // positions are relative to fset
+		f, err := parser.ParseFile(fset, os.Args[1], nil, 0)
+		if err != nil {
+			fmt.Println(err)
+		}
+		ast.Print(fset, f)
 	}
 }

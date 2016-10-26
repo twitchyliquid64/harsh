@@ -22,6 +22,16 @@ func TestMakeVariantInt(t *testing.T) {
 	}
 }
 
+func TestMakeVariantBool(t *testing.T) {
+	v := MakeVariant(true)
+	if v.Type != PRIMITIVE_TYPE_BOOL {
+		t.Error("Expected bool type")
+	}
+	if v.Bool != true {
+		t.Error("Expected true")
+	}
+}
+
 func TestMakeVariantInt64(t *testing.T) {
 	v := MakeVariant(int64(-53))
 	if v.Type != PRIMITIVE_TYPE_INT {

@@ -472,6 +472,219 @@ func TestLocalDeclarationProducesAssignNodeSimple(t *testing.T) {
 	}
 }
 
+func TestArrayLocalDeclarationProducesCorrectAST(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    func test(){
+			var testVar [40]int
+		}`, t)
+
+	if len(context.Declarations) != 1 {
+		t.Error("Unexpected number of declarations")
+	}
+	if context.Declarations[0].Identifier != "test" {
+		t.Error("Unexpected declaration name")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList")
+	}
+	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+		t.Error("Unexpected number of declarations in root node StatementList")
+	}
+	var s *ast.StatementList
+	var ok bool
+	if s, ok = context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.StatementList); !ok {
+		t.Error("StatementList node expected")
+	}
+
+	if _, ok2 := s.Stmts[0].(*ast.Assign); !ok2 {
+		t.Error("Assign Expected")
+	}
+	if s.Stmts[0].(*ast.Assign).NewLocal == false {
+		t.Error("NewLocal flag truth expected")
+	}
+	if _, ok3 := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral); !ok3 {
+		t.Error("ArrayLiteral Expected")
+	}
+	if s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind() != ast.COMPLEX_TYPE_ARRAY {
+		t.Error("COMPLEX_TYPE_ARRAY expected, got", s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind())
+	}
+	lenNode := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.(ast.ArrayType).Len
+	if lenNode == nil {
+		t.Error("Len node expected")
+	}
+	if lenLit, ok := lenNode.(*ast.IntegerLiteral); !ok {
+		t.Error("IntegerLiteral len expected")
+	} else {
+		if lenLit.Val != 40 {
+			t.Error("Expected len of 4")
+		}
+	}
+}
+
+func TestNestedArrayLocalDeclarationProducesCorrectAST(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    func test(){
+			var testVar [40][50]int
+		}`, t)
+
+	if len(context.Declarations) != 1 {
+		t.Error("Unexpected number of declarations")
+	}
+	if context.Declarations[0].Identifier != "test" {
+		t.Error("Unexpected declaration name")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList")
+	}
+	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+		t.Error("Unexpected number of declarations in root node StatementList")
+	}
+	var s *ast.StatementList
+	var ok bool
+	if s, ok = context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.StatementList); !ok {
+		t.Error("StatementList node expected")
+	}
+
+	if _, ok2 := s.Stmts[0].(*ast.Assign); !ok2 {
+		t.Error("Assign Expected")
+	}
+	if s.Stmts[0].(*ast.Assign).NewLocal == false {
+		t.Error("NewLocal flag truth expected")
+	}
+	if _, ok3 := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral); !ok3 {
+		t.Error("ArrayLiteral Expected")
+	}
+	if s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind() != ast.COMPLEX_TYPE_ARRAY {
+		t.Error("COMPLEX_TYPE_ARRAY expected, got", s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind())
+	}
+	subType := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.(ast.ArrayType).SubType
+	if subType == nil {
+		t.Error("subType node expected")
+	}
+	if arraySubType, ok := subType.(ast.ArrayType); !ok {
+		t.Error("ArrayType expected")
+	} else {
+		if arraySubType.ConcreteType() != ast.PRIMITIVE_TYPE_INT {
+			t.Error("Expected underlying int type")
+		}
+	}
+}
+
+func TestLocalArrayInitialization(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    func test(){
+			var testVar [4]int = [4]int{1,2,3,4}
+		}`, t)
+
+	if len(context.Declarations) != 1 {
+		t.Error("Unexpected number of declarations")
+	}
+	if context.Declarations[0].Identifier != "test" {
+		t.Error("Unexpected declaration name")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList")
+	}
+	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+		t.Error("Unexpected number of declarations in root node StatementList")
+	}
+	var s *ast.StatementList
+	var ok bool
+	if s, ok = context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.StatementList); !ok {
+		t.Error("StatementList node expected")
+	}
+
+	if _, ok2 := s.Stmts[0].(*ast.Assign); !ok2 {
+		t.Error("Assign Expected")
+	}
+	if s.Stmts[0].(*ast.Assign).NewLocal == false {
+		t.Error("NewLocal flag truth expected")
+	}
+	if _, ok3 := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral); !ok3 {
+		t.Error("ArrayLiteral Expected")
+	}
+	if s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind() != ast.COMPLEX_TYPE_ARRAY {
+		t.Error("COMPLEX_TYPE_ARRAY expected, got", s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind())
+	}
+	literals := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Literal
+	if lit, ok := literals[0].(*ast.IntegerLiteral); !ok {
+		t.Error("IntegerLiteral expected")
+	} else {
+		if lit.Val != 1 {
+			t.Error("Incorrect value [0] != 1")
+		}
+	}
+	if lit, ok := literals[3].(*ast.IntegerLiteral); !ok {
+		t.Error("IntegerLiteral expected")
+	} else {
+		if lit.Val != 4 {
+			t.Error("Incorrect value [3] != 4")
+		}
+	}
+}
+
+func TestNestedLocalArrayInitialization(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    func test(){
+			var testVar [2][2]int = [2][2]int{
+				int{1,7},
+				int{3,4},
+			}
+		}`, t)
+
+	if len(context.Declarations) != 1 {
+		t.Error("Unexpected number of declarations")
+	}
+	if context.Declarations[0].Identifier != "test" {
+		t.Error("Unexpected declaration name")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList")
+	}
+	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+		t.Error("Unexpected number of declarations in root node StatementList")
+	}
+	var s *ast.StatementList
+	var ok bool
+	if s, ok = context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.StatementList); !ok {
+		t.Error("StatementList node expected")
+	}
+
+	if _, ok2 := s.Stmts[0].(*ast.Assign); !ok2 {
+		t.Error("Assign Expected")
+	}
+	if s.Stmts[0].(*ast.Assign).NewLocal == false {
+		t.Error("NewLocal flag truth expected")
+	}
+	if _, ok3 := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral); !ok3 {
+		t.Error("ArrayLiteral Expected")
+	}
+	if s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind() != ast.COMPLEX_TYPE_ARRAY {
+		t.Error("COMPLEX_TYPE_ARRAY expected, got", s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind())
+	}
+	literals := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Literal
+	if lit, ok := literals[0].(*ast.ArrayLiteral); !ok {
+		t.Error("ArrayLiteral expected")
+	} else {
+		if lit.Type.ConcreteType() != ast.PRIMITIVE_TYPE_INT {
+			t.Error("Expected underlying type to be PRIMITIVE_TYPE_INT")
+		}
+		if intLit, ok := lit.Literal[1].(*ast.IntegerLiteral); !ok {
+			t.Error("Expected inner literal to be an integer")
+		} else if intLit.Val != 7 {
+			t.Error("Incorrect value for [0][1]")
+		}
+	}
+}
+
 func TestLocalDeclarationInitialization(t *testing.T) {
 	_, context := setupTestGetAST(nil, `
     package test

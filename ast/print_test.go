@@ -2,20 +2,6 @@ package ast
 
 import "testing"
 
-func TestPrintTypeKindIntegerString(t *testing.T) {
-	p := PRIMITIVE_TYPE_INT
-	if p.String() != "int" {
-		t.FailNow()
-	}
-}
-
-func TestPrintTypeKindStringString(t *testing.T) {
-	p := PRIMITIVE_TYPE_STRING
-	if p.String() != "string" {
-		t.FailNow()
-	}
-}
-
 func TestPrintPrimitiveTypeString(t *testing.T) {
 	pt := PRIMITIVE_TYPE_INT
 	if pt.String() != "int" {
@@ -44,5 +30,13 @@ func TestPrintPrimitiveTypeUndefined(t *testing.T) {
 
 	if pt.String() != "undefined" {
 		t.Error("PrimitiveType undef .String() is incorrect")
+	}
+}
+
+func TestPrintArrayType(t *testing.T) {
+	pt := COMPLEX_TYPE_ARRAY
+
+	if pt.String() != "[?]" {
+		t.Error("Expected [?], got", pt.String())
 	}
 }

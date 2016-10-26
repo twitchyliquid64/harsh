@@ -1,5 +1,14 @@
 package ast
 
+type Variant struct {
+	Type       TypeKind
+	Int        int64
+	String     string
+	Bool       bool
+	IsReturn   bool
+	VectorData []Variant
+}
+
 func MakeVariant(in interface{}) Variant {
 	switch v := in.(type) {
 	case Variant:

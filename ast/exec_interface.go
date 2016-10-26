@@ -7,14 +7,6 @@ type ExecContext struct {
 	Errors            []ExecutionError
 }
 
-type Variant struct {
-	Type     TypeKind
-	Int      int64
-	String   string
-	Bool     bool
-	IsReturn bool
-}
-
 type Namespace map[string]Variant
 
 func (n Namespace) Save(name string, v interface{}) {

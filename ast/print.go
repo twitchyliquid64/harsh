@@ -2,6 +2,7 @@ package ast
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 )
 
@@ -36,12 +37,16 @@ func (node *StringLiteral) Print(level int) {
 }
 
 func (node *ArrayLiteral) Print(level int) {
-	if node.Type.(ArrayType).Len != nil {
+	switch n := node.Type.(type) {
+	case ArrayType:
 		printLeveled("len{", level)
-		node.Type.(ArrayType).Len.Print(level + 1)
+		n.Len.Print(level + 1)
 		printLeveled("}"+node.Type.String(), level)
 		return
+	default:
+		printLeveled("ERR unexpected node type: "+reflect.TypeOf(node.Type).Name(), level)
 	}
+
 	printLeveled(node.Type.String(), level)
 }
 
@@ -58,7 +63,11 @@ func (node *BinaryOp) Print(level int) {
 
 func (node *Assign) Print(level int) {
 	printLeveled(node.Identifier+" <= {", level)
-	node.Value.Print(level + 1)
+	if node.Value == nil {
+		printLeveled("NIL", level+1)
+	} else {
+		node.Value.Print(level + 1)
+	}
 	printLeveled("}", level)
 }
 

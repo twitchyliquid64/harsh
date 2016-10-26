@@ -23,7 +23,7 @@ type BoolLiteral struct {
 
 type ArrayLiteral struct {
 	Type    TypeKind
-	Literal []Variant
+	Literal []Node
 }
 
 type ReturnStmt struct {

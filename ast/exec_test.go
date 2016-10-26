@@ -30,6 +30,108 @@ func TestBoolLiteralExecReturnsCorrectValue(t *testing.T) {
 	}
 }
 
+func TestEmptyArrayLiteralExecReturnsCorrectValue(t *testing.T) {
+	il := ArrayLiteral{
+		Type: ArrayType{
+			SubType: PRIMITIVE_TYPE_INT,
+			Len: &IntegerLiteral{
+				Val: 4,
+			},
+		},
+	}
+	context := ExecContext{}
+	r := il.Exec(&context)
+	if r.Type != COMPLEX_TYPE_ARRAY {
+		t.Error("Expected COMPLEX_TYPE_ARRAY return")
+	}
+	if len(r.VectorData) != 4 {
+		t.Error("Incorrect number of elements")
+	}
+	for i := 0; i < len(r.VectorData); i++ {
+		if r.VectorData[i].Type != PRIMITIVE_TYPE_UNDEFINED {
+			t.Error("Incorrect variant type at subscript", i)
+		}
+	}
+}
+
+func TestSimpleArrayLiteralExecReturnsCorrectValue(t *testing.T) {
+	il := ArrayLiteral{
+		Type: ArrayType{
+			SubType: PRIMITIVE_TYPE_INT,
+			Len: &IntegerLiteral{
+				Val: 3,
+			},
+		},
+		Literal: []Node{
+			&IntegerLiteral{Val: 33},
+			&IntegerLiteral{Val: 88},
+			&IntegerLiteral{Val: 232},
+		},
+	}
+	context := ExecContext{}
+	r := il.Exec(&context)
+	if r.Type != COMPLEX_TYPE_ARRAY {
+		t.Error("Expected COMPLEX_TYPE_ARRAY return")
+	}
+	if len(r.VectorData) != 3 {
+		t.Error("Incorrect number of elements")
+	}
+	if r.VectorData[0].Int != 33 || r.VectorData[0].Type != PRIMITIVE_TYPE_INT {
+		t.Error("Incorrect type or value at subscript 0")
+	}
+	if r.VectorData[2].Int != 232 || r.VectorData[2].Type != PRIMITIVE_TYPE_INT {
+		t.Error("Incorrect type or value at subscript 2:", r.VectorData[2].Type.String(), r.VectorData[2].Int)
+	}
+}
+
+func TestNestedArrayLiteralExecReturnsCorrectValue(t *testing.T) {
+	il := ArrayLiteral{
+		Type: ArrayType{
+			SubType: ArrayType{
+				SubType: PRIMITIVE_TYPE_STRING,
+				Len: &IntegerLiteral{
+					Val: 1,
+				},
+			},
+			Len: &IntegerLiteral{
+				Val: 1,
+			},
+		},
+		Literal: []Node{
+			&ArrayLiteral{
+				Type: ArrayType{
+					SubType: PRIMITIVE_TYPE_STRING,
+					Len: &IntegerLiteral{
+						Val: 1,
+					},
+				},
+				Literal: []Node{
+					&StringLiteral{
+						Str: "LOLZ",
+					},
+				},
+			},
+		},
+	}
+	context := ExecContext{}
+	r := il.Exec(&context)
+	if r.Type != COMPLEX_TYPE_ARRAY {
+		t.Error("Expected COMPLEX_TYPE_ARRAY return")
+	}
+	if len(r.VectorData) != 1 {
+		t.Error("Incorrect number of elements")
+	}
+	if r.VectorData[0].Type != COMPLEX_TYPE_ARRAY {
+		t.Error("Incorrect type", r.VectorData[0].Type.String())
+	}
+	if r.VectorData[0].VectorData[0].Type != PRIMITIVE_TYPE_STRING {
+		t.Error("Nested type incorrect")
+	}
+	if r.VectorData[0].VectorData[0].String != "LOLZ" {
+		t.Error("Nested value incorrect")
+	}
+}
+
 func TestStringLiteralExecReturnsCorrectValue(t *testing.T) {
 	il := StringLiteral{
 		Str: "Strdfjlkj_ fgklfjlgfjlkjlkj 'dd '",
@@ -303,6 +405,35 @@ func TestLocalVariableWrite(t *testing.T) {
 		IsFuncContext:     true,
 		FunctionNamespace: Namespace(map[string]Variant{}),
 		GlobalNamespace:   Namespace(map[string]Variant{}),
+	}
+
+	ass.Exec(&context)
+	v := context.FunctionNamespace["testVar"]
+	if v.Type != PRIMITIVE_TYPE_STRING {
+		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
+	}
+	if v.String != "abc" {
+		t.Error("Incorrect value")
+	}
+	if _, ok := context.GlobalNamespace["testVar"]; ok {
+		t.Error("Object should not be in global namespace")
+	}
+}
+
+func TestLocalVariableWriteWhenAlreadyExists(t *testing.T) {
+	ass := Assign{
+		Identifier: "testVar",
+		NewLocal:   false,
+		Value: &StringLiteral{
+			Str: "abc",
+		},
+	}
+	context := ExecContext{
+		IsFuncContext: true,
+		FunctionNamespace: Namespace(map[string]Variant{
+			"testVar": Variant{Type: PRIMITIVE_TYPE_STRING, String: "cba"},
+		}),
+		GlobalNamespace: Namespace(map[string]Variant{}),
 	}
 
 	ass.Exec(&context)

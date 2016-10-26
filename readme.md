@@ -23,7 +23,7 @@ Planned features, in various states are:
 
 #### AST
 
- - [ ] Testing for new type system - arrays, array declaration, array subtype etc
+ - [x] Testing for new type system - arrays, array declaration, array subtype etc
  - [ ] Testing for type structure of parameters
  - [ ] Testing for boolean
  - [ ] Testing for exec errors
