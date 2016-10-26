@@ -1,4 +1,5 @@
 # harsh
+[![GoDoc](https://godoc.org/github.com/twitchyliquid64/harsh?status.svg)](http://godoc.org/github.com/twitchyliquid64/harsh) [![Build Status](https://travis-ci.org/twitchyliquid64/harsh.svg?branch=master)](https://travis-ci.org/twitchyliquid64/harsh) 
 
 A AST library intended for code generation, mutation, and visualisation.
 
