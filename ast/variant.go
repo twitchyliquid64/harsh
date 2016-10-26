@@ -1,12 +1,13 @@
 package ast
 
 type Variant struct {
-	Type       TypeKind
-	Int        int64
-	String     string
-	Bool       bool
-	IsReturn   bool
-	VectorData []*Variant
+	Type                    TypeKind
+	Int                     int64
+	String                  string
+	Bool                    bool
+	IsReturn                bool
+	VariableReferenceFailed bool
+	VectorData              []*Variant
 }
 
 func MakeVariant(in interface{}) *Variant {
@@ -14,6 +15,7 @@ func MakeVariant(in interface{}) *Variant {
 	case *Variant:
 		temp := *v
 		temp.IsReturn = false
+		temp.VariableReferenceFailed = false
 		return &temp
 	case int:
 		return &Variant{

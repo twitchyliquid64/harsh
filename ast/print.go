@@ -89,7 +89,12 @@ func (node *Subscript) Print(level int) {
 }
 
 func (node *Assign) Print(level int) {
-	printLeveled(node.Identifier+" <= {", level)
+	if _, ok := node.Variable.(*VariableReference); ok {
+		printLeveled(node.Variable.(*VariableReference).Name+" <= {", level)
+	} else {
+		printLeveled("assign {", level)
+		node.Variable.Print(level + 1)
+	}
 	if node.Value == nil {
 		printLeveled("NIL", level+1)
 	} else {

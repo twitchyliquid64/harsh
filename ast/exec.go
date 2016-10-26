@@ -163,25 +163,33 @@ func (n *VariableReference) Exec(context *ExecContext) *Variant {
 	}
 	return &Variant{
 		Type: PRIMITIVE_TYPE_UNDEFINED,
+		VariableReferenceFailed: true,
 	}
 }
 
 func (n *Assign) Exec(context *ExecContext) *Variant {
+	variable := n.Variable.Exec(context)
 	v := n.Value.Exec(context)
-	if n.NewLocal {
-		context.FunctionNamespace.Save(n.Identifier, v)
-	} else {
-		if _, ok := context.FunctionNamespace[n.Identifier]; ok && context.IsFuncContext {
-			context.FunctionNamespace.Save(n.Identifier, v)
-		} else if _, ok := context.GlobalNamespace[n.Identifier]; ok {
-			context.GlobalNamespace.Save(n.Identifier, v)
+	if ident, ok := n.Variable.(*VariableReference); ok {
+		if n.NewLocal || v.VariableReferenceFailed {
+			context.FunctionNamespace.Save(ident.Name, v)
 		} else {
-			if context.IsFuncContext {
-				context.FunctionNamespace.Save(n.Identifier, v)
+			if _, ok := context.FunctionNamespace[ident.Name]; ok && context.IsFuncContext {
+				context.FunctionNamespace.Save(ident.Name, v)
+			} else if _, ok := context.GlobalNamespace[ident.Name]; ok {
+				context.GlobalNamespace.Save(ident.Name, v)
 			} else {
-				context.GlobalNamespace.Save(n.Identifier, v)
+				if context.IsFuncContext {
+					context.FunctionNamespace.Save(ident.Name, v)
+				} else {
+					context.GlobalNamespace.Save(ident.Name, v)
+				}
 			}
 		}
+	} else {
+		newValue := *v
+		newValue.IsReturn = false
+		*variable = newValue
 	}
 
 	return &Variant{

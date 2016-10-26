@@ -519,3 +519,187 @@ func TestIfStatementReturnsCorrectly(t *testing.T) {
 		t.Error("Expected value true")
 	}
 }
+
+func TestArrayLocalDeclarationAssignment(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+    func Test()int{
+      var testVar [4]int
+			testVar[1] = 4
+			return testVar[1]
+    }
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, err := c.CallFunc("Test", map[string]interface{}{})
+	if err != nil {
+		t.Error("CallFunc(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+	if r.Type != ast.PRIMITIVE_TYPE_INT {
+		t.Error("Expected PRIMITIVE_TYPE_INT, got ", r.Type.String())
+	}
+	if r.Int != 4 {
+		t.Error("Expected value 4")
+	}
+}
+
+func TestArrayLocalInitializationWorksAndReadable(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+    func Test()int{
+      var testVar [4]int = [4]int{1,2,3,4}
+			return testVar[1]
+    }
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, err := c.CallFunc("Test", map[string]interface{}{})
+	if err != nil {
+		t.Error("CallFunc(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+	if r.Type != ast.PRIMITIVE_TYPE_INT {
+		t.Error("Expected PRIMITIVE_TYPE_INT, got ", r.Type.String())
+	}
+	if r.Int != 2 {
+		t.Error("Expected value 2")
+	}
+}
+
+func TestArrayShorthandAssignmentWorks(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+    func Test()int{
+      testVar := [4]int{1,8,3,123}
+			return testVar[3]
+    }
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, err := c.CallFunc("Test", map[string]interface{}{})
+	if err != nil {
+		t.Error("CallFunc(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+	if r.Type != ast.PRIMITIVE_TYPE_INT {
+		t.Error("Expected PRIMITIVE_TYPE_INT, got ", r.Type.String())
+	}
+	if r.Int != 123 {
+		t.Error("Expected value 123")
+	}
+}
+
+func TestArrayOutOfBoundsWritesError(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+    func Test()int{
+      testVar := [4]int{1,8,3,123}
+			return testVar[30]
+    }
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, er := c.CallFunc("Test", map[string]interface{}{})
+	if er == nil {
+		t.Error("Errors expected")
+	} else {
+		errs := er.(ExecutionError)
+		if len(errs.Errors) != 1 {
+			t.Error("Expected one error")
+		}
+		if errs.Errors[0].Class != ast.BOUNDS_ERR {
+			t.Error("Expected error ast.BOUNDS_ERR")
+		}
+	}
+	if r.Type != ast.PRIMITIVE_TYPE_UNDEFINED {
+		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED, got ", r.Type.String())
+	}
+}
+
+func TestBooleanOperationsAreCorrect(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+    func Test()bool{
+			return true && false || false && (true == false)
+    }
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, er := c.CallFunc("Test", map[string]interface{}{})
+	if er != nil {
+		t.Error("Errors when executing")
+	}
+	if r.Type != ast.PRIMITIVE_TYPE_BOOL {
+		t.Error("Expected PRIMITIVE_TYPE_BOOL")
+	}
+	if r.Bool != false {
+		t.Error("Incorrect value")
+	}
+}
+
+func TestStringEquality(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+    func Test()int{
+			if "a" == "b" {
+				return 1
+			}
+			if "ab" == "ab" {
+				return 2
+			}
+			return 0
+    }
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, er := c.CallFunc("Test", map[string]interface{}{})
+	if er != nil {
+		t.Error("Errors when executing")
+	}
+	if r.Type != ast.PRIMITIVE_TYPE_INT {
+		t.Error("Expected PRIMITIVE_TYPE_INT")
+	}
+	if r.Int != 2 {
+		t.Error("Incorrect value")
+	}
+}

@@ -70,7 +70,7 @@ const (
 )
 
 type Assign struct {
-	Value      Node
-	Identifier string
-	NewLocal   bool
+	Value    Node
+	Variable Node
+	NewLocal bool
 }

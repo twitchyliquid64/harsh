@@ -475,8 +475,10 @@ func TestVariableReferenceReturnsUndefinedWhenNoMatch(t *testing.T) {
 
 func TestLocalVariableWrite(t *testing.T) {
 	ass := Assign{
-		Identifier: "testVar",
-		NewLocal:   true,
+		Variable: &VariableReference{
+			Name: "testVar",
+		},
+		NewLocal: true,
 		Value: &StringLiteral{
 			Str: "abc",
 		},
@@ -502,8 +504,10 @@ func TestLocalVariableWrite(t *testing.T) {
 
 func TestLocalVariableWriteWhenAlreadyExists(t *testing.T) {
 	ass := Assign{
-		Identifier: "testVar",
-		NewLocal:   false,
+		Variable: &VariableReference{
+			Name: "testVar",
+		},
+		NewLocal: false,
 		Value: &StringLiteral{
 			Str: "abc",
 		},
@@ -531,7 +535,9 @@ func TestLocalVariableWriteWhenAlreadyExists(t *testing.T) {
 
 func TestGlobalVariableWrite(t *testing.T) {
 	ass := Assign{
-		Identifier: "testVar",
+		Variable: &VariableReference{
+			Name: "testVar",
+		},
 		Value: &StringLiteral{
 			Str: "abc",
 		},
@@ -560,7 +566,9 @@ func TestGlobalVariableWrite(t *testing.T) {
 
 func TestNewVariableAssignGoesToFunc(t *testing.T) {
 	ass := Assign{
-		Identifier: "testVar",
+		Variable: &VariableReference{
+			Name: "testVar",
+		},
 		Value: &StringLiteral{
 			Str: "abc",
 		},
@@ -573,6 +581,10 @@ func TestNewVariableAssignGoesToFunc(t *testing.T) {
 
 	ass.Exec(&context)
 	v := context.FunctionNamespace["testVar"]
+	if v == nil {
+		t.Error("Could not retrieve variable")
+		t.FailNow()
+	}
 	if v.Type != PRIMITIVE_TYPE_STRING {
 		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
 	}
@@ -586,7 +598,9 @@ func TestNewVariableAssignGoesToFunc(t *testing.T) {
 
 func TestNewVariableAssignGoesToGlobalWhenNotFuncContext(t *testing.T) {
 	ass := Assign{
-		Identifier: "testVar",
+		Variable: &VariableReference{
+			Name: "testVar",
+		},
 		Value: &StringLiteral{
 			Str: "abc",
 		},
@@ -614,13 +628,17 @@ func TestIfStatementTruthExecutesElseNotMain(t *testing.T) {
 	ifNode := IfStmt{
 		Conditional: &BoolLiteral{},
 		Code: &Assign{
-			Identifier: "testVar",
+			Variable: &VariableReference{
+				Name: "testVar",
+			},
 			Value: &StringLiteral{
 				Str: "main",
 			},
 		},
 		Else: &Assign{
-			Identifier: "testVar",
+			Variable: &VariableReference{
+				Name: "testVar",
+			},
 			Value: &StringLiteral{
 				Str: "else",
 			},
@@ -646,19 +664,25 @@ func TestIfStatementTruthExecutesMainNotElse_alsoTestInit(t *testing.T) {
 	ifNode := IfStmt{
 		Conditional: &BoolLiteral{Val: true},
 		Init: &Assign{
-			Identifier: "init",
+			Variable: &VariableReference{
+				Name: "init",
+			},
 			Value: &StringLiteral{
 				Str: "init has been run",
 			},
 		},
 		Code: &Assign{
-			Identifier: "testVar",
+			Variable: &VariableReference{
+				Name: "testVar",
+			},
 			Value: &StringLiteral{
 				Str: "main",
 			},
 		},
 		Else: &Assign{
-			Identifier: "testVar",
+			Variable: &VariableReference{
+				Name: "testVar",
+			},
 			Value: &StringLiteral{
 				Str: "else",
 			},
@@ -681,5 +705,136 @@ func TestIfStatementTruthExecutesMainNotElse_alsoTestInit(t *testing.T) {
 
 	if _, ok := context.GlobalNamespace["init"]; !ok {
 		t.Error("Init AST node was not executed")
+	}
+}
+
+func TestSubscriptLocalVariableReference(t *testing.T) {
+	ass := &Assign{
+		Variable: &Subscript{
+			Subscript: &IntegerLiteral{
+				Val: 0,
+			},
+			Expr: &VariableReference{
+				Name: "testVar",
+			},
+		},
+		Value: &IntegerLiteral{
+			Val: 42,
+		},
+	}
+	ns := Namespace(map[string]*Variant{})
+	context := ExecContext{
+		IsFuncContext:   true,
+		GlobalNamespace: ns,
+		FunctionNamespace: map[string]*Variant{
+			"testVar": &Variant{
+				Type: COMPLEX_TYPE_ARRAY,
+				VectorData: []*Variant{
+					&Variant{
+						Type: PRIMITIVE_TYPE_INT,
+						Int:  11,
+					},
+				},
+			},
+		},
+	}
+
+	r := ass.Exec(&context)
+	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
+		t.Error("Expected PRIMITIVE_TYPE_INT return, got " + r.Type.String())
+	}
+	if v, ok := context.FunctionNamespace["testVar"]; !ok {
+		t.Error("Could not read function variable")
+	} else {
+		if v.Type != COMPLEX_TYPE_ARRAY {
+			t.Error("Type incorrect")
+		}
+		if v.VectorData[0].Type != PRIMITIVE_TYPE_INT {
+			t.Error("Element type incorrect")
+		}
+		if v.VectorData[0].Int != 42 {
+			t.Error("Element value incorrect -", v.VectorData[0].Int)
+		}
+	}
+}
+
+func TestSubscriptGlobalVariableReference(t *testing.T) {
+	ass := &Assign{
+		Variable: &Subscript{
+			Subscript: &IntegerLiteral{
+				Val: 0,
+			},
+			Expr: &VariableReference{
+				Name: "testVar",
+			},
+		},
+		Value: &IntegerLiteral{
+			Val: 42,
+		},
+	}
+	ns := Namespace(map[string]*Variant{
+		"testVar": &Variant{
+			Type: COMPLEX_TYPE_ARRAY,
+			VectorData: []*Variant{
+				&Variant{
+					Type: PRIMITIVE_TYPE_INT,
+					Int:  11,
+				},
+			},
+		},
+	})
+	context := ExecContext{
+		IsFuncContext:     true,
+		GlobalNamespace:   ns,
+		FunctionNamespace: map[string]*Variant{},
+	}
+
+	r := ass.Exec(&context)
+	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
+		t.Error("Expected PRIMITIVE_TYPE_INT return, got " + r.Type.String())
+	}
+	if v, ok := context.GlobalNamespace["testVar"]; !ok {
+		t.Error("Could not read global variable")
+	} else {
+		if v.Type != COMPLEX_TYPE_ARRAY {
+			t.Error("Type incorrect")
+		}
+		if v.VectorData[0].Type != PRIMITIVE_TYPE_INT {
+			t.Error("Element type incorrect")
+		}
+		if v.VectorData[0].Int != 42 {
+			t.Error("Element value incorrect -", v.VectorData[0].Int)
+		}
+	}
+}
+
+func TestSubscriptVariableReferenceErrorsWhenNoneFound(t *testing.T) {
+	ass := &Assign{
+		Variable: &Subscript{
+			Subscript: &IntegerLiteral{
+				Val: 0,
+			},
+			Expr: &VariableReference{
+				Name: "testVar",
+			},
+		},
+		Value: &IntegerLiteral{
+			Val: 42,
+		},
+	}
+	ns := Namespace(map[string]*Variant{})
+	context := ExecContext{
+		IsFuncContext:     true,
+		GlobalNamespace:   ns,
+		FunctionNamespace: map[string]*Variant{},
+	}
+
+	r := ass.Exec(&context)
+	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
+		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return, got " + r.Type.String())
+	}
+	if len(context.Errors) != 1 {
+		t.Error("Expecting one error")
+		t.Log(context.Errors[0].Error())
 	}
 }
