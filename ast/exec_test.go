@@ -249,6 +249,86 @@ func TestBinaryOpSubtractionReturnsCorrectValue(t *testing.T) {
 	}
 }
 
+func TestBinaryOpModulusReturnsCorrectValue(t *testing.T) {
+	il := BinaryOp{
+		LHS: &IntegerLiteral{
+			Val: 5,
+		},
+		RHS: &IntegerLiteral{
+			Val: 4,
+		},
+		Op: BINOP_MOD,
+	}
+	context := ExecContext{}
+	r := il.Exec(&context)
+	if r.Type != PRIMITIVE_TYPE_INT {
+		t.Error("Expected PRIMITIVE_TYPE_INT return")
+	}
+	if r.Int != 1 {
+		t.Error("Incorrect value, got", r.Int)
+	}
+}
+
+func TestBinaryOpDivisionReturnsCorrectValue(t *testing.T) {
+	il := BinaryOp{
+		LHS: &IntegerLiteral{
+			Val: 6,
+		},
+		RHS: &IntegerLiteral{
+			Val: 2,
+		},
+		Op: BINOP_DIV,
+	}
+	context := ExecContext{}
+	r := il.Exec(&context)
+	if r.Type != PRIMITIVE_TYPE_INT {
+		t.Error("Expected PRIMITIVE_TYPE_INT return")
+	}
+	if r.Int != 3 {
+		t.Error("Incorrect value, got", r.Int)
+	}
+}
+
+func TestBinaryOpLogicalAndReturnsCorrectValue(t *testing.T) {
+	il := BinaryOp{
+		LHS: &BoolLiteral{
+			Val: true,
+		},
+		RHS: &BoolLiteral{
+			Val: false,
+		},
+		Op: BINOP_LAND,
+	}
+	context := ExecContext{}
+	r := il.Exec(&context)
+	if r.Type != PRIMITIVE_TYPE_BOOL {
+		t.Error("Expected PRIMITIVE_TYPE_BOOL return")
+	}
+	if r.Bool != false {
+		t.Error("Incorrect value, got", r.Int)
+	}
+}
+
+func TestBinaryOpLogicalOrReturnsCorrectValue(t *testing.T) {
+	il := BinaryOp{
+		LHS: &BoolLiteral{
+			Val: true,
+		},
+		RHS: &BoolLiteral{
+			Val: false,
+		},
+		Op: BINOP_LOR,
+	}
+	context := ExecContext{}
+	r := il.Exec(&context)
+	if r.Type != PRIMITIVE_TYPE_BOOL {
+		t.Error("Expected PRIMITIVE_TYPE_BOOL return")
+	}
+	if r.Bool != true {
+		t.Error("Incorrect value, got", r.Int)
+	}
+}
+
 func TestBinaryOpMultiplicationReturnsCorrectValue(t *testing.T) {
 	il := BinaryOp{
 		LHS: &IntegerLiteral{

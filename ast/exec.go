@@ -104,16 +104,34 @@ func (n *BinaryOp) Exec(context *ExecContext) Variant {
 			ret.Int = l.Int / r.Int
 		case BINOP_MOD:
 			ret.Int = l.Int % r.Int
+		case BINOP_EQUALITY:
+			ret.Type = PRIMITIVE_TYPE_BOOL
+			ret.Bool = l.Int == r.Int
 		}
 	} else if l.Type == PRIMITIVE_TYPE_STRING && r.Type == PRIMITIVE_TYPE_STRING {
 		ret.Type = PRIMITIVE_TYPE_STRING
 		switch n.Op {
 		case BINOP_ADD:
 			ret.String = l.String + r.String
-			//TODO: Add default case which adds an error to the context
+		case BINOP_EQUALITY:
+			ret.Type = PRIMITIVE_TYPE_BOOL
+			ret.Bool = l.String == r.String
+		default:
+			context.Errors = append(context.Errors, ExecutionError{
+				Class:        TYPE_ERR,
+				CreatingNode: n,
+				Text:         "Invalid operation for string operands: " + n.Op.String(),
+			})
 		}
 	} else if l.Type == PRIMITIVE_TYPE_BOOL && r.Type == PRIMITIVE_TYPE_BOOL {
+		ret.Type = PRIMITIVE_TYPE_BOOL
 		switch n.Op {
+		case BINOP_EQUALITY:
+			ret.Bool = l.Bool && r.Bool
+		case BINOP_LAND:
+			ret.Bool = l.Bool && r.Bool
+		case BINOP_LOR:
+			ret.Bool = l.Bool || r.Bool
 		default:
 			context.Errors = append(context.Errors, ExecutionError{
 				Class:        TYPE_ERR,

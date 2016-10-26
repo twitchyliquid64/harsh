@@ -110,6 +110,12 @@ func (op *BinOpType) String() string {
 		return "UNK?"
 	case BINOP_MOD:
 		return "%"
+	case BINOP_EQUALITY:
+		return "=="
+	case BINOP_LAND:
+		return "&&"
+	case BINOP_LOR:
+		return "||"
 	}
 	return "BINOP?"
 }

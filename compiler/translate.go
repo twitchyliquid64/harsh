@@ -10,10 +10,6 @@ import (
 	"github.com/twitchyliquid64/harsh/ast"
 )
 
-func testCrap(in int, bro, crap string) int {
-	return (3 + 1) * 3
-}
-
 func translateGoAST(fset *token.FileSet, inp *goast.File) (ast.Node, *Context) {
 	ns := ast.Namespace(map[string]ast.Variant{})
 
@@ -206,8 +202,18 @@ func translateGoBinop(tok token.Token) ast.BinOpType {
 		return ast.BINOP_SUB
 	case token.MUL:
 		return ast.BINOP_MUL
+	case token.REM:
+		return ast.BINOP_MOD
+	case token.QUO:
+		return ast.BINOP_DIV
+	case token.LAND:
+		return ast.BINOP_LAND
+	case token.LOR:
+		return ast.BINOP_LOR
+	case token.EQL:
+		return ast.BINOP_EQUALITY
 	default:
-		fmt.Println("Unknown binop token.Token: ", reflect.TypeOf(tok))
+		fmt.Println("Unknown binop token.Token: ", tok.String())
 		return ast.BINOP_UNK
 	}
 }
