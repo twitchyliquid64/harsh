@@ -585,8 +585,8 @@ func TestArrayShorthandAssignmentWorks(t *testing.T) {
 	c, err := ParseLiteral("test.go", `
     package test
 
-    func Test()int{
-      testVar := [4]int{1,8,3,123}
+    func Test(inVal int)int{
+      testVar := [4]int{1,8,3,inVal}
 			return testVar[3]
     }
     `)
@@ -597,7 +597,9 @@ func TestArrayShorthandAssignmentWorks(t *testing.T) {
 		t.FailNow()
 	}
 
-	r, err := c.CallFunc("Test", map[string]interface{}{})
+	r, err := c.CallFunc("Test", map[string]interface{}{
+		"inVal": 123,
+	})
 	if err != nil {
 		t.Error("CallFunc(): Error")
 		t.Error(err)
