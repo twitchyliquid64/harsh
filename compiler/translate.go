@@ -108,6 +108,13 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 					})
 				}
 			}
+		case goast.UnaryExpr:
+			if v.Op == token.NOT {
+				return &ast.UnaryOp{
+					Op:   ast.UNOP_NOT,
+					Expr: translateGoNode(fset, context, reflect.ValueOf(v.X)),
+				}
+			}
 
 		case goast.DeclStmt:
 			switch d := v.Decl.(type) {
@@ -172,7 +179,6 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 					Text:  "BasicLit Kind is not recognised: " + v.Kind.String(),
 				})
 			}
-			fmt.Println("Not implemented - BASICLIT: ", v.Value)
 
 		case goast.ReturnStmt:
 			if len(v.Results) == 1 { //only one return supported for now
@@ -185,7 +191,7 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 				}
 			} else {
 				context.Errors = append(context.Errors, TranslateError{
-					Class: NOT_SUPPORTED,
+					Class: NOT_YET_SUPPORTED,
 					Pos:   fset.Position(v.Pos()),
 					Text:  "Returning multiple values is not supported.",
 				})
@@ -351,7 +357,7 @@ func translateGoGenDecl(fset *token.FileSet, context *Context, node *goast.GenDe
 				fmt.Println("IMPORT", n.Path)
 			}
 			context.Errors = append(context.Errors, TranslateError{
-				Class: NOT_SUPPORTED,
+				Class: NOT_YET_SUPPORTED,
 				Pos:   fset.Position(node.Pos()),
 				Text:  "Import statements are not yet supported",
 			})

@@ -1,5 +1,5 @@
 # harsh
-[![GoDoc](https://godoc.org/github.com/twitchyliquid64/harsh?status.svg)](http://godoc.org/github.com/twitchyliquid64/harsh) [![Build Status](https://travis-ci.org/twitchyliquid64/harsh.svg?branch=master)](https://travis-ci.org/twitchyliquid64/harsh) 
+[![GoDoc](https://godoc.org/github.com/twitchyliquid64/harsh?status.svg)](http://godoc.org/github.com/twitchyliquid64/harsh) [![Build Status](https://travis-ci.org/twitchyliquid64/harsh.svg?branch=master)](https://travis-ci.org/twitchyliquid64/harsh) [![Go Report Card](https://goreportcard.com/badge/github.com/twitchyliquid64/harsh)](https://goreportcard.com/report/github.com/twitchyliquid64/harsh)
 
 A AST library intended for code generation, mutation, and visualisation.
 
@@ -28,7 +28,7 @@ Planned features, in various states are:
  - [ ] Testing for type structure of parameters
  - [x] e2e test for new bool operators & arrays
  - [ ] Testing for exec errors
- - [ ] Testing for translate errors
+ - [x] Testing for translate errors
  - [x] Implement array use - move Exec to use pointer to Variant instead of Variant. Write tests.
  - [x] Boolean operators
  - [ ] Unary operators (!)

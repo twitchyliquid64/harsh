@@ -47,10 +47,21 @@ type BinaryOp struct {
 	Op  BinOpType
 }
 
+type UnaryOp struct {
+	Op   UnOpType
+	Expr Node
+}
+
 type Subscript struct {
 	Subscript Node
 	Expr      Node
 }
+
+type UnOpType int
+
+const (
+	UNOP_NOT UnOpType = iota
+)
 
 // BinaryOp Ops
 type BinOpType int

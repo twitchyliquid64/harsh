@@ -838,3 +838,51 @@ func TestSubscriptVariableReferenceErrorsWhenNoneFound(t *testing.T) {
 		t.Log(context.Errors[0].Error())
 	}
 }
+
+func TestUnaryNotOperation(t *testing.T) {
+	op := &UnaryOp{
+		Op: UNOP_NOT,
+		Expr: &BoolLiteral{
+			Val: true,
+		},
+	}
+
+	ns := Namespace(map[string]*Variant{})
+	context := ExecContext{
+		IsFuncContext:     true,
+		GlobalNamespace:   ns,
+		FunctionNamespace: map[string]*Variant{},
+	}
+
+	r := op.Exec(&context)
+	if r.Type != PRIMITIVE_TYPE_BOOL {
+		t.Error("Expected PRIMITIVE_TYPE_BOOL")
+	}
+	if r.Bool != false {
+		t.Error("Incorrect value")
+	}
+}
+
+func TestUnaryBoolOperationWithIntErrors(t *testing.T) {
+	op := &UnaryOp{
+		Op: UNOP_NOT,
+		Expr: &IntegerLiteral{
+			Val: 6,
+		},
+	}
+
+	ns := Namespace(map[string]*Variant{})
+	context := ExecContext{
+		IsFuncContext:     true,
+		GlobalNamespace:   ns,
+		FunctionNamespace: map[string]*Variant{},
+	}
+
+	r := op.Exec(&context)
+	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
+		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED")
+	}
+	if len(context.Errors) != 1 {
+		t.Error("One error expected,", len(context.Errors))
+	}
+}

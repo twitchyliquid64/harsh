@@ -214,6 +214,34 @@ func (n *IfStmt) Exec(context *ExecContext) *Variant {
 	}
 }
 
+func (n *UnaryOp) Exec(context *ExecContext) *Variant {
+	upper := n.Expr.Exec(context)
+	if upper.Type == PRIMITIVE_TYPE_BOOL {
+		switch n.Op {
+		case UNOP_NOT:
+			return &Variant{
+				Type: PRIMITIVE_TYPE_BOOL,
+				Bool: !upper.Bool,
+			}
+		default:
+			context.Errors = append(context.Errors, ExecutionError{
+				Class:        TYPE_ERR,
+				CreatingNode: n,
+				Text:         "Cannot perform unary operation on " + upper.Type.String(),
+			})
+		}
+	} else {
+		context.Errors = append(context.Errors, ExecutionError{
+			Class:        TYPE_ERR,
+			CreatingNode: n,
+			Text:         "Cannot perform unary operations on type " + upper.Type.String(),
+		})
+	}
+	return &Variant{
+		Type: PRIMITIVE_TYPE_UNDEFINED,
+	}
+}
+
 func (n *Subscript) Exec(context *ExecContext) *Variant {
 	baseVar := n.Expr.Exec(context)
 	subscript := n.Subscript.Exec(context)

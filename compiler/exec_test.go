@@ -705,3 +705,66 @@ func TestStringEquality(t *testing.T) {
 		t.Error("Incorrect value")
 	}
 }
+
+func TestLayeredArrayAccessAndAssignWorks(t *testing.T) {
+	c, err := ParseLiteral("main.go", `package test
+
+		func Test() string {
+			var testVar [2][2]string = [2][2]string{
+				[2]string{
+					"a",
+					"b",
+				},
+				[2]string{
+					"c",
+					"d",
+				},
+			}
+			testVar[0][1] = "CRAPLOL"
+			return testVar[0][1] + testVar[1][1]
+		}`)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, er := c.CallFunc("Test", map[string]interface{}{})
+	if er != nil {
+		t.Error("Errors when executing")
+	}
+	if r.Type != ast.PRIMITIVE_TYPE_STRING {
+		t.Error("Expected PRIMITIVE_TYPE_STRING")
+	}
+	if r.String != "CRAPLOLd" {
+		t.Error("Incorrect value")
+	}
+}
+
+func TestUnaryNotBooleanReturnsCorrect(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+    func Test()int{
+			return !false
+    }
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, er := c.CallFunc("Test", map[string]interface{}{})
+	if er != nil {
+		t.Error("Errors when executing")
+	}
+	if r.Type != ast.PRIMITIVE_TYPE_BOOL {
+		t.Error("Expected PRIMITIVE_TYPE_INT")
+	}
+	if r.Bool != true {
+		t.Error("Incorrect value")
+	}
+}

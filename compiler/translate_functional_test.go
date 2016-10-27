@@ -764,3 +764,30 @@ func TestIfStatementASTStructureGeneratedCorrectly(t *testing.T) {
 		t.Error("Expecting StatementList node for the If statment's 'else' code block")
 	}
 }
+
+func TestUnaryNotASTStructureGeneratedCorrectly(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    func test(k bool)bool{
+			return !k
+		}`, t)
+
+	if len(context.Declarations) != 1 {
+		t.Error("Unexpected number of declarations")
+	}
+	if context.Declarations[0].Identifier != "test" {
+		t.Error("Unexpected declaration name")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList, got ", reflect.TypeOf(context.Declarations[0].Code))
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt); !ok {
+		t.Error("Expected root node for declaration to be ReturnStmt")
+		t.FailNow()
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.UnaryOp); !ok {
+		t.Error("Expected root node for declaration to be UnaryOp")
+		t.FailNow()
+	}
+}

@@ -34,6 +34,7 @@ type translateErrClass int
 
 const (
 	NOT_SUPPORTED translateErrClass = iota
+	NOT_YET_SUPPORTED
 )
 
 type TranslateError struct {

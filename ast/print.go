@@ -69,6 +69,16 @@ func (node *BinaryOp) Print(level int) {
 	printLeveled("}", level)
 }
 
+func (node *UnaryOp) Print(level int) {
+	printLeveled(node.Op.String()+" {", level)
+	if node.Expr != nil {
+		node.Expr.Print(level + 1)
+	} else {
+		printLeveled("NIL", level+1)
+	}
+	printLeveled("}", level)
+}
+
 func (node *Subscript) Print(level int) {
 	printLeveled("subscript {", level)
 	printLeveled("Index {", level+1)
@@ -126,6 +136,14 @@ func (node *IfStmt) Print(level int) {
 		printLeveled("}", level+2)
 	}
 	printLeveled("}", level)
+}
+
+func (op *UnOpType) String() string {
+	switch *op {
+	case UNOP_NOT:
+		return "!"
+	}
+	return "UNOP?"
 }
 
 func (op *BinOpType) String() string {
