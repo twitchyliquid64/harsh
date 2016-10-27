@@ -5,6 +5,7 @@ type errClass int
 const (
 	TYPE_ERR errClass = iota
 	BOUNDS_ERR
+	NOT_FOUND_ERR
 	INVALID_AST
 )
 

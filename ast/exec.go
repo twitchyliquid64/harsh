@@ -118,6 +118,7 @@ func (n *BinaryOp) Exec(context *ExecContext) *Variant {
 			ret.Type = PRIMITIVE_TYPE_BOOL
 			ret.Bool = l.String == r.String
 		default:
+			ret.Type = PRIMITIVE_TYPE_UNDEFINED
 			context.Errors = append(context.Errors, ExecutionError{
 				Class:        TYPE_ERR,
 				CreatingNode: n,
@@ -134,6 +135,7 @@ func (n *BinaryOp) Exec(context *ExecContext) *Variant {
 		case BINOP_LOR:
 			ret.Bool = l.Bool || r.Bool
 		default:
+			ret.Type = PRIMITIVE_TYPE_UNDEFINED
 			context.Errors = append(context.Errors, ExecutionError{
 				Class:        TYPE_ERR,
 				CreatingNode: n,
@@ -227,7 +229,7 @@ func (n *UnaryOp) Exec(context *ExecContext) *Variant {
 			context.Errors = append(context.Errors, ExecutionError{
 				Class:        TYPE_ERR,
 				CreatingNode: n,
-				Text:         "Cannot perform unary operation on " + upper.Type.String(),
+				Text:         "Cannot perform boolean unary operation on " + upper.Type.String(),
 			})
 		}
 	} else {
@@ -245,6 +247,18 @@ func (n *UnaryOp) Exec(context *ExecContext) *Variant {
 func (n *Subscript) Exec(context *ExecContext) *Variant {
 	baseVar := n.Expr.Exec(context)
 	subscript := n.Subscript.Exec(context)
+
+	if baseVar.VariableReferenceFailed {
+		context.Errors = append(context.Errors, ExecutionError{
+			Class:        NOT_FOUND_ERR,
+			CreatingNode: n,
+			Text:         "Could not resolve a value/variable for base data of type " + baseVar.Type.String(),
+		})
+		return &Variant{
+			Type: PRIMITIVE_TYPE_UNDEFINED,
+		}
+	}
+
 	if baseVar.Type != COMPLEX_TYPE_ARRAY {
 		context.Errors = append(context.Errors, ExecutionError{
 			Class:        TYPE_ERR,

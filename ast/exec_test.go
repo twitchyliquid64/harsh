@@ -289,6 +289,49 @@ func TestBinaryOpDivisionReturnsCorrectValue(t *testing.T) {
 	}
 }
 
+func TestBinaryOpIntEqualityReturnsCorrectValue(t *testing.T) {
+	il := BinaryOp{
+		LHS: &IntegerLiteral{
+			Val: 6,
+		},
+		RHS: &IntegerLiteral{
+			Val: 2,
+		},
+		Op: BINOP_EQUALITY,
+	}
+	context := ExecContext{}
+	r := il.Exec(&context)
+	if r.Type != PRIMITIVE_TYPE_BOOL {
+		t.Error("Expected PRIMITIVE_TYPE_BOOL return")
+	}
+	if r.Bool != false {
+		t.Error("Incorrect value, got", r.Bool)
+	}
+}
+
+func TestBinaryOpBoolEqualityReturnsCorrectValue(t *testing.T) {
+	il := BinaryOp{
+		LHS: &BoolLiteral{
+			Val: true,
+		},
+		RHS: &BoolLiteral{
+			Val: false,
+		},
+		Op: BINOP_EQUALITY,
+	}
+	context := ExecContext{}
+	r := il.Exec(&context)
+	if r.Type != PRIMITIVE_TYPE_BOOL {
+		t.Error("Expected PRIMITIVE_TYPE_BOOL return")
+	}
+	if r.Bool != false {
+		t.Error("Incorrect value, got", r.Bool)
+	}
+	if len(context.Errors) != 0 {
+		t.Error("Got errors, expected 0")
+	}
+}
+
 func TestBinaryOpLogicalAndReturnsCorrectValue(t *testing.T) {
 	il := BinaryOp{
 		LHS: &BoolLiteral{
@@ -346,6 +389,75 @@ func TestBinaryOpMultiplicationReturnsCorrectValue(t *testing.T) {
 	}
 	if r.Int != 986 {
 		t.Error("Incorrect value, got ", r.Int)
+	}
+}
+
+func TestBinaryOpStringEquality(t *testing.T) {
+	il := BinaryOp{
+		LHS: &StringLiteral{
+			Str: "ab",
+		},
+		RHS: &StringLiteral{
+			Str: "cd",
+		},
+		Op: BINOP_EQUALITY,
+	}
+	context := ExecContext{}
+	r := il.Exec(&context)
+	if r.Type != PRIMITIVE_TYPE_BOOL {
+		t.Error("Expected PRIMITIVE_TYPE_BOOL")
+	}
+	if len(context.Errors) != 0 {
+		t.Error("Expected 0 errors, got", len(context.Errors))
+	}
+	if r.Bool != false {
+		t.Error("Incorrect result")
+	}
+}
+
+func TestBinaryOpInvalidStringOperationErrors(t *testing.T) {
+	il := BinaryOp{
+		LHS: &StringLiteral{
+			Str: "ab",
+		},
+		RHS: &StringLiteral{
+			Str: "cd",
+		},
+		Op: BINOP_MOD,
+	}
+	context := ExecContext{}
+	r := il.Exec(&context)
+	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
+		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED")
+	}
+	if len(context.Errors) != 1 {
+		t.Error("One error expected,", len(context.Errors))
+	}
+	if context.Errors[0].Class != TYPE_ERR {
+		t.Error("Incorrect error class")
+	}
+}
+
+func TestBinaryOpInvalidBoolOperationErrors(t *testing.T) {
+	il := BinaryOp{
+		LHS: &BoolLiteral{
+			Val: true,
+		},
+		RHS: &BoolLiteral{
+			Val: true,
+		},
+		Op: BINOP_MOD,
+	}
+	context := ExecContext{}
+	r := il.Exec(&context)
+	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
+		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED")
+	}
+	if len(context.Errors) != 1 {
+		t.Error("One error expected,", len(context.Errors))
+	}
+	if context.Errors[0].Class != TYPE_ERR {
+		t.Error("Incorrect error class")
 	}
 }
 
@@ -741,7 +853,7 @@ func TestSubscriptLocalVariableReference(t *testing.T) {
 
 	r := ass.Exec(&context)
 	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
-		t.Error("Expected PRIMITIVE_TYPE_INT return, got " + r.Type.String())
+		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return, got " + r.Type.String())
 	}
 	if v, ok := context.FunctionNamespace["testVar"]; !ok {
 		t.Error("Could not read function variable")
@@ -791,7 +903,7 @@ func TestSubscriptGlobalVariableReference(t *testing.T) {
 
 	r := ass.Exec(&context)
 	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
-		t.Error("Expected PRIMITIVE_TYPE_INT return, got " + r.Type.String())
+		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return, got " + r.Type.String())
 	}
 	if v, ok := context.GlobalNamespace["testVar"]; !ok {
 		t.Error("Could not read global variable")
@@ -836,6 +948,9 @@ func TestSubscriptVariableReferenceErrorsWhenNoneFound(t *testing.T) {
 	if len(context.Errors) != 1 {
 		t.Error("Expecting one error")
 		t.Log(context.Errors[0].Error())
+	}
+	if context.Errors[0].Class != NOT_FOUND_ERR {
+		t.Error("Incorrect error class, got", context.Errors[0].Error())
 	}
 }
 
@@ -884,5 +999,185 @@ func TestUnaryBoolOperationWithIntErrors(t *testing.T) {
 	}
 	if len(context.Errors) != 1 {
 		t.Error("One error expected,", len(context.Errors))
+	}
+	if context.Errors[0].Class != TYPE_ERR {
+		t.Error("Incorrect error class")
+	}
+}
+
+func TestArrayLiteralErrorsWhenNonIntSizeUsed(t *testing.T) {
+	op := &ArrayLiteral{
+		Type: ArrayType{
+			Len: &StringLiteral{
+				Str: "1",
+			},
+		},
+	}
+
+	ns := Namespace(map[string]*Variant{})
+	context := ExecContext{
+		IsFuncContext:     true,
+		GlobalNamespace:   ns,
+		FunctionNamespace: map[string]*Variant{},
+	}
+
+	r := op.Exec(&context)
+	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
+		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED")
+	}
+	if len(context.Errors) != 1 {
+		t.Error("One error expected,", len(context.Errors))
+	}
+	if context.Errors[0].Class != TYPE_ERR {
+		t.Error("Incorrect error class")
+	}
+}
+
+func TestArrayLiteralErrorsWhenLiteralLenMismatchToTypeLen(t *testing.T) {
+	op := &ArrayLiteral{
+		Type: ArrayType{
+			Len: &IntegerLiteral{
+				Val: 4,
+			},
+		},
+		Literal: []Node{
+			&IntegerLiteral{
+				Val: 3,
+			},
+		},
+	}
+
+	ns := Namespace(map[string]*Variant{})
+	context := ExecContext{
+		IsFuncContext:     true,
+		GlobalNamespace:   ns,
+		FunctionNamespace: map[string]*Variant{},
+	}
+
+	r := op.Exec(&context)
+	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
+		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED")
+	}
+	if len(context.Errors) != 1 {
+		t.Error("One error expected,", len(context.Errors))
+	}
+	if context.Errors[0].Class != BOUNDS_ERR {
+		t.Error("Incorrect error class")
+	}
+}
+
+func TestSubscriptErrorsWhenNonArrayBase(t *testing.T) {
+	ass := &Assign{
+		Variable: &Subscript{
+			Subscript: &IntegerLiteral{
+				Val: 0,
+			},
+			Expr: &IntegerLiteral{
+				Val: 33,
+			},
+		},
+		Value: &IntegerLiteral{
+			Val: 42,
+		},
+	}
+	ns := Namespace(map[string]*Variant{})
+	context := ExecContext{
+		IsFuncContext:     true,
+		GlobalNamespace:   ns,
+		FunctionNamespace: map[string]*Variant{},
+	}
+
+	ass.Exec(&context)
+	if len(context.Errors) != 1 {
+		t.Error("Expected 1 error, got", len(context.Errors))
+	}
+	if context.Errors[0].Class != TYPE_ERR {
+		t.Error("Incorrect error class")
+	}
+}
+
+func TestSubscriptErrorsWithNonIntIndex(t *testing.T) {
+	ass := &Assign{
+		Variable: &Subscript{
+			Subscript: &StringLiteral{
+				Str: "1",
+			},
+			Expr: &VariableReference{
+				Name: "testVar",
+			},
+		},
+		Value: &IntegerLiteral{
+			Val: 42,
+		},
+	}
+	ns := Namespace(map[string]*Variant{})
+	context := ExecContext{
+		IsFuncContext:   true,
+		GlobalNamespace: ns,
+		FunctionNamespace: map[string]*Variant{
+			"testVar": &Variant{
+				Type: COMPLEX_TYPE_ARRAY,
+				VectorData: []*Variant{
+					&Variant{
+						Type: PRIMITIVE_TYPE_INT,
+						Int:  11,
+					},
+				},
+			},
+		},
+	}
+
+	r := ass.Exec(&context)
+	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
+		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return, got " + r.Type.String())
+	}
+	if len(context.Errors) != 1 {
+		t.Error("Expected 1 error, got", len(context.Errors))
+	}
+	if context.Errors[0].Class != TYPE_ERR {
+		t.Error("Incorrect error class")
+	}
+}
+
+func TestSubscriptErrorsWithOutOfBoundsSubscript(t *testing.T) {
+	ass := &Assign{
+		Variable: &Subscript{
+			Subscript: &IntegerLiteral{
+				Val: 1,
+			},
+			Expr: &VariableReference{
+				Name: "testVar",
+			},
+		},
+		Value: &IntegerLiteral{
+			Val: 42,
+		},
+	}
+	ns := Namespace(map[string]*Variant{})
+	context := ExecContext{
+		IsFuncContext:   true,
+		GlobalNamespace: ns,
+		FunctionNamespace: map[string]*Variant{
+			"testVar": &Variant{
+				Type: COMPLEX_TYPE_ARRAY,
+				VectorData: []*Variant{
+					&Variant{
+						Type: PRIMITIVE_TYPE_INT,
+						Int:  11,
+					},
+				},
+			},
+		},
+	}
+
+	r := ass.Exec(&context)
+	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
+		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return, got " + r.Type.String())
+	}
+	if len(context.Errors) != 1 {
+		t.Error("Expected 1 error, got", len(context.Errors))
+	}
+	if context.Errors[0].Class != BOUNDS_ERR {
+		t.Error("Incorrect error class")
 	}
 }
