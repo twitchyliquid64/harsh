@@ -26,6 +26,9 @@ type ArrayLiteral struct {
 	Literal []Node
 }
 
+type NilLiteral struct {
+}
+
 type ReturnStmt struct {
 	Expr Node
 }

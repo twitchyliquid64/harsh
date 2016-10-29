@@ -73,6 +73,25 @@ func TestImportsProducesError(t *testing.T) {
 	}
 }
 
+func TestUnsupportedNodeProducesError(t *testing.T) {
+	ns := ast.Namespace(map[string]*ast.Variant{})
+	context := &Context{
+		ConType: CONTEXT_ADHOC,
+		Globals: ns,
+		//Debug:   true,
+	}
+	node := translateGoNode(nil, context, reflect.ValueOf(goast.GoStmt{}))
+	if len(context.Errors) != 1 {
+		t.Error("Error expected")
+	}
+	if context.Errors[0].Class != NOT_SUPPORTED {
+		t.Error("Incorrect error class")
+	}
+	if node != nil {
+		t.Error("Nil node expected")
+	}
+}
+
 func TestUnknownGlobalProducesError(t *testing.T) {
 	ns := ast.Namespace(map[string]*ast.Variant{})
 	context := &Context{

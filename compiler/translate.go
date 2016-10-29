@@ -187,7 +187,7 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 				}
 			} else if len(v.Results) == 0 { //TODO: make a undefined node and return it
 				return &ast.ReturnStmt{
-					Expr: &ast.IntegerLiteral{},
+					Expr: &ast.NilLiteral{},
 				}
 			} else {
 				context.Errors = append(context.Errors, TranslateError{
@@ -209,7 +209,6 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 			fmt.Println("Not implemented - SWITCH: ", len(v.Body.List))
 
 		default:
-			fmt.Println("Got unknown struct type: ", t.Type())
 			context.Errors = append(context.Errors, TranslateError{
 				Class: NOT_SUPPORTED,
 				Text:  "Translation of go/ast node not supported: " + t.Type().Name(),
@@ -257,7 +256,7 @@ func defaultValue(k ast.TypeKind) ast.Node {
 			Literal: nil,
 		}
 	}
-	return &ast.IntegerLiteral{Val: -1}
+	return &ast.NilLiteral{}
 }
 
 func convertTypeToTypeKind(fset *token.FileSet, t goast.Expr, context *Context) ast.TypeKind {
@@ -301,7 +300,7 @@ func convertTypeToTypeKind(fset *token.FileSet, t goast.Expr, context *Context) 
 	} else {
 		context.Errors = append(context.Errors, TranslateError{
 			Class: NOT_SUPPORTED,
-			Pos:   fset.Position(node.Pos()),
+			Pos:   fset.Position(t.Pos()),
 			Text:  "Cannot convert go/ast node to TypeKind: " + reflect.TypeOf(t).String(),
 		})
 	}

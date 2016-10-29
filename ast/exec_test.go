@@ -30,6 +30,15 @@ func TestBoolLiteralExecReturnsCorrectValue(t *testing.T) {
 	}
 }
 
+func TestNilLiteralExecReturnsCorrectValue(t *testing.T) {
+	il := NilLiteral{}
+	context := ExecContext{}
+	r := il.Exec(&context)
+	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
+		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return")
+	}
+}
+
 func TestEmptyArrayLiteralExecReturnsCorrectValue(t *testing.T) {
 	il := ArrayLiteral{
 		Type: ArrayType{

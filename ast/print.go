@@ -18,6 +18,10 @@ func (node *StatementList) Print(level int) {
 	printLeveled("}", level)
 }
 
+func (node *NilLiteral) Print(level int) {
+	printLeveled("nil", level)
+}
+
 func (node *ReturnStmt) Print(level int) {
 	printLeveled("return{", level)
 	if node.Expr == nil {
@@ -125,10 +129,18 @@ func (node *IfStmt) Print(level int) {
 		printLeveled("}", level+2)
 	}
 	printLeveled("condition {", level+2)
-	node.Conditional.Print(level + 3)
+	if node.Conditional != nil {
+		node.Conditional.Print(level + 3)
+	} else {
+		printLeveled("NIL", level+3)
+	}
 	printLeveled("}", level+2)
 	printLeveled("code {", level+2)
-	node.Code.Print(level + 3)
+	if node.Code != nil {
+		node.Code.Print(level + 3)
+	} else {
+		printLeveled("NIL", level+3)
+	}
 	printLeveled("}", level+2)
 	if node.Else != nil {
 		printLeveled("else {", level+2)

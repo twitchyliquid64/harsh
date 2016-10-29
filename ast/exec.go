@@ -21,6 +21,12 @@ func (n *StringLiteral) Exec(context *ExecContext) *Variant {
 	}
 }
 
+func (n *NilLiteral) Exec(context *ExecContext) *Variant {
+	return &Variant{
+		Type: PRIMITIVE_TYPE_UNDEFINED,
+	}
+}
+
 func (n *ArrayLiteral) Exec(context *ExecContext) *Variant {
 	sizeNode := n.Type.(ArrayType).Len.Exec(context)
 	if sizeNode.Type != PRIMITIVE_TYPE_INT {

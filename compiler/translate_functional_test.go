@@ -783,11 +783,38 @@ func TestUnaryNotASTStructureGeneratedCorrectly(t *testing.T) {
 		t.Error("Expected root node for declaration to be StatementList, got ", reflect.TypeOf(context.Declarations[0].Code))
 	}
 	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt); !ok {
-		t.Error("Expected root node for declaration to be ReturnStmt")
+		t.Error("Expected next node for declaration to be ReturnStmt")
 		t.FailNow()
 	}
 	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.UnaryOp); !ok {
-		t.Error("Expected root node for declaration to be UnaryOp")
+		t.Error("Expected next node for declaration to be UnaryOp")
+		t.FailNow()
+	}
+}
+
+func TestEmptyReturnProducesCorrectASTStructure(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    func test(){
+			return
+		}`, t)
+
+	if len(context.Declarations) != 1 {
+		t.Error("Unexpected number of declarations")
+	}
+	if context.Declarations[0].Identifier != "test" {
+		t.Error("Unexpected declaration name")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList, got ", reflect.TypeOf(context.Declarations[0].Code))
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt); !ok {
+		t.Error("Expected next node for declaration to be ReturnStmt")
+		t.FailNow()
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.NilLiteral); !ok {
+		t.Error("Expected next node for declaration to be NilLiteral")
 		t.FailNow()
 	}
 }
