@@ -22,6 +22,7 @@ const (
 	COMPLEX_TYPE_ARRAY
 	COMPLEX_TYPE_VECTOR
 	PRIMITIVE_TYPE_UNDEFINED
+	UNKNOWN_TYPE //Used internally to signify the type could be valid but is currently unknown
 )
 
 type TypeDecl interface {

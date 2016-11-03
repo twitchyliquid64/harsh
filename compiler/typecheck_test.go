@@ -85,6 +85,9 @@ func TestTypecheckBinaryOpMismatchCausesError(t *testing.T) {
 	if c.Errors[0].Kind != TYPEERROR_INCOMPATIBLE_TYPES_ERR {
 		t.Error("Expected incompatible types error")
 	}
+	if c.Errors[0].Msg != "Cannot perform binary operation + on operands with type int and bool" {
+		t.Error("Incorrect error message, got: " + c.Errors[0].Msg)
+	}
 	if type_ != ast.PRIMITIVE_TYPE_UNDEFINED {
 		t.Error("Expected undefined type")
 	}

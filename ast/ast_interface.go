@@ -42,6 +42,7 @@ type IfStmt struct {
 
 type VariableReference struct {
 	Name string
+	Type TypeKind
 }
 
 type BinaryOp struct {

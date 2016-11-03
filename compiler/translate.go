@@ -69,8 +69,24 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 					Val: b,
 				}
 			}
+			var t ast.TypeKind = ast.UNKNOWN_TYPE
+			switch n := v.Obj.Decl.(type) {
+			case *goast.ValueSpec:
+				t = convertTypeToTypeKind(fset, n.Type, context)
+			case *goast.AssignStmt:
+				// TODO call Typecheck() to infer type
+			case *goast.Field:
+				t = convertTypeToTypeKind(fset, n.Type, context)
+			default:
+				context.Errors = append(context.Errors, TranslateError{
+					Class: NOT_SUPPORTED,
+					Pos:   fset.Position(v.Pos()),
+					Text:  "ast.Ident.Obj.Decl type unknown: " + v.Name + " (" + reflect.TypeOf(n).Name() + ")",
+				})
+			}
 			return &ast.VariableReference{
 				Name: v.Name,
+				Type: t,
 			}
 
 		case goast.AssignStmt:

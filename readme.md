@@ -25,7 +25,8 @@ Planned features, in various states are:
 #### AST
 
  - [x] Testing for new type system - arrays, array declaration, array subtype etc
- - [ ] Testing for type structure of parameters
+ - [ ] Complete typecheck system
+ - [ ] Store type of VariableReference nodes in node for constant time type checking
  - [x] e2e test for new bool operators & arrays
  - [x] Testing for exec errors
  - [x] Testing for translate errors

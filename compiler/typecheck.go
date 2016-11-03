@@ -26,6 +26,10 @@ func (t TypeError) Error() string {
 	return t.Msg
 }
 
+func TypeEqual(l ast.TypeDecl, r ast.TypeDecl) bool {
+	return l == r
+}
+
 func Typecheck(context *TypecheckContext, node ast.Node) ast.TypeDecl {
 	switch n := (node).(type) {
 	case *ast.StatementList:
@@ -43,7 +47,7 @@ func Typecheck(context *TypecheckContext, node ast.Node) ast.TypeDecl {
 	case *ast.BinaryOp:
 		l := Typecheck(context, n.LHS)
 		r := Typecheck(context, n.RHS)
-		if l != r {
+		if !TypeEqual(l, r) {
 			context.Errors = append(context.Errors, TypeError{
 				Kind: TYPEERROR_INCOMPATIBLE_TYPES_ERR,
 				Msg:  "Cannot perform binary operation " + n.Op.String() + " on operands with type " + l.String() + " and " + r.String(),
