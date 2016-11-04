@@ -22,11 +22,11 @@ func TestTypecheckStatementList(t *testing.T) {
 func TestTypecheckString(t *testing.T) {
 	node := &ast.StringLiteral{}
 	c := &TypecheckContext{}
-	type_ := Typecheck(c, node)
+	ty := Typecheck(c, node)
 	if len(c.Errors) != 0 {
 		t.Error("Type errors not expected")
 	}
-	if type_ != ast.PRIMITIVE_TYPE_STRING {
+	if ty != ast.PrimitiveTypeString {
 		t.Error("Expected string type")
 	}
 }
@@ -34,11 +34,11 @@ func TestTypecheckString(t *testing.T) {
 func TestTypecheckInt(t *testing.T) {
 	node := &ast.IntegerLiteral{}
 	c := &TypecheckContext{}
-	type_ := Typecheck(c, node)
+	ty := Typecheck(c, node)
 	if len(c.Errors) != 0 {
 		t.Error("Type errors not expected")
 	}
-	if type_ != ast.PRIMITIVE_TYPE_INT {
+	if ty != ast.PrimitiveTypeInt {
 		t.Error("Expected integer type")
 	}
 }
@@ -46,11 +46,11 @@ func TestTypecheckInt(t *testing.T) {
 func TestTypecheckBool(t *testing.T) {
 	node := &ast.BoolLiteral{}
 	c := &TypecheckContext{}
-	type_ := Typecheck(c, node)
+	ty := Typecheck(c, node)
 	if len(c.Errors) != 0 {
 		t.Error("Type errors not expected")
 	}
-	if type_ != ast.PRIMITIVE_TYPE_BOOL {
+	if ty != ast.PrimitiveTypeBool {
 		t.Error("Expected bool type")
 	}
 }
@@ -59,14 +59,14 @@ func TestTypecheckBinaryOpMatches(t *testing.T) {
 	node := &ast.BinaryOp{
 		LHS: &ast.IntegerLiteral{},
 		RHS: &ast.IntegerLiteral{},
-		Op:  ast.BINOP_ADD,
+		Op:  ast.BinOpAdd,
 	}
 	c := &TypecheckContext{}
-	type_ := Typecheck(c, node)
+	ty := Typecheck(c, node)
 	if len(c.Errors) != 0 {
 		t.Error("Type errors not expected")
 	}
-	if type_ != ast.PRIMITIVE_TYPE_INT {
+	if ty != ast.PrimitiveTypeInt {
 		t.Error("Expected int type")
 	}
 }
@@ -75,20 +75,20 @@ func TestTypecheckBinaryOpMismatchCausesError(t *testing.T) {
 	node := &ast.BinaryOp{
 		LHS: &ast.IntegerLiteral{},
 		RHS: &ast.BoolLiteral{},
-		Op:  ast.BINOP_ADD,
+		Op:  ast.BinOpAdd,
 	}
 	c := &TypecheckContext{}
-	type_ := Typecheck(c, node)
+	ty := Typecheck(c, node)
 	if len(c.Errors) != 1 {
 		t.Error("Type errors expected")
 	}
-	if c.Errors[0].Kind != TYPEERROR_INCOMPATIBLE_TYPES_ERR {
+	if c.Errors[0].Kind != TypeerrorIncompatibleTypesErr {
 		t.Error("Expected incompatible types error")
 	}
 	if c.Errors[0].Msg != "Cannot perform binary operation + on operands with type int and bool" {
 		t.Error("Incorrect error message, got: " + c.Errors[0].Msg)
 	}
-	if type_ != ast.PRIMITIVE_TYPE_UNDEFINED {
+	if ty != ast.PrimitiveTypeUndefined {
 		t.Error("Expected undefined type")
 	}
 }

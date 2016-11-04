@@ -11,8 +11,10 @@ import (
 	"github.com/twitchyliquid64/harsh/ast"
 )
 
+// ErrFuncNotFound is returned if Context.CallFunc() is called with a function that is not known in the context.
 var ErrFuncNotFound = errors.New("No function found")
 
+// ParseFile parses a Go source file and returns the root node, a AST Context, and any translation / parse errors.
 func ParseFile(fname string) (ast.Node, *Context, error) {
 	fset := token.NewFileSet()
 
@@ -26,6 +28,7 @@ func ParseFile(fname string) (ast.Node, *Context, error) {
 	return rootNode, context, nil
 }
 
+// ParseLiteral takes a string of Go code, returning an AST context and any translation/parse errors.
 func ParseLiteral(fname, inCode string) (context *Context, err error) {
 	fset := token.NewFileSet()
 	goAst, err := parser.ParseFile(fset, fname, inCode, 0)
@@ -34,7 +37,7 @@ func ParseLiteral(fname, inCode string) (context *Context, err error) {
 	}
 	ns := ast.Namespace(map[string]*ast.Variant{})
 	context = &Context{
-		ConType: CONTEXT_ADHOC,
+		ConType: ContextAdhoc,
 		Globals: ns,
 	}
 
@@ -48,6 +51,7 @@ func ParseLiteral(fname, inCode string) (context *Context, err error) {
 	return context, nil
 }
 
+// ExecutionError represents a problem that arose when executing a function.
 type ExecutionError struct {
 	Errors []ast.ExecutionError
 }
@@ -56,6 +60,8 @@ func (e ExecutionError) Error() string {
 	return strconv.Itoa(len(e.Errors)) + " execution errors"
 }
 
+// CallFunc executes the named function in Context, with args, and returning a value. If the function does not exist
+// or execution raises an error, an error is returned.
 func (c *Context) CallFunc(name string, args map[string]interface{}) (*ast.Variant, error) {
 	for _, decl := range c.Declarations {
 		if decl.Identifier == name {
@@ -73,12 +79,11 @@ func (c *Context) CallFunc(name string, args map[string]interface{}) (*ast.Varia
 			retValue := decl.Code.Exec(execContext)
 			if len(execContext.Errors) == 0 {
 				return retValue, nil
-			} else {
-				return retValue, ExecutionError{Errors: execContext.Errors}
 			}
+			return retValue, ExecutionError{Errors: execContext.Errors}
 		}
 	}
 	return &ast.Variant{
-		Type: ast.PRIMITIVE_TYPE_UNDEFINED,
+		Type: ast.PrimitiveTypeUndefined,
 	}, ErrFuncNotFound
 }

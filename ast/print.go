@@ -6,6 +6,7 @@ import (
 	"strconv"
 )
 
+// Print writes a description of the node to standard output, at the specified indentation level.
 func (node *StatementList) Print(level int) {
 	printLeveled("nodes{", level)
 	for _, n := range node.Stmts {
@@ -18,10 +19,12 @@ func (node *StatementList) Print(level int) {
 	printLeveled("}", level)
 }
 
+// Print writes a description of the node to standard output, at the specified indentation level.
 func (node *NilLiteral) Print(level int) {
 	printLeveled("nil", level)
 }
 
+// Print writes a description of the node to standard output, at the specified indentation level.
 func (node *ReturnStmt) Print(level int) {
 	printLeveled("return{", level)
 	if node.Expr == nil {
@@ -32,14 +35,17 @@ func (node *ReturnStmt) Print(level int) {
 	printLeveled("}", level)
 }
 
+// Print writes a description of the node to standard output, at the specified indentation level.
 func (node *IntegerLiteral) Print(level int) {
 	printLeveled(strconv.FormatInt(node.Val, 10)+" int64", level)
 }
 
+// Print writes a description of the node to standard output, at the specified indentation level.
 func (node *StringLiteral) Print(level int) {
 	printLeveled(strconv.Quote(node.Str)+" string", level)
 }
 
+// Print writes a description of the node to standard output, at the specified indentation level.
 func (node *ArrayLiteral) Print(level int) {
 	switch n := node.Type.(type) {
 	case ArrayType:
@@ -54,10 +60,12 @@ func (node *ArrayLiteral) Print(level int) {
 	printLeveled(node.Type.String(), level)
 }
 
+// Print writes a description of the node to standard output, at the specified indentation level.
 func (node *BoolLiteral) Print(level int) {
 	printLeveled(strconv.FormatBool(node.Val)+" bool", level)
 }
 
+// Print writes a description of the node to standard output, at the specified indentation level.
 func (node *BinaryOp) Print(level int) {
 	printLeveled(node.Op.String()+" {", level)
 	if node.LHS != nil {
@@ -73,6 +81,7 @@ func (node *BinaryOp) Print(level int) {
 	printLeveled("}", level)
 }
 
+// Print writes a description of the node to standard output, at the specified indentation level.
 func (node *UnaryOp) Print(level int) {
 	printLeveled(node.Op.String()+" {", level)
 	if node.Expr != nil {
@@ -83,6 +92,7 @@ func (node *UnaryOp) Print(level int) {
 	printLeveled("}", level)
 }
 
+// Print writes a description of the node to standard output, at the specified indentation level.
 func (node *Subscript) Print(level int) {
 	printLeveled("subscript {", level)
 	printLeveled("Index {", level+1)
@@ -102,6 +112,7 @@ func (node *Subscript) Print(level int) {
 	printLeveled("}", level)
 }
 
+// Print writes a description of the node to standard output, at the specified indentation level.
 func (node *Assign) Print(level int) {
 	if _, ok := node.Variable.(*VariableReference); ok {
 		printLeveled(node.Variable.(*VariableReference).Name+" <= {", level)
@@ -117,10 +128,12 @@ func (node *Assign) Print(level int) {
 	printLeveled("}", level)
 }
 
+// Print writes a description of the node to standard output, at the specified indentation level.
 func (node *VariableReference) Print(level int) {
 	printLeveled("{"+node.Name+"}", level)
 }
 
+// Print writes a description of the node to standard output, at the specified indentation level.
 func (node *IfStmt) Print(level int) {
 	printLeveled("if {", level)
 	if node.Init != nil {
@@ -152,7 +165,7 @@ func (node *IfStmt) Print(level int) {
 
 func (op *UnOpType) String() string {
 	switch *op {
-	case UNOP_NOT:
+	case UnOpNot:
 		return "!"
 	}
 	return "UNOP?"
@@ -160,23 +173,23 @@ func (op *UnOpType) String() string {
 
 func (op *BinOpType) String() string {
 	switch *op {
-	case BINOP_ADD:
+	case BinOpAdd:
 		return "+"
-	case BINOP_SUB:
+	case BinOpSub:
 		return "-"
-	case BINOP_MUL:
+	case BinOpMul:
 		return "*"
-	case BINOP_DIV:
+	case BinOpDiv:
 		return "/"
-	case BINOP_UNK:
+	case BinOpUnknown:
 		return "UNK?"
-	case BINOP_MOD:
+	case BinOpMod:
 		return "%"
-	case BINOP_EQUALITY:
+	case BinOpEquality:
 		return "=="
-	case BINOP_LAND:
+	case BinOpLAnd:
 		return "&&"
-	case BINOP_LOR:
+	case BinOpLOr:
 		return "||"
 	}
 	return "BINOP?"
@@ -197,15 +210,15 @@ func (t NamedType) String() string {
 
 func (tk TypeKindDescription) String() string {
 	switch tk {
-	case PRIMITIVE_TYPE_INT:
+	case PrimitiveTypeInt:
 		return "int"
-	case PRIMITIVE_TYPE_STRING:
+	case PrimitiveTypeString:
 		return "string"
-	case PRIMITIVE_TYPE_BOOL:
+	case PrimitiveTypeBool:
 		return "bool"
-	case COMPLEX_TYPE_ARRAY:
+	case ComplexTypeArray:
 		return "[?]"
-	case PRIMITIVE_TYPE_UNDEFINED:
+	case PrimitiveTypeUndefined:
 		return "undefined"
 	}
 	return "?"

@@ -12,7 +12,7 @@ import (
 func TestBasicLitKindUnknownProducesError(t *testing.T) {
 	ns := ast.Namespace(map[string]*ast.Variant{})
 	context := &Context{
-		ConType: CONTEXT_ADHOC,
+		ConType: ContextAdhoc,
 		Globals: ns,
 		//Debug:   true,
 	}
@@ -22,7 +22,7 @@ func TestBasicLitKindUnknownProducesError(t *testing.T) {
 	if len(context.Errors) != 1 {
 		t.Error("Error expected")
 	}
-	if context.Errors[0].Class != NOT_SUPPORTED {
+	if context.Errors[0].Class != NotSupported{
 		t.Error("Incorrect error class")
 	}
 	if node != nil {
@@ -33,7 +33,7 @@ func TestBasicLitKindUnknownProducesError(t *testing.T) {
 func TestMultipleReturnProducesError(t *testing.T) {
 	ns := ast.Namespace(map[string]*ast.Variant{})
 	context := &Context{
-		ConType: CONTEXT_ADHOC,
+		ConType: ContextAdhoc,
 		Globals: ns,
 		//Debug:   true,
 	}
@@ -45,7 +45,7 @@ func TestMultipleReturnProducesError(t *testing.T) {
 	if len(context.Errors) != 1 {
 		t.Error("Error expected")
 	}
-	if context.Errors[0].Class != NOT_YET_SUPPORTED {
+	if context.Errors[0].Class != NotYetSupported {
 		t.Error("Incorrect error class")
 	}
 	if node != nil {
@@ -56,7 +56,7 @@ func TestMultipleReturnProducesError(t *testing.T) {
 func TestImportsProducesError(t *testing.T) {
 	ns := ast.Namespace(map[string]*ast.Variant{})
 	context := &Context{
-		ConType: CONTEXT_ADHOC,
+		ConType: ContextAdhoc,
 		Globals: ns,
 		//Debug:   true,
 	}
@@ -68,7 +68,7 @@ func TestImportsProducesError(t *testing.T) {
 	if len(context.Errors) != 1 {
 		t.Error("Error expected")
 	}
-	if context.Errors[0].Class != NOT_YET_SUPPORTED {
+	if context.Errors[0].Class != NotYetSupported {
 		t.Error("Incorrect error class")
 	}
 }
@@ -76,7 +76,7 @@ func TestImportsProducesError(t *testing.T) {
 func TestUnsupportedNodeProducesError(t *testing.T) {
 	ns := ast.Namespace(map[string]*ast.Variant{})
 	context := &Context{
-		ConType: CONTEXT_ADHOC,
+		ConType: ContextAdhoc,
 		Globals: ns,
 		//Debug:   true,
 	}
@@ -84,7 +84,7 @@ func TestUnsupportedNodeProducesError(t *testing.T) {
 	if len(context.Errors) != 1 {
 		t.Error("Error expected")
 	}
-	if context.Errors[0].Class != NOT_SUPPORTED {
+	if context.Errors[0].Class != NotSupported{
 		t.Error("Incorrect error class")
 	}
 	if node != nil {
@@ -95,7 +95,7 @@ func TestUnsupportedNodeProducesError(t *testing.T) {
 func TestUnknownGlobalProducesError(t *testing.T) {
 	ns := ast.Namespace(map[string]*ast.Variant{})
 	context := &Context{
-		ConType: CONTEXT_ADHOC,
+		ConType: ContextAdhoc,
 		Globals: ns,
 		//Debug:   true,
 	}
@@ -116,7 +116,7 @@ func TestUnknownGlobalProducesError(t *testing.T) {
 	if len(context.Errors) != 1 {
 		t.Error("Error expected")
 	}
-	if context.Errors[0].Class != NOT_SUPPORTED {
+	if context.Errors[0].Class != NotSupported{
 		t.Error("Incorrect error class")
 	}
 }

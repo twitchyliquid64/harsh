@@ -20,7 +20,7 @@ func setupTestGetAST(context *Context, inCode string, t *testing.T) (ast.Node, *
 	if context == nil {
 		ns := ast.Namespace(map[string]*ast.Variant{})
 		context = &Context{
-			ConType: CONTEXT_ADHOC,
+			ConType: ContextAdhoc,
 			Globals: ns,
 		}
 	}
@@ -125,7 +125,7 @@ func TestBasicArithmeticASTStructureCorrectness(t *testing.T) {
 		t.Error("BinaryOp node expected")
 	}
 	op := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.BinaryOp)
-	if op.Op != ast.BINOP_ADD {
+	if op.Op != ast.BinOpAdd {
 		t.Error("Addition operation expected")
 	}
 	if _, ok := op.LHS.(*ast.IntegerLiteral); !ok {
@@ -166,13 +166,13 @@ func TestComplexArithmeticASTStructureCorrectness(t *testing.T) {
 		t.Error("BinaryOp node expected")
 	}
 	op := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.BinaryOp)
-	if op.Op != ast.BINOP_SUB {
+	if op.Op != ast.BinOpSub {
 		t.Error("Subtraction operation expected")
 	}
 	if _, ok := op.LHS.(*ast.BinaryOp); !ok {
 		t.Error("BinaryOp node expected")
 	}
-	if op.LHS.(*ast.BinaryOp).Op != ast.BINOP_MUL {
+	if op.LHS.(*ast.BinaryOp).Op != ast.BinOpMul {
 		t.Error("Multiplication operation expected")
 	}
 	if _, ok := op.RHS.(*ast.IntegerLiteral); !ok {
@@ -193,7 +193,7 @@ func TestComplexArithmeticASTStructureCorrectness(t *testing.T) {
 	if _, ok := op.RHS.(*ast.BinaryOp); !ok {
 		t.Error("BinaryOp node expected")
 	}
-	if op.RHS.(*ast.BinaryOp).Op != ast.BINOP_ADD {
+	if op.RHS.(*ast.BinaryOp).Op != ast.BinOpAdd {
 		t.Error("Multiplication operation expected")
 	}
 	op = op.RHS.(*ast.BinaryOp)
@@ -244,13 +244,13 @@ func TestFunctionParamsAndResultsAreTypedAndNamedCorrectly(t *testing.T) {
 		}
 	}
 
-	if p[0].ConcreteType() != ast.PRIMITIVE_TYPE_INT {
+	if p[0].ConcreteType() != ast.PrimitiveTypeInt {
 		t.Error("First parameter incorrect")
 	}
 	if _, ok := p[1].(ast.NamedType); !ok {
 		t.Error("Second parameter not a NamedType:", reflect.TypeOf(p[0]))
 	}
-	if p[1].ConcreteType() != ast.PRIMITIVE_TYPE_INT {
+	if p[1].ConcreteType() != ast.PrimitiveTypeInt {
 		t.Error("Second parameter incorrect")
 	}
 	if len(context.Declarations[0].Results) != 1 {
@@ -260,7 +260,7 @@ func TestFunctionParamsAndResultsAreTypedAndNamedCorrectly(t *testing.T) {
 		t.Error("Unexpected return type")
 	}
 	r := context.Declarations[0].Results
-	if r[0] != ast.PRIMITIVE_TYPE_STRING {
+	if r[0] != ast.PrimitiveTypeString {
 		t.Error("Return incorrect")
 	}
 }
@@ -282,7 +282,7 @@ func TestContextMetadataCorrectness(t *testing.T) {
 
 func TestFileContextCorrectness(t *testing.T) {
 	_, context := setupTestGetAST(&Context{
-		ConType: CONTEXT_FILE,
+		ConType: ContextFile,
 	}, `
     package test
 
@@ -348,7 +348,7 @@ func TestGlobalIntSavedCorrectly(t *testing.T) {
 		t.Error("Global expected")
 		t.FailNow()
 	}
-	if v.Type != ast.PRIMITIVE_TYPE_INT {
+	if v.Type != ast.PrimitiveTypeInt {
 		t.Error("Integer type for variable expected, got ", v.Type.String())
 	}
 	if v.Int != 0 {
@@ -368,7 +368,7 @@ func TestGlobalStringSavedCorrectly(t *testing.T) {
 		t.Error("Global expected")
 		t.FailNow()
 	}
-	if v.Type != ast.PRIMITIVE_TYPE_STRING {
+	if v.Type != ast.PrimitiveTypeString {
 		t.Error("String type for variable expected, got ", v.Type.String())
 	}
 	if v.String != "" {
@@ -507,8 +507,8 @@ func TestArrayLocalDeclarationProducesCorrectAST(t *testing.T) {
 	if _, ok3 := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral); !ok3 {
 		t.Error("ArrayLiteral Expected")
 	}
-	if s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind() != ast.COMPLEX_TYPE_ARRAY {
-		t.Error("COMPLEX_TYPE_ARRAY expected, got", s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind())
+	if s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind() != ast.ComplexTypeArray {
+		t.Error("ComplexTypeArray expected, got", s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind())
 	}
 	lenNode := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.(ast.ArrayType).Len
 	if lenNode == nil {
@@ -558,8 +558,8 @@ func TestNestedArrayLocalDeclarationProducesCorrectAST(t *testing.T) {
 	if _, ok3 := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral); !ok3 {
 		t.Error("ArrayLiteral Expected")
 	}
-	if s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind() != ast.COMPLEX_TYPE_ARRAY {
-		t.Error("COMPLEX_TYPE_ARRAY expected, got", s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind())
+	if s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind() != ast.ComplexTypeArray {
+		t.Error("ComplexTypeArray expected, got", s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind())
 	}
 	subType := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.(ast.ArrayType).SubType
 	if subType == nil {
@@ -568,7 +568,7 @@ func TestNestedArrayLocalDeclarationProducesCorrectAST(t *testing.T) {
 	if arraySubType, ok := subType.(ast.ArrayType); !ok {
 		t.Error("ArrayType expected")
 	} else {
-		if arraySubType.ConcreteType() != ast.PRIMITIVE_TYPE_INT {
+		if arraySubType.ConcreteType() != ast.PrimitiveTypeInt {
 			t.Error("Expected underlying int type")
 		}
 	}
@@ -609,8 +609,8 @@ func TestLocalArrayInitialization(t *testing.T) {
 	if _, ok3 := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral); !ok3 {
 		t.Error("ArrayLiteral Expected")
 	}
-	if s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind() != ast.COMPLEX_TYPE_ARRAY {
-		t.Error("COMPLEX_TYPE_ARRAY expected, got", s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind())
+	if s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind() != ast.ComplexTypeArray {
+		t.Error("ComplexTypeArray expected, got", s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind())
 	}
 	literals := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Literal
 	if lit, ok := literals[0].(*ast.IntegerLiteral); !ok {
@@ -667,15 +667,15 @@ func TestNestedLocalArrayInitialization(t *testing.T) {
 	if _, ok3 := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral); !ok3 {
 		t.Error("ArrayLiteral Expected")
 	}
-	if s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind() != ast.COMPLEX_TYPE_ARRAY {
-		t.Error("COMPLEX_TYPE_ARRAY expected, got", s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind())
+	if s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind() != ast.ComplexTypeArray {
+		t.Error("ComplexTypeArray expected, got", s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind())
 	}
 	literals := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Literal
 	if lit, ok := literals[0].(*ast.ArrayLiteral); !ok {
 		t.Error("ArrayLiteral expected")
 	} else {
-		if lit.Type.ConcreteType() != ast.PRIMITIVE_TYPE_INT {
-			t.Error("Expected underlying type to be PRIMITIVE_TYPE_INT")
+		if lit.Type.ConcreteType() != ast.PrimitiveTypeInt {
+			t.Error("Expected underlying type to be PrimitiveTypeInt")
 		}
 		if intLit, ok := lit.Literal[1].(*ast.IntegerLiteral); !ok {
 			t.Error("Expected inner literal to be an integer")

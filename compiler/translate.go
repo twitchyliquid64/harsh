@@ -14,7 +14,7 @@ func translateGoAST(fset *token.FileSet, inp *goast.File) (ast.Node, *Context) {
 	ns := ast.Namespace(map[string]*ast.Variant{})
 
 	context := &Context{
-		ConType: CONTEXT_ADHOC,
+		ConType: ContextAdhoc,
 		Globals: ns,
 		//Debug:   true,
 	}
@@ -34,7 +34,7 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 		switch v := s.(type) {
 		case goast.File: //high level interface for a file.
 			fileContext := context
-			if context.ConType == CONTEXT_ADHOC {
+			if context.ConType == ContextAdhoc {
 				// do nothing - filecontext is the current context as it should be
 			} else {
 				fileContext = &Context{}
@@ -69,7 +69,7 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 					Val: b,
 				}
 			}
-			var t ast.TypeKind = ast.UNKNOWN_TYPE
+			var t ast.TypeKind = ast.UnknownType
 			switch n := v.Obj.Decl.(type) {
 			case *goast.ValueSpec:
 				t = convertTypeToTypeKind(fset, n.Type, context)
@@ -79,7 +79,7 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 				t = convertTypeToTypeKind(fset, n.Type, context)
 			default:
 				context.Errors = append(context.Errors, TranslateError{
-					Class: NOT_SUPPORTED,
+					Class:NotSupported,
 					Pos:   fset.Position(v.Pos()),
 					Text:  "ast.Ident.Obj.Decl type unknown: " + v.Name + " (" + reflect.TypeOf(n).Name() + ")",
 				})
@@ -106,7 +106,7 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 						}
 					}
 					context.Errors = append(context.Errors, TranslateError{
-						Class: NOT_SUPPORTED,
+						Class:NotSupported,
 						Pos:   fset.Position(v.Pos()),
 						Text:  "Assignment object unknown: " + ident.Name + " (" + reflect.TypeOf(ident.Obj.Decl).Name() + ")",
 					})
@@ -118,7 +118,7 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 					}
 				} else {
 					context.Errors = append(context.Errors, TranslateError{
-						Class: NOT_SUPPORTED,
+						Class:NotSupported,
 						Pos:   fset.Position(v.Pos()),
 						Text:  "Assignment LHS unknown: " + reflect.TypeOf(l).Name(),
 					})
@@ -127,7 +127,7 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 		case goast.UnaryExpr:
 			if v.Op == token.NOT {
 				return &ast.UnaryOp{
-					Op:   ast.UNOP_NOT,
+					Op:   ast.UnOpNot,
 					Expr: translateGoNode(fset, context, reflect.ValueOf(v.X)),
 				}
 			}
@@ -138,7 +138,7 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 				ln := ast.StatementList{}
 				for _, spec := range d.Specs {
 					if s, ok := spec.(*goast.ValueSpec); ok {
-						for i, _ := range s.Names {
+						for i := range s.Names {
 							assignNode := defaultValue(convertTypeToTypeKind(fset, s.Type, context))
 							if i < len(s.Values) {
 								assignNode = translateGoNode(fset, context, reflect.ValueOf(s.Values[i]))
@@ -153,7 +153,7 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 						}
 					} else {
 						context.Errors = append(context.Errors, TranslateError{
-							Class: NOT_SUPPORTED,
+							Class:NotSupported,
 							Pos:   fset.Position(v.Pos()),
 							Text:  "Spec in Declaration unknown: (" + reflect.TypeOf(spec).Name() + ")",
 						})
@@ -190,7 +190,7 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 				}
 			} else {
 				context.Errors = append(context.Errors, TranslateError{
-					Class: NOT_SUPPORTED,
+					Class:NotSupported,
 					Pos:   fset.Position(v.Pos()),
 					Text:  "BasicLit Kind is not recognised: " + v.Kind.String(),
 				})
@@ -207,7 +207,7 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 				}
 			} else {
 				context.Errors = append(context.Errors, TranslateError{
-					Class: NOT_YET_SUPPORTED,
+					Class: NotYetSupported,
 					Pos:   fset.Position(v.Pos()),
 					Text:  "Returning multiple values is not supported.",
 				})
@@ -226,7 +226,7 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 
 		default:
 			context.Errors = append(context.Errors, TranslateError{
-				Class: NOT_SUPPORTED,
+				Class:NotSupported,
 				Text:  "Translation of go/ast node not supported: " + t.Type().Name(),
 			})
 		}
@@ -238,32 +238,32 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 func translateGoBinop(tok token.Token) ast.BinOpType {
 	switch tok {
 	case token.ADD:
-		return ast.BINOP_ADD
+		return ast.BinOpAdd
 	case token.SUB:
-		return ast.BINOP_SUB
+		return ast.BinOpSub
 	case token.MUL:
-		return ast.BINOP_MUL
+		return ast.BinOpMul
 	case token.REM:
-		return ast.BINOP_MOD
+		return ast.BinOpMod
 	case token.QUO:
-		return ast.BINOP_DIV
+		return ast.BinOpDiv
 	case token.LAND:
-		return ast.BINOP_LAND
+		return ast.BinOpLAnd
 	case token.LOR:
-		return ast.BINOP_LOR
+		return ast.BinOpLOr
 	case token.EQL:
-		return ast.BINOP_EQUALITY
+		return ast.BinOpEquality
 	default:
 		fmt.Println("Unknown binop token.Token: ", tok.String())
-		return ast.BINOP_UNK
+		return ast.BinOpUnknown
 	}
 }
 
 func defaultValue(k ast.TypeKind) ast.Node {
-	if k == ast.PRIMITIVE_TYPE_INT {
+	if k == ast.PrimitiveTypeInt {
 		return &ast.IntegerLiteral{}
 	}
-	if k == ast.PRIMITIVE_TYPE_STRING {
+	if k == ast.PrimitiveTypeString {
 		return &ast.StringLiteral{}
 	}
 	if _, ok := k.(ast.ArrayType); ok {
@@ -278,31 +278,31 @@ func defaultValue(k ast.TypeKind) ast.Node {
 func convertTypeToTypeKind(fset *token.FileSet, t goast.Expr, context *Context) ast.TypeKind {
 	if node, ok := t.(*goast.Ident); ok {
 		if node.Name == "string" {
-			return ast.PRIMITIVE_TYPE_STRING
+			return ast.PrimitiveTypeString
 		}
 		if node.Name == "int" {
-			return ast.PRIMITIVE_TYPE_INT
+			return ast.PrimitiveTypeInt
 		}
 		if node.Name == "bool" {
-			return ast.PRIMITIVE_TYPE_BOOL
+			return ast.PrimitiveTypeBool
 		}
 		context.Errors = append(context.Errors, TranslateError{
-			Class: NOT_SUPPORTED,
+			Class:NotSupported,
 			Text:  "Cannot convert go/ast.Ident to TypeKind: " + node.Name,
 		})
 	} else if node, ok := t.(*goast.ArrayType); ok {
 		childTypeKind := convertTypeToTypeKind(fset, node.Elt, context)
-		if childTypeKind == ast.PRIMITIVE_TYPE_UNDEFINED {
+		if childTypeKind == ast.PrimitiveTypeUndefined {
 			context.Errors = append(context.Errors, TranslateError{
-				Class: NOT_SUPPORTED,
+				Class:NotSupported,
 				Pos:   fset.Position(node.Pos()),
 				Text:  "Array uses unsupported type: " + reflect.TypeOf(node.Elt).String(),
 			})
 		} else { //build an array type based on it
-			var lenNode goast.Expr = node.Len
+			var lenNode = node.Len
 			if lenNode == nil {
 				context.Errors = append(context.Errors, TranslateError{
-					Class: NOT_SUPPORTED,
+					Class:NotSupported,
 					Pos:   fset.Position(node.Pos()),
 					Text:  "Slices are not yet supported",
 				})
@@ -315,12 +315,12 @@ func convertTypeToTypeKind(fset *token.FileSet, t goast.Expr, context *Context) 
 		}
 	} else {
 		context.Errors = append(context.Errors, TranslateError{
-			Class: NOT_SUPPORTED,
+			Class:NotSupported,
 			Pos:   fset.Position(t.Pos()),
 			Text:  "Cannot convert go/ast node to TypeKind: " + reflect.TypeOf(t).String(),
 		})
 	}
-	return ast.PRIMITIVE_TYPE_UNDEFINED
+	return ast.PrimitiveTypeUndefined
 }
 
 func translateType(fset *token.FileSet, typ *goast.Field, context *Context) []ast.TypeDecl {
@@ -336,7 +336,7 @@ func translateType(fset *token.FileSet, typ *goast.Field, context *Context) []as
 		}
 	default:
 		context.Errors = append(context.Errors, TranslateError{
-			Class: NOT_SUPPORTED,
+			Class:NotSupported,
 			Pos:   fset.Position(typ.Type.Pos()),
 			Text:  "Translate type encounted unexpected type: " + reflect.TypeOf(typ.Type).String(),
 		}) //goast.Print(nil, typ.Type)
@@ -372,7 +372,7 @@ func translateGoGenDecl(fset *token.FileSet, context *Context, node *goast.GenDe
 				fmt.Println("IMPORT", n.Path)
 			}
 			context.Errors = append(context.Errors, TranslateError{
-				Class: NOT_YET_SUPPORTED,
+				Class: NotYetSupported,
 				Pos:   fset.Position(node.Pos()),
 				Text:  "Import statements are not yet supported",
 			})
@@ -392,9 +392,9 @@ func translateGoGenDecl(fset *token.FileSet, context *Context, node *goast.GenDe
 					case "string":
 						context.Globals.Save(name.Name, "")
 					default:
-						context.Globals.Save(name.Name, ast.PRIMITIVE_TYPE_UNDEFINED)
+						context.Globals.Save(name.Name, ast.PrimitiveTypeUndefined)
 						context.Errors = append(context.Errors, TranslateError{
-							Class: NOT_SUPPORTED,
+							Class:NotSupported,
 							Pos:   fset.Position(spec.Pos()),
 							Text:  "Unknown global type: " + t.Name,
 						})

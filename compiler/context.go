@@ -6,6 +6,7 @@ import (
 	"github.com/twitchyliquid64/harsh/ast"
 )
 
+// Context represents a parsed Go module.
 type Context struct {
 	Name          string
 	ConType       conType
@@ -26,17 +27,22 @@ type declaration struct {
 type conType int
 
 const (
-	CONTEXT_ADHOC = 0
-	CONTEXT_FILE  = 1
+	// ContextAdhoc represents a Parse/translation pass done on arbitrarily structured code - IE: not broken up into modules.
+	ContextAdhoc = 0
+	// ContextFile represents a Parse/translation done on a file or set of files, where nested contexts are used to represent each layer.
+	ContextFile = 1
 )
 
 type translateErrClass int
 
 const (
-	NOT_SUPPORTED translateErrClass = iota
-	NOT_YET_SUPPORTED
+	// NotSupported indicates that the semantic/syntatic feature represented in the go AST is not supported by harsh.
+	NotSupported translateErrClass = iota
+	// NotYetSupported indicates a feature cannot yet be translated, but further development may support the feature (submit a PR!)
+	NotYetSupported
 )
 
+// TranslateError represents any issue translating the go.ast format into harsh's native AST format.
 type TranslateError struct {
 	Pos   token.Position
 	Class translateErrClass

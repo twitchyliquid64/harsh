@@ -1,5 +1,6 @@
 package ast
 
+// Variant represents a value at runtime.
 type Variant struct {
 	Type                    TypeKind
 	Int                     int64
@@ -10,6 +11,7 @@ type Variant struct {
 	VectorData              []*Variant
 }
 
+// MakeVariant takes a value of type *Variant or a go primitive (int/int64/bool/string) and constructs a *Variant.
 func MakeVariant(in interface{}) *Variant {
 	switch v := in.(type) {
 	case *Variant:
@@ -19,27 +21,27 @@ func MakeVariant(in interface{}) *Variant {
 		return &temp
 	case int:
 		return &Variant{
-			Type: PRIMITIVE_TYPE_INT,
+			Type: PrimitiveTypeInt,
 			Int:  int64(v),
 		}
 	case int64:
 		return &Variant{
-			Type: PRIMITIVE_TYPE_INT,
+			Type: PrimitiveTypeInt,
 			Int:  v,
 		}
 	case bool:
 		return &Variant{
-			Type: PRIMITIVE_TYPE_BOOL,
+			Type: PrimitiveTypeBool,
 			Bool: v,
 		}
 	case string:
 		return &Variant{
-			Type:   PRIMITIVE_TYPE_STRING,
+			Type:   PrimitiveTypeString,
 			String: v,
 		}
 	}
 
 	return &Variant{
-		Type: PRIMITIVE_TYPE_UNDEFINED,
+		Type: PrimitiveTypeUndefined,
 	}
 }

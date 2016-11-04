@@ -27,8 +27,8 @@ func TestBasicCallFuncReturnsUndefined(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
-	if r.Type != ast.PRIMITIVE_TYPE_UNDEFINED {
-		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED")
+	if r.Type != ast.PrimitiveTypeUndefined {
+		t.Error("Expected PrimitiveTypeUndefined")
 	}
 }
 
@@ -53,7 +53,7 @@ func TestBasicCallFuncBadNameFails(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
-	if v.Type != ast.PRIMITIVE_TYPE_UNDEFINED {
+	if v.Type != ast.PrimitiveTypeUndefined {
 		t.Error("Expected undefined result")
 	}
 }
@@ -79,8 +79,8 @@ func TestBasicCallFuncReturnsIntLiteral(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
-	if r.Type != ast.PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT")
+	if r.Type != ast.PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt")
 	}
 	if r.Int != 1 {
 		t.Error("Expected value 1")
@@ -108,8 +108,8 @@ func TestBasicCallFuncReturnsStringLiteral(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
-	if r.Type != ast.PRIMITIVE_TYPE_STRING {
-		t.Error("Expected PRIMITIVE_TYPE_STRING")
+	if r.Type != ast.PrimitiveTypeString {
+		t.Error("Expected PrimitiveTypeString")
 	}
 	if r.String != "bantz" {
 		t.Error("Expected value \"bantz\"")
@@ -137,8 +137,8 @@ func TestStringConcatCallFuncReturnsStringLiteral(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
-	if r.Type != ast.PRIMITIVE_TYPE_STRING {
-		t.Error("Expected PRIMITIVE_TYPE_STRING")
+	if r.Type != ast.PrimitiveTypeString {
+		t.Error("Expected PrimitiveTypeString")
 	}
 	if r.String != "bantz :D" {
 		t.Error("Expected value \"bantz :D\"")
@@ -166,8 +166,8 @@ func TestBasicCallFuncReturnsArithmeticResult(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
-	if r.Type != ast.PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT")
+	if r.Type != ast.PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt")
 	}
 	if r.Int != 7 {
 		t.Error("Expected value 7")
@@ -197,8 +197,8 @@ func TestBasicCallFuncReturnsParameters(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
-	if r.Type != ast.PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT")
+	if r.Type != ast.PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt")
 	}
 	if r.Int != 4 {
 		t.Error("Expected value 4")
@@ -228,8 +228,8 @@ func TestBasicCallFuncReturnsArithmeticFromParam(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
-	if r.Type != ast.PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT")
+	if r.Type != ast.PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt")
 	}
 	if r.Int != 13 {
 		t.Error("Expected value 4")
@@ -260,8 +260,8 @@ func TestGlobalReadCorrectly(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
-	if r.Type != ast.PRIMITIVE_TYPE_STRING {
-		t.Error("Expected PRIMITIVE_TYPE_STRING, got " + r.Type.String())
+	if r.Type != ast.PrimitiveTypeString {
+		t.Error("Expected PrimitiveTypeString, got " + r.Type.String())
 	}
 	if r.String != "testData121" {
 		t.Error("Expected value testData121, got '" + r.String + "'")
@@ -291,8 +291,8 @@ func TestNewLocalWriteCorrectly(t *testing.T) {
 		t.FailNow()
 	}
 
-	if r.Type != ast.PRIMITIVE_TYPE_STRING {
-		t.Error("Expected PRIMITIVE_TYPE_STRING, got " + r.Type.String())
+	if r.Type != ast.PrimitiveTypeString {
+		t.Error("Expected PrimitiveTypeString, got " + r.Type.String())
 	}
 	if r.String != "abc" {
 		t.Error("Expected value abc, got '" + r.String + "'")
@@ -327,8 +327,8 @@ func TestGlobalWriteCorrectly(t *testing.T) {
 		t.FailNow()
 	}
 
-	if r.Type != ast.PRIMITIVE_TYPE_STRING {
-		t.Error("Expected PRIMITIVE_TYPE_STRING, got " + r.Type.String())
+	if r.Type != ast.PrimitiveTypeString {
+		t.Error("Expected PrimitiveTypeString, got " + r.Type.String())
 	}
 	if r.String != "1234abbc" {
 		t.Error("Expected value abc, got '" + r.String + "'")
@@ -363,8 +363,8 @@ func TestAssignScopePrecedenceCorrectness(t *testing.T) {
 		t.FailNow()
 	}
 
-	if r.Type != ast.PRIMITIVE_TYPE_STRING {
-		t.Error("Expected PRIMITIVE_TYPE_STRING, got " + r.Type.String())
+	if r.Type != ast.PrimitiveTypeString {
+		t.Error("Expected PrimitiveTypeString, got " + r.Type.String())
 	}
 	if r.String != "abbc123" {
 		t.Error("Expected value abc, got '" + r.String + "'")
@@ -395,8 +395,8 @@ func TestLocalDeclarationDefaultsInt(t *testing.T) {
 		t.FailNow()
 	}
 
-	if r.Type != ast.PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT, got " + r.Type.String())
+	if r.Type != ast.PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt, got " + r.Type.String())
 	}
 	if r.Int != 44 {
 		t.Error("Expected value 44, got ", r.Int)
@@ -427,8 +427,8 @@ func TestLocalDeclarationDefaultsString(t *testing.T) {
 		t.FailNow()
 	}
 
-	if r.Type != ast.PRIMITIVE_TYPE_STRING {
-		t.Error("Expected PRIMITIVE_TYPE_STRING, got " + r.Type.String())
+	if r.Type != ast.PrimitiveTypeString {
+		t.Error("Expected PrimitiveTypeString, got " + r.Type.String())
 	}
 	if r.String != "abc" {
 		t.Error("Expected value abc, got ", r.Int)
@@ -458,8 +458,8 @@ func TestBasicBoolType(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
-	if r.Type != ast.PRIMITIVE_TYPE_BOOL {
-		t.Error("Expected PRIMITIVE_TYPE_BOOL")
+	if r.Type != ast.PrimitiveTypeBool {
+		t.Error("Expected PrimitiveTypeBool")
 	}
 	if r.Bool != true {
 		t.Error("Expected value false")
@@ -499,8 +499,8 @@ func TestIfStatementReturnsCorrectly(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
-	if r.Type != ast.PRIMITIVE_TYPE_BOOL {
-		t.Error("Expected PRIMITIVE_TYPE_BOOL, got ", r.Type.String())
+	if r.Type != ast.PrimitiveTypeBool {
+		t.Error("Expected PrimitiveTypeBool, got ", r.Type.String())
 	}
 	if r.Bool != true {
 		t.Error("Expected value true")
@@ -512,8 +512,8 @@ func TestIfStatementReturnsCorrectly(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
-	if r.Type != ast.PRIMITIVE_TYPE_BOOL {
-		t.Error("Expected PRIMITIVE_TYPE_BOOL, got ", r.Type.String())
+	if r.Type != ast.PrimitiveTypeBool {
+		t.Error("Expected PrimitiveTypeBool, got ", r.Type.String())
 	}
 	if r.Bool != true {
 		t.Error("Expected value true")
@@ -543,8 +543,8 @@ func TestArrayLocalDeclarationAssignment(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
-	if r.Type != ast.PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT, got ", r.Type.String())
+	if r.Type != ast.PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt, got ", r.Type.String())
 	}
 	if r.Int != 4 {
 		t.Error("Expected value 4")
@@ -573,8 +573,8 @@ func TestArrayLocalInitializationWorksAndReadable(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
-	if r.Type != ast.PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT, got ", r.Type.String())
+	if r.Type != ast.PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt, got ", r.Type.String())
 	}
 	if r.Int != 2 {
 		t.Error("Expected value 2")
@@ -605,8 +605,8 @@ func TestArrayShorthandAssignmentWorks(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
-	if r.Type != ast.PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT, got ", r.Type.String())
+	if r.Type != ast.PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt, got ", r.Type.String())
 	}
 	if r.Int != 123 {
 		t.Error("Expected value 123")
@@ -637,12 +637,12 @@ func TestArrayOutOfBoundsWritesError(t *testing.T) {
 		if len(errs.Errors) != 1 {
 			t.Error("Expected one error")
 		}
-		if errs.Errors[0].Class != ast.BOUNDS_ERR {
-			t.Error("Expected error ast.BOUNDS_ERR")
+		if errs.Errors[0].Class != ast.BoundsErr {
+			t.Error("Expected error ast.BoundsErr")
 		}
 	}
-	if r.Type != ast.PRIMITIVE_TYPE_UNDEFINED {
-		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED, got ", r.Type.String())
+	if r.Type != ast.PrimitiveTypeUndefined {
+		t.Error("Expected PrimitiveTypeUndefined, got ", r.Type.String())
 	}
 }
 
@@ -665,8 +665,8 @@ func TestBooleanOperationsAreCorrect(t *testing.T) {
 	if er != nil {
 		t.Error("Errors when executing")
 	}
-	if r.Type != ast.PRIMITIVE_TYPE_BOOL {
-		t.Error("Expected PRIMITIVE_TYPE_BOOL")
+	if r.Type != ast.PrimitiveTypeBool {
+		t.Error("Expected PrimitiveTypeBool")
 	}
 	if r.Bool != false {
 		t.Error("Incorrect value")
@@ -698,8 +698,8 @@ func TestStringEquality(t *testing.T) {
 	if er != nil {
 		t.Error("Errors when executing")
 	}
-	if r.Type != ast.PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT")
+	if r.Type != ast.PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt")
 	}
 	if r.Int != 2 {
 		t.Error("Incorrect value")
@@ -734,8 +734,8 @@ func TestLayeredArrayAccessAndAssignWorks(t *testing.T) {
 	if er != nil {
 		t.Error("Errors when executing")
 	}
-	if r.Type != ast.PRIMITIVE_TYPE_STRING {
-		t.Error("Expected PRIMITIVE_TYPE_STRING")
+	if r.Type != ast.PrimitiveTypeString {
+		t.Error("Expected PrimitiveTypeString")
 	}
 	if r.String != "CRAPLOLd" {
 		t.Error("Incorrect value")
@@ -761,8 +761,8 @@ func TestUnaryNotBooleanReturnsCorrect(t *testing.T) {
 	if er != nil {
 		t.Error("Errors when executing")
 	}
-	if r.Type != ast.PRIMITIVE_TYPE_BOOL {
-		t.Error("Expected PRIMITIVE_TYPE_INT")
+	if r.Type != ast.PrimitiveTypeBool {
+		t.Error("Expected PrimitiveTypeInt")
 	}
 	if r.Bool != true {
 		t.Error("Incorrect value")

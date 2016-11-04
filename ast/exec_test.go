@@ -8,8 +8,8 @@ func TestIntLiteralExecReturnsCorrectValue(t *testing.T) {
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT return")
+	if r.Type != PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt return")
 	}
 	if r.Int != 493 {
 		t.Error("Incorrect value")
@@ -22,8 +22,8 @@ func TestBoolLiteralExecReturnsCorrectValue(t *testing.T) {
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_BOOL {
-		t.Error("Expected PRIMITIVE_TYPE_BOOL return")
+	if r.Type != PrimitiveTypeBool {
+		t.Error("Expected PrimitiveTypeBool return")
 	}
 	if r.Bool != true {
 		t.Error("Incorrect value")
@@ -34,15 +34,15 @@ func TestNilLiteralExecReturnsCorrectValue(t *testing.T) {
 	il := NilLiteral{}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
-		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return")
+	if r.Type != PrimitiveTypeUndefined {
+		t.Error("Expected PrimitiveTypeUndefined return")
 	}
 }
 
 func TestEmptyArrayLiteralExecReturnsCorrectValue(t *testing.T) {
 	il := ArrayLiteral{
 		Type: ArrayType{
-			SubType: PRIMITIVE_TYPE_INT,
+			SubType: PrimitiveTypeInt,
 			Len: &IntegerLiteral{
 				Val: 4,
 			},
@@ -50,14 +50,14 @@ func TestEmptyArrayLiteralExecReturnsCorrectValue(t *testing.T) {
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != COMPLEX_TYPE_ARRAY {
-		t.Error("Expected COMPLEX_TYPE_ARRAY return")
+	if r.Type != ComplexTypeArray {
+		t.Error("Expected ComplexTypeArray return")
 	}
 	if len(r.VectorData) != 4 {
 		t.Error("Incorrect number of elements")
 	}
 	for i := 0; i < len(r.VectorData); i++ {
-		if r.VectorData[i].Type != PRIMITIVE_TYPE_UNDEFINED {
+		if r.VectorData[i].Type != PrimitiveTypeUndefined {
 			t.Error("Incorrect variant type at subscript", i)
 		}
 	}
@@ -66,7 +66,7 @@ func TestEmptyArrayLiteralExecReturnsCorrectValue(t *testing.T) {
 func TestSimpleArrayLiteralExecReturnsCorrectValue(t *testing.T) {
 	il := ArrayLiteral{
 		Type: ArrayType{
-			SubType: PRIMITIVE_TYPE_INT,
+			SubType: PrimitiveTypeInt,
 			Len: &IntegerLiteral{
 				Val: 3,
 			},
@@ -79,16 +79,16 @@ func TestSimpleArrayLiteralExecReturnsCorrectValue(t *testing.T) {
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != COMPLEX_TYPE_ARRAY {
-		t.Error("Expected COMPLEX_TYPE_ARRAY return")
+	if r.Type != ComplexTypeArray {
+		t.Error("Expected ComplexTypeArray return")
 	}
 	if len(r.VectorData) != 3 {
 		t.Error("Incorrect number of elements")
 	}
-	if r.VectorData[0].Int != 33 || r.VectorData[0].Type != PRIMITIVE_TYPE_INT {
+	if r.VectorData[0].Int != 33 || r.VectorData[0].Type != PrimitiveTypeInt {
 		t.Error("Incorrect type or value at subscript 0")
 	}
-	if r.VectorData[2].Int != 232 || r.VectorData[2].Type != PRIMITIVE_TYPE_INT {
+	if r.VectorData[2].Int != 232 || r.VectorData[2].Type != PrimitiveTypeInt {
 		t.Error("Incorrect type or value at subscript 2:", r.VectorData[2].Type.String(), r.VectorData[2].Int)
 	}
 }
@@ -97,7 +97,7 @@ func TestNestedArrayLiteralExecReturnsCorrectValue(t *testing.T) {
 	il := ArrayLiteral{
 		Type: ArrayType{
 			SubType: ArrayType{
-				SubType: PRIMITIVE_TYPE_STRING,
+				SubType: PrimitiveTypeString,
 				Len: &IntegerLiteral{
 					Val: 1,
 				},
@@ -109,7 +109,7 @@ func TestNestedArrayLiteralExecReturnsCorrectValue(t *testing.T) {
 		Literal: []Node{
 			&ArrayLiteral{
 				Type: ArrayType{
-					SubType: PRIMITIVE_TYPE_STRING,
+					SubType: PrimitiveTypeString,
 					Len: &IntegerLiteral{
 						Val: 1,
 					},
@@ -124,16 +124,16 @@ func TestNestedArrayLiteralExecReturnsCorrectValue(t *testing.T) {
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != COMPLEX_TYPE_ARRAY {
-		t.Error("Expected COMPLEX_TYPE_ARRAY return")
+	if r.Type != ComplexTypeArray {
+		t.Error("Expected ComplexTypeArray return")
 	}
 	if len(r.VectorData) != 1 {
 		t.Error("Incorrect number of elements")
 	}
-	if r.VectorData[0].Type != COMPLEX_TYPE_ARRAY {
+	if r.VectorData[0].Type != ComplexTypeArray {
 		t.Error("Incorrect type", r.VectorData[0].Type.String())
 	}
-	if r.VectorData[0].VectorData[0].Type != PRIMITIVE_TYPE_STRING {
+	if r.VectorData[0].VectorData[0].Type != PrimitiveTypeString {
 		t.Error("Nested type incorrect")
 	}
 	if r.VectorData[0].VectorData[0].String != "LOLZ" {
@@ -147,8 +147,8 @@ func TestStringLiteralExecReturnsCorrectValue(t *testing.T) {
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_STRING {
-		t.Error("Expected PRIMITIVE_TYPE_STRING return")
+	if r.Type != PrimitiveTypeString {
+		t.Error("Expected PrimitiveTypeString return")
 	}
 	if r.String != "Strdfjlkj_ fgklfjlgfjlkjlkj 'dd '" {
 		t.Error("Incorrect value")
@@ -163,8 +163,8 @@ func TestReturnReturnsUpstreamValue(t *testing.T) {
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT return")
+	if r.Type != PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt return")
 	}
 	if r.Int != 493 {
 		t.Error("Incorrect value")
@@ -179,12 +179,12 @@ func TestBinaryOpAdditionReturnsCorrectValue(t *testing.T) {
 		RHS: &IntegerLiteral{
 			Val: 4,
 		},
-		Op: BINOP_ADD,
+		Op: BinOpAdd,
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT return")
+	if r.Type != PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt return")
 	}
 	if r.Int != 497 {
 		t.Error("Incorrect value")
@@ -199,19 +199,19 @@ func TestBinaryOpInvalidOperandsErrors(t *testing.T) {
 		RHS: &StringLiteral{
 			Str: "4",
 		},
-		Op: BINOP_ADD,
+		Op: BinOpAdd,
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
-		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return")
+	if r.Type != PrimitiveTypeUndefined {
+		t.Error("Expected PrimitiveTypeUndefined return")
 	}
 	if len(context.Errors) != 1 {
 		t.Error("Errors expected")
 		t.Fail()
 	}
-	if context.Errors[0].Class != TYPE_ERR {
-		t.Error("Expected error of type TYPE_ERR")
+	if context.Errors[0].Class != TypeErr {
+		t.Error("Expected error of type TypeErr")
 	}
 	if context.Errors[0].Text != "Invalid types for operands: int and string" {
 		t.Error("Got unexpected error text: " + context.Errors[0].Error())
@@ -226,12 +226,12 @@ func TestBinaryOpConcatenationReturnsCorrectValue(t *testing.T) {
 		RHS: &StringLiteral{
 			Str: "cd",
 		},
-		Op: BINOP_ADD,
+		Op: BinOpAdd,
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_STRING {
-		t.Error("Expected PRIMITIVE_TYPE_STRING return")
+	if r.Type != PrimitiveTypeString {
+		t.Error("Expected PrimitiveTypeString return")
 	}
 	if r.String != "abcd" {
 		t.Error("Incorrect value")
@@ -246,12 +246,12 @@ func TestBinaryOpSubtractionReturnsCorrectValue(t *testing.T) {
 		RHS: &IntegerLiteral{
 			Val: 4,
 		},
-		Op: BINOP_SUB,
+		Op: BinOpSub,
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT return")
+	if r.Type != PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt return")
 	}
 	if r.Int != 489 {
 		t.Error("Incorrect value")
@@ -266,12 +266,12 @@ func TestBinaryOpModulusReturnsCorrectValue(t *testing.T) {
 		RHS: &IntegerLiteral{
 			Val: 4,
 		},
-		Op: BINOP_MOD,
+		Op: BinOpMod,
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT return")
+	if r.Type != PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt return")
 	}
 	if r.Int != 1 {
 		t.Error("Incorrect value, got", r.Int)
@@ -286,12 +286,12 @@ func TestBinaryOpDivisionReturnsCorrectValue(t *testing.T) {
 		RHS: &IntegerLiteral{
 			Val: 2,
 		},
-		Op: BINOP_DIV,
+		Op: BinOpDiv,
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT return")
+	if r.Type != PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt return")
 	}
 	if r.Int != 3 {
 		t.Error("Incorrect value, got", r.Int)
@@ -306,12 +306,12 @@ func TestBinaryOpIntEqualityReturnsCorrectValue(t *testing.T) {
 		RHS: &IntegerLiteral{
 			Val: 2,
 		},
-		Op: BINOP_EQUALITY,
+		Op: BinOpEquality,
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_BOOL {
-		t.Error("Expected PRIMITIVE_TYPE_BOOL return")
+	if r.Type != PrimitiveTypeBool {
+		t.Error("Expected PrimitiveTypeBool return")
 	}
 	if r.Bool != false {
 		t.Error("Incorrect value, got", r.Bool)
@@ -326,12 +326,12 @@ func TestBinaryOpBoolEqualityReturnsCorrectValue(t *testing.T) {
 		RHS: &BoolLiteral{
 			Val: false,
 		},
-		Op: BINOP_EQUALITY,
+		Op: BinOpEquality,
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_BOOL {
-		t.Error("Expected PRIMITIVE_TYPE_BOOL return")
+	if r.Type != PrimitiveTypeBool {
+		t.Error("Expected PrimitiveTypeBool return")
 	}
 	if r.Bool != false {
 		t.Error("Incorrect value, got", r.Bool)
@@ -349,12 +349,12 @@ func TestBinaryOpLogicalAndReturnsCorrectValue(t *testing.T) {
 		RHS: &BoolLiteral{
 			Val: false,
 		},
-		Op: BINOP_LAND,
+		Op: BinOpLAnd,
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_BOOL {
-		t.Error("Expected PRIMITIVE_TYPE_BOOL return")
+	if r.Type != PrimitiveTypeBool {
+		t.Error("Expected PrimitiveTypeBool return")
 	}
 	if r.Bool != false {
 		t.Error("Incorrect value, got", r.Int)
@@ -369,12 +369,12 @@ func TestBinaryOpLogicalOrReturnsCorrectValue(t *testing.T) {
 		RHS: &BoolLiteral{
 			Val: false,
 		},
-		Op: BINOP_LOR,
+		Op: BinOpLOr,
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_BOOL {
-		t.Error("Expected PRIMITIVE_TYPE_BOOL return")
+	if r.Type != PrimitiveTypeBool {
+		t.Error("Expected PrimitiveTypeBool return")
 	}
 	if r.Bool != true {
 		t.Error("Incorrect value, got", r.Int)
@@ -389,12 +389,12 @@ func TestBinaryOpMultiplicationReturnsCorrectValue(t *testing.T) {
 		RHS: &IntegerLiteral{
 			Val: 2,
 		},
-		Op: BINOP_MUL,
+		Op: BinOpMul,
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT return")
+	if r.Type != PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt return")
 	}
 	if r.Int != 986 {
 		t.Error("Incorrect value, got ", r.Int)
@@ -409,12 +409,12 @@ func TestBinaryOpStringEquality(t *testing.T) {
 		RHS: &StringLiteral{
 			Str: "cd",
 		},
-		Op: BINOP_EQUALITY,
+		Op: BinOpEquality,
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_BOOL {
-		t.Error("Expected PRIMITIVE_TYPE_BOOL")
+	if r.Type != PrimitiveTypeBool {
+		t.Error("Expected PrimitiveTypeBool")
 	}
 	if len(context.Errors) != 0 {
 		t.Error("Expected 0 errors, got", len(context.Errors))
@@ -432,17 +432,17 @@ func TestBinaryOpInvalidStringOperationErrors(t *testing.T) {
 		RHS: &StringLiteral{
 			Str: "cd",
 		},
-		Op: BINOP_MOD,
+		Op: BinOpMod,
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
-		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED")
+	if r.Type != PrimitiveTypeUndefined {
+		t.Error("Expected PrimitiveTypeUndefined")
 	}
 	if len(context.Errors) != 1 {
 		t.Error("One error expected,", len(context.Errors))
 	}
-	if context.Errors[0].Class != TYPE_ERR {
+	if context.Errors[0].Class != TypeErr {
 		t.Error("Incorrect error class")
 	}
 }
@@ -455,17 +455,17 @@ func TestBinaryOpInvalidBoolOperationErrors(t *testing.T) {
 		RHS: &BoolLiteral{
 			Val: true,
 		},
-		Op: BINOP_MOD,
+		Op: BinOpMod,
 	}
 	context := ExecContext{}
 	r := il.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
-		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED")
+	if r.Type != PrimitiveTypeUndefined {
+		t.Error("Expected PrimitiveTypeUndefined")
 	}
 	if len(context.Errors) != 1 {
 		t.Error("One error expected,", len(context.Errors))
 	}
-	if context.Errors[0].Class != TYPE_ERR {
+	if context.Errors[0].Class != TypeErr {
 		t.Error("Incorrect error class")
 	}
 }
@@ -491,8 +491,8 @@ func TestStatementListReturnsShortCircuitValue(t *testing.T) {
 		IsFuncContext: true,
 	}
 	r := n.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT return, got " + r.Type.String())
+	if r.Type != PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt return, got " + r.Type.String())
 	}
 	if r.Int != 44 {
 		t.Error("Incorrect value")
@@ -506,8 +506,8 @@ func TestEmptyStatementListReturnsNoValue(t *testing.T) {
 		IsFuncContext: true,
 	}
 	r := n.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
-		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return, got " + r.Type.String())
+	if r.Type != PrimitiveTypeUndefined {
+		t.Error("Expected PrimitiveTypeUndefined return, got " + r.Type.String())
 	}
 }
 
@@ -519,15 +519,15 @@ func TestVariableReferenceReturnsFunctionParameter(t *testing.T) {
 		IsFuncContext: true,
 		FunctionNamespace: map[string]*Variant{
 			"inInt": &Variant{
-				Type: PRIMITIVE_TYPE_INT,
+				Type: PrimitiveTypeInt,
 				Int:  42,
 			},
 		},
 	}
 
 	r := vr.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT return, got " + r.Type.String())
+	if r.Type != PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt return, got " + r.Type.String())
 	}
 	if r.Int != 42 {
 		t.Error("Incorrect value")
@@ -546,8 +546,8 @@ func TestVariableReferenceReturnsGlobal(t *testing.T) {
 	context.GlobalNamespace.Save("glo", -42)
 
 	r := vr.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT return, got " + r.Type.String())
+	if r.Type != PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt return, got " + r.Type.String())
 	}
 	if r.Int != -42 {
 		t.Error("Incorrect value")
@@ -564,7 +564,7 @@ func TestVariableReferenceReturnsParamFirst(t *testing.T) {
 		GlobalNamespace: ns,
 		FunctionNamespace: map[string]*Variant{
 			"inInt": &Variant{
-				Type: PRIMITIVE_TYPE_INT,
+				Type: PrimitiveTypeInt,
 				Int:  1234,
 			},
 		},
@@ -572,8 +572,8 @@ func TestVariableReferenceReturnsParamFirst(t *testing.T) {
 	context.GlobalNamespace.Save("inInt", -42)
 
 	r := vr.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_INT {
-		t.Error("Expected PRIMITIVE_TYPE_INT return, got " + r.Type.String())
+	if r.Type != PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt return, got " + r.Type.String())
 	}
 	if r.Int != 1234 {
 		t.Error("Incorrect value")
@@ -589,8 +589,8 @@ func TestVariableReferenceReturnsUndefinedWhenNoMatch(t *testing.T) {
 	}
 
 	r := vr.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
-		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return, got " + r.Type.String())
+	if r.Type != PrimitiveTypeUndefined {
+		t.Error("Expected PrimitiveTypeUndefined return, got " + r.Type.String())
 	}
 }
 
@@ -612,8 +612,8 @@ func TestLocalVariableWrite(t *testing.T) {
 
 	ass.Exec(&context)
 	v := context.FunctionNamespace["testVar"]
-	if v.Type != PRIMITIVE_TYPE_STRING {
-		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
+	if v.Type != PrimitiveTypeString {
+		t.Error("Expected PrimitiveTypeString return, got " + v.Type.String())
 	}
 	if v.String != "abc" {
 		t.Error("Incorrect value")
@@ -636,15 +636,15 @@ func TestLocalVariableWriteWhenAlreadyExists(t *testing.T) {
 	context := ExecContext{
 		IsFuncContext: true,
 		FunctionNamespace: Namespace(map[string]*Variant{
-			"testVar": &Variant{Type: PRIMITIVE_TYPE_STRING, String: "cba"},
+			"testVar": &Variant{Type: PrimitiveTypeString, String: "cba"},
 		}),
 		GlobalNamespace: Namespace(map[string]*Variant{}),
 	}
 
 	ass.Exec(&context)
 	v := context.FunctionNamespace["testVar"]
-	if v.Type != PRIMITIVE_TYPE_STRING {
-		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
+	if v.Type != PrimitiveTypeString {
+		t.Error("Expected PrimitiveTypeString return, got " + v.Type.String())
 	}
 	if v.String != "abc" {
 		t.Error("Incorrect value")
@@ -677,8 +677,8 @@ func TestGlobalVariableWrite(t *testing.T) {
 	}
 
 	v := context.GlobalNamespace["testVar"]
-	if v.Type != PRIMITIVE_TYPE_STRING {
-		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
+	if v.Type != PrimitiveTypeString {
+		t.Error("Expected PrimitiveTypeString return, got " + v.Type.String())
 	}
 	if v.String != "abc" {
 		t.Error("Incorrect value")
@@ -706,8 +706,8 @@ func TestNewVariableAssignGoesToFunc(t *testing.T) {
 		t.Error("Could not retrieve variable")
 		t.FailNow()
 	}
-	if v.Type != PRIMITIVE_TYPE_STRING {
-		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
+	if v.Type != PrimitiveTypeString {
+		t.Error("Expected PrimitiveTypeString return, got " + v.Type.String())
 	}
 	if v.String != "abc" {
 		t.Error("Incorrect value")
@@ -734,8 +734,8 @@ func TestNewVariableAssignGoesToGlobalWhenNotFuncContext(t *testing.T) {
 
 	ass.Exec(&context)
 	v := context.GlobalNamespace["testVar"]
-	if v.Type != PRIMITIVE_TYPE_STRING {
-		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
+	if v.Type != PrimitiveTypeString {
+		t.Error("Expected PrimitiveTypeString return, got " + v.Type.String())
 	}
 	if v.String != "abc" {
 		t.Error("Incorrect value")
@@ -773,8 +773,8 @@ func TestIfStatementTruthExecutesElseNotMain(t *testing.T) {
 
 	ifNode.Exec(&context)
 	v := context.GlobalNamespace["testVar"]
-	if v.Type != PRIMITIVE_TYPE_STRING {
-		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
+	if v.Type != PrimitiveTypeString {
+		t.Error("Expected PrimitiveTypeString return, got " + v.Type.String())
 	}
 	if v.String != "else" {
 		t.Error("Incorrect value")
@@ -817,8 +817,8 @@ func TestIfStatementTruthExecutesMainNotElse_alsoTestInit(t *testing.T) {
 
 	ifNode.Exec(&context)
 	v := context.GlobalNamespace["testVar"]
-	if v.Type != PRIMITIVE_TYPE_STRING {
-		t.Error("Expected PRIMITIVE_TYPE_STRING return, got " + v.Type.String())
+	if v.Type != PrimitiveTypeString {
+		t.Error("Expected PrimitiveTypeString return, got " + v.Type.String())
 	}
 	if v.String != "main" {
 		t.Error("Incorrect value")
@@ -849,10 +849,10 @@ func TestSubscriptLocalVariableReference(t *testing.T) {
 		GlobalNamespace: ns,
 		FunctionNamespace: map[string]*Variant{
 			"testVar": &Variant{
-				Type: COMPLEX_TYPE_ARRAY,
+				Type: ComplexTypeArray,
 				VectorData: []*Variant{
 					&Variant{
-						Type: PRIMITIVE_TYPE_INT,
+						Type: PrimitiveTypeInt,
 						Int:  11,
 					},
 				},
@@ -861,16 +861,16 @@ func TestSubscriptLocalVariableReference(t *testing.T) {
 	}
 
 	r := ass.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
-		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return, got " + r.Type.String())
+	if r.Type != PrimitiveTypeUndefined {
+		t.Error("Expected PrimitiveTypeUndefined return, got " + r.Type.String())
 	}
 	if v, ok := context.FunctionNamespace["testVar"]; !ok {
 		t.Error("Could not read function variable")
 	} else {
-		if v.Type != COMPLEX_TYPE_ARRAY {
+		if v.Type != ComplexTypeArray {
 			t.Error("Type incorrect")
 		}
-		if v.VectorData[0].Type != PRIMITIVE_TYPE_INT {
+		if v.VectorData[0].Type != PrimitiveTypeInt {
 			t.Error("Element type incorrect")
 		}
 		if v.VectorData[0].Int != 42 {
@@ -895,10 +895,10 @@ func TestSubscriptGlobalVariableReference(t *testing.T) {
 	}
 	ns := Namespace(map[string]*Variant{
 		"testVar": &Variant{
-			Type: COMPLEX_TYPE_ARRAY,
+			Type: ComplexTypeArray,
 			VectorData: []*Variant{
 				&Variant{
-					Type: PRIMITIVE_TYPE_INT,
+					Type: PrimitiveTypeInt,
 					Int:  11,
 				},
 			},
@@ -911,16 +911,16 @@ func TestSubscriptGlobalVariableReference(t *testing.T) {
 	}
 
 	r := ass.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
-		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return, got " + r.Type.String())
+	if r.Type != PrimitiveTypeUndefined {
+		t.Error("Expected PrimitiveTypeUndefined return, got " + r.Type.String())
 	}
 	if v, ok := context.GlobalNamespace["testVar"]; !ok {
 		t.Error("Could not read global variable")
 	} else {
-		if v.Type != COMPLEX_TYPE_ARRAY {
+		if v.Type != ComplexTypeArray {
 			t.Error("Type incorrect")
 		}
-		if v.VectorData[0].Type != PRIMITIVE_TYPE_INT {
+		if v.VectorData[0].Type != PrimitiveTypeInt {
 			t.Error("Element type incorrect")
 		}
 		if v.VectorData[0].Int != 42 {
@@ -951,21 +951,21 @@ func TestSubscriptVariableReferenceErrorsWhenNoneFound(t *testing.T) {
 	}
 
 	r := ass.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
-		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return, got " + r.Type.String())
+	if r.Type != PrimitiveTypeUndefined {
+		t.Error("Expected PrimitiveTypeUndefined return, got " + r.Type.String())
 	}
 	if len(context.Errors) != 1 {
 		t.Error("Expecting one error")
 		t.Log(context.Errors[0].Error())
 	}
-	if context.Errors[0].Class != NOT_FOUND_ERR {
+	if context.Errors[0].Class != NotFoundErr {
 		t.Error("Incorrect error class, got", context.Errors[0].Error())
 	}
 }
 
 func TestUnaryNotOperation(t *testing.T) {
 	op := &UnaryOp{
-		Op: UNOP_NOT,
+		Op: UnOpNot,
 		Expr: &BoolLiteral{
 			Val: true,
 		},
@@ -979,8 +979,8 @@ func TestUnaryNotOperation(t *testing.T) {
 	}
 
 	r := op.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_BOOL {
-		t.Error("Expected PRIMITIVE_TYPE_BOOL")
+	if r.Type != PrimitiveTypeBool {
+		t.Error("Expected PrimitiveTypeBool")
 	}
 	if r.Bool != false {
 		t.Error("Incorrect value")
@@ -989,7 +989,7 @@ func TestUnaryNotOperation(t *testing.T) {
 
 func TestUnaryBoolOperationWithIntErrors(t *testing.T) {
 	op := &UnaryOp{
-		Op: UNOP_NOT,
+		Op: UnOpNot,
 		Expr: &IntegerLiteral{
 			Val: 6,
 		},
@@ -1003,13 +1003,13 @@ func TestUnaryBoolOperationWithIntErrors(t *testing.T) {
 	}
 
 	r := op.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
-		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED")
+	if r.Type != PrimitiveTypeUndefined {
+		t.Error("Expected PrimitiveTypeUndefined")
 	}
 	if len(context.Errors) != 1 {
 		t.Error("One error expected,", len(context.Errors))
 	}
-	if context.Errors[0].Class != TYPE_ERR {
+	if context.Errors[0].Class != TypeErr {
 		t.Error("Incorrect error class")
 	}
 }
@@ -1031,13 +1031,13 @@ func TestArrayLiteralErrorsWhenNonIntSizeUsed(t *testing.T) {
 	}
 
 	r := op.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
-		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED")
+	if r.Type != PrimitiveTypeUndefined {
+		t.Error("Expected PrimitiveTypeUndefined")
 	}
 	if len(context.Errors) != 1 {
 		t.Error("One error expected,", len(context.Errors))
 	}
-	if context.Errors[0].Class != TYPE_ERR {
+	if context.Errors[0].Class != TypeErr {
 		t.Error("Incorrect error class")
 	}
 }
@@ -1064,13 +1064,13 @@ func TestArrayLiteralErrorsWhenLiteralLenMismatchToTypeLen(t *testing.T) {
 	}
 
 	r := op.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
-		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED")
+	if r.Type != PrimitiveTypeUndefined {
+		t.Error("Expected PrimitiveTypeUndefined")
 	}
 	if len(context.Errors) != 1 {
 		t.Error("One error expected,", len(context.Errors))
 	}
-	if context.Errors[0].Class != BOUNDS_ERR {
+	if context.Errors[0].Class != BoundsErr {
 		t.Error("Incorrect error class")
 	}
 }
@@ -1100,7 +1100,7 @@ func TestSubscriptErrorsWhenNonArrayBase(t *testing.T) {
 	if len(context.Errors) != 1 {
 		t.Error("Expected 1 error, got", len(context.Errors))
 	}
-	if context.Errors[0].Class != TYPE_ERR {
+	if context.Errors[0].Class != TypeErr {
 		t.Error("Incorrect error class")
 	}
 }
@@ -1125,10 +1125,10 @@ func TestSubscriptErrorsWithNonIntIndex(t *testing.T) {
 		GlobalNamespace: ns,
 		FunctionNamespace: map[string]*Variant{
 			"testVar": &Variant{
-				Type: COMPLEX_TYPE_ARRAY,
+				Type: ComplexTypeArray,
 				VectorData: []*Variant{
 					&Variant{
-						Type: PRIMITIVE_TYPE_INT,
+						Type: PrimitiveTypeInt,
 						Int:  11,
 					},
 				},
@@ -1137,13 +1137,13 @@ func TestSubscriptErrorsWithNonIntIndex(t *testing.T) {
 	}
 
 	r := ass.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
-		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return, got " + r.Type.String())
+	if r.Type != PrimitiveTypeUndefined {
+		t.Error("Expected PrimitiveTypeUndefined return, got " + r.Type.String())
 	}
 	if len(context.Errors) != 1 {
 		t.Error("Expected 1 error, got", len(context.Errors))
 	}
-	if context.Errors[0].Class != TYPE_ERR {
+	if context.Errors[0].Class != TypeErr {
 		t.Error("Incorrect error class")
 	}
 }
@@ -1168,10 +1168,10 @@ func TestSubscriptErrorsWithOutOfBoundsSubscript(t *testing.T) {
 		GlobalNamespace: ns,
 		FunctionNamespace: map[string]*Variant{
 			"testVar": &Variant{
-				Type: COMPLEX_TYPE_ARRAY,
+				Type: ComplexTypeArray,
 				VectorData: []*Variant{
 					&Variant{
-						Type: PRIMITIVE_TYPE_INT,
+						Type: PrimitiveTypeInt,
 						Int:  11,
 					},
 				},
@@ -1180,13 +1180,13 @@ func TestSubscriptErrorsWithOutOfBoundsSubscript(t *testing.T) {
 	}
 
 	r := ass.Exec(&context)
-	if r.Type != PRIMITIVE_TYPE_UNDEFINED {
-		t.Error("Expected PRIMITIVE_TYPE_UNDEFINED return, got " + r.Type.String())
+	if r.Type != PrimitiveTypeUndefined {
+		t.Error("Expected PrimitiveTypeUndefined return, got " + r.Type.String())
 	}
 	if len(context.Errors) != 1 {
 		t.Error("Expected 1 error, got", len(context.Errors))
 	}
-	if context.Errors[0].Class != BOUNDS_ERR {
+	if context.Errors[0].Class != BoundsErr {
 		t.Error("Incorrect error class")
 	}
 }

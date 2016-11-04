@@ -2,13 +2,15 @@ package ast
 
 type errClass int
 
+// Represents possible classes of execution errors.
 const (
-	TYPE_ERR errClass = iota
-	BOUNDS_ERR
-	NOT_FOUND_ERR
-	INVALID_AST
+	TypeErr errClass = iota
+	BoundsErr
+	NotFoundErr
+	InvalidAst
 )
 
+// ExecutionError encapsulates errors encountered while executing the AST at runtime.
 type ExecutionError struct {
 	Class        errClass
 	CreatingNode Node

@@ -1,51 +1,56 @@
 package ast
 
+// Exec carries out node-specific logic, which may include evaluation of subnodes and primitive operations depending on the nodes type.
 func (n *IntegerLiteral) Exec(context *ExecContext) *Variant {
 	return &Variant{
-		Type: PRIMITIVE_TYPE_INT,
+		Type: PrimitiveTypeInt,
 		Int:  n.Val,
 	}
 }
 
+// Exec carries out node-specific logic, which may include evaluation of subnodes and primitive operations depending on the nodes type.
 func (n *BoolLiteral) Exec(context *ExecContext) *Variant {
 	return &Variant{
-		Type: PRIMITIVE_TYPE_BOOL,
+		Type: PrimitiveTypeBool,
 		Bool: n.Val,
 	}
 }
 
+// Exec carries out node-specific logic, which may include evaluation of subnodes and primitive operations depending on the nodes type.
 func (n *StringLiteral) Exec(context *ExecContext) *Variant {
 	return &Variant{
-		Type:   PRIMITIVE_TYPE_STRING,
+		Type:   PrimitiveTypeString,
 		String: n.Str,
 	}
 }
 
+// Exec carries out node-specific logic, which may include evaluation of subnodes and primitive operations depending on the nodes type.
 func (n *NilLiteral) Exec(context *ExecContext) *Variant {
 	return &Variant{
-		Type: PRIMITIVE_TYPE_UNDEFINED,
+		Type: PrimitiveTypeUndefined,
 	}
 }
 
+// Exec carries out node-specific logic, which may include evaluation of subnodes and primitive operations depending on the nodes type.
 func (n *ArrayLiteral) Exec(context *ExecContext) *Variant {
 	sizeNode := n.Type.(ArrayType).Len.Exec(context)
-	if sizeNode.Type != PRIMITIVE_TYPE_INT {
+	if sizeNode.Type != PrimitiveTypeInt {
 		context.Errors = append(context.Errors, ExecutionError{
-			Class:        TYPE_ERR,
+			Class:        TypeErr,
 			CreatingNode: n,
 			Text:         "Non-integer len used for array",
 		})
-		return &Variant{Type: PRIMITIVE_TYPE_UNDEFINED}
+		return &Variant{Type: PrimitiveTypeUndefined}
 	}
 
-	var values []*Variant = make([]*Variant, sizeNode.Int)
+	var values = make([]*Variant, sizeNode.Int)
 	if len(values) != len(n.Literal) && len(n.Literal) != 0 {
 		context.Errors = append(context.Errors, ExecutionError{
-			Class:        BOUNDS_ERR,
+			Class:        BoundsErr,
 			CreatingNode: n,
 			Text:         "Literal used in array assignment does not match the size of the underlying array",
 		})
-		return &Variant{Type: PRIMITIVE_TYPE_UNDEFINED}
+		return &Variant{Type: PrimitiveTypeUndefined}
 	}
 
 	var i int
@@ -53,15 +58,16 @@ func (n *ArrayLiteral) Exec(context *ExecContext) *Variant {
 		values[i] = n.Literal[i].Exec(context)
 	}
 	for ; i < len(values); i++ {
-		values[i] = &Variant{Type: PRIMITIVE_TYPE_UNDEFINED}
+		values[i] = &Variant{Type: PrimitiveTypeUndefined}
 	}
 
 	return &Variant{
-		Type:       COMPLEX_TYPE_ARRAY,
+		Type:       ComplexTypeArray,
 		VectorData: values,
 	}
 }
 
+// Exec carries out node-specific logic, which may include evaluation of subnodes and primitive operations depending on the nodes type.
 func (n *StatementList) Exec(context *ExecContext) *Variant {
 	callingContext := (*context)
 	newContext := callingContext
@@ -81,10 +87,11 @@ func (n *StatementList) Exec(context *ExecContext) *Variant {
 		context.Errors = append(context.Errors, err)
 	}
 	return &Variant{
-		Type: PRIMITIVE_TYPE_UNDEFINED,
+		Type: PrimitiveTypeUndefined,
 	}
 }
 
+// Exec carries out node-specific logic, which may include evaluation of subnodes and primitive operations depending on the nodes type.
 func (n *ReturnStmt) Exec(context *ExecContext) *Variant {
 	v := n.Expr.Exec(context)
 	temp := *v
@@ -92,65 +99,66 @@ func (n *ReturnStmt) Exec(context *ExecContext) *Variant {
 	return &temp
 }
 
+// Exec carries out node-specific logic, which may include evaluation of subnodes and primitive operations depending on the nodes type.
 func (n *BinaryOp) Exec(context *ExecContext) *Variant {
 	l := n.LHS.Exec(context)
 	r := n.RHS.Exec(context)
 	ret := Variant{
-		Type: PRIMITIVE_TYPE_UNDEFINED,
+		Type: PrimitiveTypeUndefined,
 	}
-	if l.Type == PRIMITIVE_TYPE_INT && r.Type == PRIMITIVE_TYPE_INT {
-		ret.Type = PRIMITIVE_TYPE_INT
+	if l.Type == PrimitiveTypeInt && r.Type == PrimitiveTypeInt {
+		ret.Type = PrimitiveTypeInt
 		switch n.Op {
-		case BINOP_ADD:
+		case BinOpAdd:
 			ret.Int = l.Int + r.Int
-		case BINOP_SUB:
+		case BinOpSub:
 			ret.Int = l.Int - r.Int
-		case BINOP_MUL:
+		case BinOpMul:
 			ret.Int = l.Int * r.Int
-		case BINOP_DIV:
+		case BinOpDiv:
 			ret.Int = l.Int / r.Int
-		case BINOP_MOD:
+		case BinOpMod:
 			ret.Int = l.Int % r.Int
-		case BINOP_EQUALITY:
-			ret.Type = PRIMITIVE_TYPE_BOOL
+		case BinOpEquality:
+			ret.Type = PrimitiveTypeBool
 			ret.Bool = l.Int == r.Int
 		}
-	} else if l.Type == PRIMITIVE_TYPE_STRING && r.Type == PRIMITIVE_TYPE_STRING {
-		ret.Type = PRIMITIVE_TYPE_STRING
+	} else if l.Type == PrimitiveTypeString && r.Type == PrimitiveTypeString {
+		ret.Type = PrimitiveTypeString
 		switch n.Op {
-		case BINOP_ADD:
+		case BinOpAdd:
 			ret.String = l.String + r.String
-		case BINOP_EQUALITY:
-			ret.Type = PRIMITIVE_TYPE_BOOL
+		case BinOpEquality:
+			ret.Type = PrimitiveTypeBool
 			ret.Bool = l.String == r.String
 		default:
-			ret.Type = PRIMITIVE_TYPE_UNDEFINED
+			ret.Type = PrimitiveTypeUndefined
 			context.Errors = append(context.Errors, ExecutionError{
-				Class:        TYPE_ERR,
+				Class:        TypeErr,
 				CreatingNode: n,
 				Text:         "Invalid operation for string operands: " + n.Op.String(),
 			})
 		}
-	} else if l.Type == PRIMITIVE_TYPE_BOOL && r.Type == PRIMITIVE_TYPE_BOOL {
-		ret.Type = PRIMITIVE_TYPE_BOOL
+	} else if l.Type == PrimitiveTypeBool && r.Type == PrimitiveTypeBool {
+		ret.Type = PrimitiveTypeBool
 		switch n.Op {
-		case BINOP_EQUALITY:
+		case BinOpEquality:
 			ret.Bool = l.Bool && r.Bool
-		case BINOP_LAND:
+		case BinOpLAnd:
 			ret.Bool = l.Bool && r.Bool
-		case BINOP_LOR:
+		case BinOpLOr:
 			ret.Bool = l.Bool || r.Bool
 		default:
-			ret.Type = PRIMITIVE_TYPE_UNDEFINED
+			ret.Type = PrimitiveTypeUndefined
 			context.Errors = append(context.Errors, ExecutionError{
-				Class:        TYPE_ERR,
+				Class:        TypeErr,
 				CreatingNode: n,
 				Text:         "Invalid operation for boolean operands: " + n.Op.String(),
 			})
 		}
 	} else {
 		context.Errors = append(context.Errors, ExecutionError{
-			Class:        TYPE_ERR,
+			Class:        TypeErr,
 			CreatingNode: n,
 			Text:         "Invalid types for operands: " + l.Type.String() + " and " + r.Type.String(),
 		})
@@ -160,6 +168,7 @@ func (n *BinaryOp) Exec(context *ExecContext) *Variant {
 	return &ret
 }
 
+// Exec carries out node-specific logic, which may include evaluation of subnodes and primitive operations depending on the nodes type.
 func (n *VariableReference) Exec(context *ExecContext) *Variant {
 	if v, ok := context.FunctionNamespace[n.Name]; ok {
 		return v
@@ -170,11 +179,12 @@ func (n *VariableReference) Exec(context *ExecContext) *Variant {
 		}
 	}
 	return &Variant{
-		Type: PRIMITIVE_TYPE_UNDEFINED,
+		Type: PrimitiveTypeUndefined,
 		VariableReferenceFailed: true,
 	}
 }
 
+// Exec carries out node-specific logic, which may include evaluation of subnodes and primitive operations depending on the nodes type.
 func (n *Assign) Exec(context *ExecContext) *Variant {
 	variable := n.Variable.Exec(context)
 	v := n.Value.Exec(context)
@@ -201,98 +211,101 @@ func (n *Assign) Exec(context *ExecContext) *Variant {
 	}
 
 	return &Variant{
-		Type: PRIMITIVE_TYPE_UNDEFINED,
+		Type: PrimitiveTypeUndefined,
 	}
 }
 
+// Exec carries out node-specific logic, which may include evaluation of subnodes and primitive operations depending on the nodes type.
 func (n *IfStmt) Exec(context *ExecContext) *Variant {
 	if n.Init != nil {
 		n.Init.Exec(context)
 	}
 
 	conditionResult := n.Conditional.Exec(context)
-	if conditionResult.Type == PRIMITIVE_TYPE_BOOL && conditionResult.Bool {
+	if conditionResult.Type == PrimitiveTypeBool && conditionResult.Bool {
 		return n.Code.Exec(context)
 	} else if n.Else != nil {
 		return n.Else.Exec(context)
 	}
 
 	return &Variant{
-		Type: PRIMITIVE_TYPE_UNDEFINED,
+		Type: PrimitiveTypeUndefined,
 	}
 }
 
+// Exec carries out node-specific logic, which may include evaluation of subnodes and primitive operations depending on the nodes type.
 func (n *UnaryOp) Exec(context *ExecContext) *Variant {
 	upper := n.Expr.Exec(context)
-	if upper.Type == PRIMITIVE_TYPE_BOOL {
+	if upper.Type == PrimitiveTypeBool {
 		switch n.Op {
-		case UNOP_NOT:
+		case UnOpNot:
 			return &Variant{
-				Type: PRIMITIVE_TYPE_BOOL,
+				Type: PrimitiveTypeBool,
 				Bool: !upper.Bool,
 			}
 		default:
 			context.Errors = append(context.Errors, ExecutionError{
-				Class:        TYPE_ERR,
+				Class:        TypeErr,
 				CreatingNode: n,
 				Text:         "Cannot perform boolean unary operation on " + upper.Type.String(),
 			})
 		}
 	} else {
 		context.Errors = append(context.Errors, ExecutionError{
-			Class:        TYPE_ERR,
+			Class:        TypeErr,
 			CreatingNode: n,
 			Text:         "Cannot perform unary operations on type " + upper.Type.String(),
 		})
 	}
 	return &Variant{
-		Type: PRIMITIVE_TYPE_UNDEFINED,
+		Type: PrimitiveTypeUndefined,
 	}
 }
 
+// Exec carries out node-specific logic, which may include evaluation of subnodes and primitive operations depending on the nodes type.
 func (n *Subscript) Exec(context *ExecContext) *Variant {
 	baseVar := n.Expr.Exec(context)
 	subscript := n.Subscript.Exec(context)
 
 	if baseVar.VariableReferenceFailed {
 		context.Errors = append(context.Errors, ExecutionError{
-			Class:        NOT_FOUND_ERR,
+			Class:        NotFoundErr,
 			CreatingNode: n,
 			Text:         "Could not resolve a value/variable for base data of type " + baseVar.Type.String(),
 		})
 		return &Variant{
-			Type: PRIMITIVE_TYPE_UNDEFINED,
+			Type: PrimitiveTypeUndefined,
 		}
 	}
 
-	if baseVar.Type != COMPLEX_TYPE_ARRAY {
+	if baseVar.Type != ComplexTypeArray {
 		context.Errors = append(context.Errors, ExecutionError{
-			Class:        TYPE_ERR,
+			Class:        TypeErr,
 			CreatingNode: n,
 			Text:         "Cannot perform subscript operation on type " + baseVar.Type.String(),
 		})
 		return &Variant{
-			Type: PRIMITIVE_TYPE_UNDEFINED,
+			Type: PrimitiveTypeUndefined,
 		}
 	}
-	if subscript.Type != PRIMITIVE_TYPE_INT {
+	if subscript.Type != PrimitiveTypeInt {
 		context.Errors = append(context.Errors, ExecutionError{
-			Class:        TYPE_ERR,
+			Class:        TypeErr,
 			CreatingNode: n,
 			Text:         "Cannot perform subscript operation on type " + baseVar.Type.String(),
 		})
 		return &Variant{
-			Type: PRIMITIVE_TYPE_UNDEFINED,
+			Type: PrimitiveTypeUndefined,
 		}
 	}
 	if int(subscript.Int) >= len(baseVar.VectorData) {
 		context.Errors = append(context.Errors, ExecutionError{
-			Class:        BOUNDS_ERR,
+			Class:        BoundsErr,
 			CreatingNode: n,
 			Text:         "Subscript out of bounds",
 		})
 		return &Variant{
-			Type: PRIMITIVE_TYPE_UNDEFINED,
+			Type: PrimitiveTypeUndefined,
 		}
 	}
 

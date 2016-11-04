@@ -3,14 +3,14 @@ package ast
 import "testing"
 
 func TestPrintPrimitiveTypeString(t *testing.T) {
-	pt := PRIMITIVE_TYPE_INT
+	pt := PrimitiveTypeInt
 	if pt.String() != "int" {
 		t.Error("PrimitiveType integer .String() is incorrect")
 	}
 }
 
 func TestPrintPrimitiveTypeInteger(t *testing.T) {
-	pt := PRIMITIVE_TYPE_STRING
+	pt := PrimitiveTypeString
 
 	if pt.String() != "string" {
 		t.Error("PrimitiveType string .String() is incorrect")
@@ -18,7 +18,7 @@ func TestPrintPrimitiveTypeInteger(t *testing.T) {
 }
 
 func TestPrintPrimitiveTypeBool(t *testing.T) {
-	pt := PRIMITIVE_TYPE_BOOL
+	pt := PrimitiveTypeBool
 
 	if pt.String() != "bool" {
 		t.Error("PrimitiveType bool .String() is incorrect")
@@ -26,7 +26,7 @@ func TestPrintPrimitiveTypeBool(t *testing.T) {
 }
 
 func TestPrintPrimitiveTypeUndefined(t *testing.T) {
-	pt := PRIMITIVE_TYPE_UNDEFINED
+	pt := PrimitiveTypeUndefined
 
 	if pt.String() != "undefined" {
 		t.Error("PrimitiveType undef .String() is incorrect")
@@ -34,7 +34,7 @@ func TestPrintPrimitiveTypeUndefined(t *testing.T) {
 }
 
 func TestPrintArrayType(t *testing.T) {
-	pt := COMPLEX_TYPE_ARRAY
+	pt := ComplexTypeArray
 
 	if pt.String() != "[?]" {
 		t.Error("Expected [?], got", pt.String())
@@ -42,40 +42,40 @@ func TestPrintArrayType(t *testing.T) {
 }
 
 func TestPrintBinops(t *testing.T) {
-	b := BINOP_ADD
+	b := BinOpAdd
 	if b.String() != "+" {
-		t.Error("BINOP_ADD.String() incorrect")
+		t.Error("BinOpAdd.String() incorrect")
 	}
-	b = BINOP_DIV
+	b = BinOpDiv
 	if b.String() != "/" {
-		t.Error("BINOP_DIV.String() incorrect")
+		t.Error("BinOpDiv.String() incorrect")
 	}
-	b = BINOP_EQUALITY
+	b = BinOpEquality
 	if b.String() != "==" {
-		t.Error("BINOP_EQUALITY.String() incorrect")
+		t.Error("BinOpEquality.String() incorrect")
 	}
-	b = BINOP_LAND
+	b = BinOpLAnd
 	if b.String() != "&&" {
-		t.Error("BINOP_LAND.String() incorrect")
+		t.Error("BinOpLAnd.String() incorrect")
 	}
-	b = BINOP_LOR
+	b = BinOpLOr
 	if b.String() != "||" {
-		t.Error("BINOP_LOR.String() incorrect")
+		t.Error("BinOpLOr.String() incorrect")
 	}
-	b = BINOP_MOD
+	b = BinOpMod
 	if b.String() != "%" {
-		t.Error("BINOP_MOD.String() incorrect")
+		t.Error("BinOpMod.String() incorrect")
 	}
-	b = BINOP_MUL
+	b = BinOpMul
 	if b.String() != "*" {
-		t.Error("BINOP_MUL.String() incorrect")
+		t.Error("BinOpMul.String() incorrect")
 	}
-	b = BINOP_SUB
+	b = BinOpSub
 	if b.String() != "-" {
-		t.Error("BINOP_SUB.String() incorrect")
+		t.Error("BinOpSub.String() incorrect")
 	}
-	b = BINOP_UNK
+	b = BinOpUnknown
 	if b.String() != "UNK?" {
-		t.Error("BINOP_UNK.String() incorrect:", b.String())
+		t.Error("BinOpUnknown.String() incorrect:", b.String())
 	}
 }
