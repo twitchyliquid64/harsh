@@ -130,7 +130,7 @@ func (node *Assign) Print(level int) {
 
 // Print writes a description of the node to standard output, at the specified indentation level.
 func (node *VariableReference) Print(level int) {
-	printLeveled("{"+node.Name+"}", level)
+	printLeveled("{"+node.Name+"} ("+node.Type.String()+")", level)
 }
 
 // Print writes a description of the node to standard output, at the specified indentation level.

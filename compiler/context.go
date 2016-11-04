@@ -40,6 +40,8 @@ const (
 	NotSupported translateErrClass = iota
 	// NotYetSupported indicates a feature cannot yet be translated, but further development may support the feature (submit a PR!)
 	NotYetSupported
+	// TypeErrorFound indicates translate type typechecking failed.
+	TypeErrorFound
 )
 
 // TranslateError represents any issue translating the go.ast format into harsh's native AST format.

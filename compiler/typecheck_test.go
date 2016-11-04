@@ -88,7 +88,39 @@ func TestTypecheckBinaryOpMismatchCausesError(t *testing.T) {
 	if c.Errors[0].Msg != "Cannot perform binary operation + on operands with type int and bool" {
 		t.Error("Incorrect error message, got: " + c.Errors[0].Msg)
 	}
-	if ty != ast.PrimitiveTypeUndefined {
-		t.Error("Expected undefined type")
+	if ty != ast.UnknownType {
+		t.Error("Expected UnknownType")
+	}
+}
+
+func TestBinaryOpWithOperandWithUnknownTypeReturnsUnknownType(t *testing.T) {
+	node := &ast.BinaryOp{
+		LHS: &ast.VariableReference{Name: "aa", Type: ast.UnknownType},
+		RHS: &ast.IntegerLiteral{},
+		Op:  ast.BinOpAdd,
+	}
+	c := &TypecheckContext{}
+	ty := Typecheck(c, node)
+	if len(c.Errors) != 0 {
+		t.Error("Type errors not expected")
+	}
+	if ty != ast.UnknownType {
+		t.Error("Expected UnknownType")
+	}
+}
+
+func TestTypecheckVariabeReferenceWithKnownType(t *testing.T) {
+	node := &ast.BinaryOp{
+		LHS: &ast.VariableReference{Name: "aa", Type: ast.PrimitiveTypeInt},
+		RHS: &ast.IntegerLiteral{},
+		Op:  ast.BinOpAdd,
+	}
+	c := &TypecheckContext{}
+	ty := Typecheck(c, node)
+	if len(c.Errors) != 0 {
+		t.Error("Type errors not expected")
+	}
+	if ty != ast.PrimitiveTypeInt {
+		t.Error("Expected int type")
 	}
 }

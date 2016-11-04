@@ -32,19 +32,28 @@ func (t TypeError) Error() string {
 }
 
 // TypeEqual returns true if the given types are equivalent and can be operated without promotion.
-func TypeEqual(l ast.TypeDecl, r ast.TypeDecl) bool {
+func TypeEqual(l ast.TypeKind, r ast.TypeKind) bool {
 	return l == r
 }
 
 // Typecheck is a recursive method that returns the effective type of the return value of the node, if it were executed.
 // Any type errors are added to context.Errors.
-func Typecheck(context *TypecheckContext, node ast.Node) ast.TypeDecl {
+func Typecheck(context *TypecheckContext, node ast.Node) ast.TypeKind {
 	switch n := (node).(type) {
 	case *ast.StatementList:
 		for _, subNode := range n.Stmts {
 			Typecheck(context, subNode)
 		}
 
+	case *ast.VariableReference:
+		if n.Type == nil {
+			context.Errors = append(context.Errors, TypeError{
+				Kind: TypeerrorInternalErr,
+				Msg:  "VariableReference.Type should never be nil",
+			})
+			return ast.UnknownType
+		}
+		return n.Type
 	case *ast.NilLiteral:
 	case *ast.StringLiteral:
 		return ast.PrimitiveTypeString
@@ -55,12 +64,15 @@ func Typecheck(context *TypecheckContext, node ast.Node) ast.TypeDecl {
 	case *ast.BinaryOp:
 		l := Typecheck(context, n.LHS)
 		r := Typecheck(context, n.RHS)
+		if l == ast.UnknownType || r == ast.UnknownType {
+			return ast.UnknownType
+		}
 		if !TypeEqual(l, r) {
 			context.Errors = append(context.Errors, TypeError{
 				Kind: TypeerrorIncompatibleTypesErr,
 				Msg:  "Cannot perform binary operation " + n.Op.String() + " on operands with type " + l.String() + " and " + r.String(),
 			})
-			return ast.PrimitiveTypeUndefined
+			return ast.UnknownType
 		}
 		return l
 
@@ -70,5 +82,5 @@ func Typecheck(context *TypecheckContext, node ast.Node) ast.TypeDecl {
 			Msg:  "Cannot typecheck node of type " + reflect.TypeOf(node).String(),
 		})
 	}
-	return ast.PrimitiveTypeUndefined
+	return ast.UnknownType
 }
