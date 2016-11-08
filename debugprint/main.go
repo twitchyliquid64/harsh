@@ -34,24 +34,33 @@ func main() {
 
 	for _, decl := range context.Declarations {
 		fmt.Println("FUNCTION: ", decl.Identifier)
-		fmt.Print("Params: {")
+		fmt.Print("  Params: {")
 		for i, param := range decl.Parameters {
 			fmt.Print(param.String())
 			if i+1 < len(decl.Parameters) {
 				fmt.Print(", ")
 			}
 		}
-		fmt.Println("}")
+		fmt.Println("  }")
 		if decl.Code != nil {
 			decl.Code.Print(2)
 		}
 		for _, ret := range decl.Results {
-			fmt.Println("-", ret.String(), "(return)")
+			fmt.Println("  -", ret.String(), "(return)")
+		}
+
+		c := &compiler.TypecheckContext{}
+		compiler.Typecheck(c, decl.Code)
+		if len(c.Errors) > 0 {
+			fmt.Println("  Type errors:")
+			for i, e := range c.Errors {
+				fmt.Printf("   %02d: %s (%d)\r\n", i+1, e.Msg, e.Kind)
+			}
 		}
 	}
 
 	if len(context.Errors) > 0 {
-		fmt.Println("Errors:")
+		fmt.Println("Translate Errors:")
 		for i, err := range context.Errors {
 			fmt.Printf("%02d: %s (%s)\r\n", i+1, err.Text, err.Pos.String())
 		}

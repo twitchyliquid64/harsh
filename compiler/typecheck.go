@@ -8,7 +8,8 @@ import (
 
 // TypecheckContext stores the persistent context of a recursive execution of Typecheck(), storing information such as type errors.
 type TypecheckContext struct {
-	Errors []TypeError
+	Errors     []TypeError
+	ReturnType ast.TypeKind
 }
 
 // TypeErrorKind represents an enum of error types which symbolise the kind of TypeError.
@@ -75,6 +76,36 @@ func Typecheck(context *TypecheckContext, node ast.Node) ast.TypeKind {
 			return ast.UnknownType
 		}
 		return l
+
+	case *ast.Assign:
+		//TODO: tests
+		l := Typecheck(context, n.Value)
+		r := Typecheck(context, n.Variable)
+		if l == ast.UnknownType || r == ast.UnknownType {
+			return ast.UnknownType
+		}
+		if !TypeEqual(l, r) {
+			context.Errors = append(context.Errors, TypeError{
+				Kind: TypeerrorIncompatibleTypesErr,
+				Msg:  "Cannot perform assignment on operands with type " + l.String() + " and " + r.String(),
+			})
+			return ast.UnknownType
+		}
+		return l
+
+	case *ast.ReturnStmt:
+		//TODO: actually test it
+		if context.ReturnType != nil {
+			if !TypeEqual(Typecheck(context, n.Expr), context.ReturnType) {
+				context.Errors = append(context.Errors, TypeError{
+					Kind: TypeerrorIncompatibleTypesErr,
+					Msg:  "Returned value does not match return type " + context.ReturnType.String() + ". Upstream value is " + Typecheck(context, n.Expr).String(),
+				})
+			}
+			return ast.UnknownType
+		} else {
+			return Typecheck(context, n.Expr)
+		}
 
 	default:
 		context.Errors = append(context.Errors, TypeError{
