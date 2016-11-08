@@ -1,7 +1,5 @@
 package ast
 
-import "github.com/twitchyliquid64/harsh/ast"
-
 // TypeKind is implemented by all Types which are represented in the AST.
 // BaseType returns the underlying array/slice type if applicable, otherwise it returns the same value as Kind().
 // Kind returns a value with represents the kind of value it is: ie int/string/slice/array.
@@ -83,7 +81,7 @@ func (a ArrayType) BaseType() TypeKind {
 
 // StructType represents a named set of fields contained within one structure.
 type StructType struct {
-	Fields []ast.NamedType
+	Fields []NamedType
 }
 
 func (a StructType) String() string {
