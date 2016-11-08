@@ -50,6 +50,9 @@ func main() {
 		}
 
 		c := &compiler.TypecheckContext{}
+		if len(decl.Results) == 1 {
+			c.ReturnType = decl.Results[0]
+		}
 		compiler.Typecheck(c, decl.Code)
 		if len(c.Errors) > 0 {
 			fmt.Println("  Type errors:")

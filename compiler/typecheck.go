@@ -18,8 +18,8 @@ type TypeErrorKind int
 const (
 	// TypeerrorInternalErr represents a bug or an unreachable condition in the execution of TypeCheck.
 	TypeerrorInternalErr TypeErrorKind = iota
-	// TypeerrorIncompatibleTypesErr represents a combination of operands or operators which are invalid in respect to their types.
-	TypeerrorIncompatibleTypesErr
+	// TypeErrorIncompatibleTypesErr represents a combination of operands or operators which are invalid in respect to their types.
+	TypeErrorIncompatibleTypesErr
 )
 
 // TypeError represents an error in the AST found during Typecheck().
@@ -70,7 +70,7 @@ func Typecheck(context *TypecheckContext, node ast.Node) ast.TypeKind {
 		}
 		if !TypeEqual(l, r) {
 			context.Errors = append(context.Errors, TypeError{
-				Kind: TypeerrorIncompatibleTypesErr,
+				Kind: TypeErrorIncompatibleTypesErr,
 				Msg:  "Cannot perform binary operation " + n.Op.String() + " on operands with type " + l.String() + " and " + r.String(),
 			})
 			return ast.UnknownType
@@ -78,7 +78,6 @@ func Typecheck(context *TypecheckContext, node ast.Node) ast.TypeKind {
 		return l
 
 	case *ast.Assign:
-		//TODO: tests
 		l := Typecheck(context, n.Value)
 		r := Typecheck(context, n.Variable)
 		if l == ast.UnknownType || r == ast.UnknownType {
@@ -86,26 +85,47 @@ func Typecheck(context *TypecheckContext, node ast.Node) ast.TypeKind {
 		}
 		if !TypeEqual(l, r) {
 			context.Errors = append(context.Errors, TypeError{
-				Kind: TypeerrorIncompatibleTypesErr,
-				Msg:  "Cannot perform assignment on operands with type " + l.String() + " and " + r.String(),
+				Kind: TypeErrorIncompatibleTypesErr,
+				Msg:  "Cannot perform assignment to " + r.String() + " with type " + l.String(),
 			})
 			return ast.UnknownType
 		}
 		return l
 
 	case *ast.ReturnStmt:
-		//TODO: actually test it
-		if context.ReturnType != nil {
-			if !TypeEqual(Typecheck(context, n.Expr), context.ReturnType) {
+		if context.ReturnType != nil { //return type is known, test it
+			v := Typecheck(context, n.Expr)
+			if v == ast.UnknownType {
+				return ast.UnknownType //cant compare to unknown
+			}
+			if !TypeEqual(v, context.ReturnType) {
 				context.Errors = append(context.Errors, TypeError{
-					Kind: TypeerrorIncompatibleTypesErr,
+					Kind: TypeErrorIncompatibleTypesErr,
 					Msg:  "Returned value does not match return type " + context.ReturnType.String() + ". Upstream value is " + Typecheck(context, n.Expr).String(),
 				})
+				return ast.UnknownType
 			}
-			return ast.UnknownType
-		} else {
-			return Typecheck(context, n.Expr)
 		}
+		return Typecheck(context, n.Expr)
+
+	case *ast.Subscript:
+		sub := Typecheck(context, n.Subscript)
+		if sub != ast.UnknownType && sub != ast.PrimitiveTypeInt {
+			context.Errors = append(context.Errors, TypeError{
+				Kind: TypeErrorIncompatibleTypesErr,
+				Msg:  "Cannot subscript with non-integer index - got type: " + sub.String(),
+			})
+			return ast.UnknownType
+		}
+		RHS := Typecheck(context, n.Expr)
+		if RHS.Kind() != ast.ComplexTypeArray { //TODO: support others
+			context.Errors = append(context.Errors, TypeError{
+				Kind: TypeErrorIncompatibleTypesErr,
+				Msg:  "Cannot subscript non-array type " + RHS.String(),
+			})
+			return ast.UnknownType
+		}
+		return RHS.BaseType()
 
 	default:
 		context.Errors = append(context.Errors, TypeError{

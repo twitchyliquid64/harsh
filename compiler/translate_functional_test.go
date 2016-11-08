@@ -244,13 +244,13 @@ func TestFunctionParamsAndResultsAreTypedAndNamedCorrectly(t *testing.T) {
 		}
 	}
 
-	if p[0].ConcreteType() != ast.PrimitiveTypeInt {
+	if p[0].BaseType() != ast.PrimitiveTypeInt {
 		t.Error("First parameter incorrect")
 	}
 	if _, ok := p[1].(ast.NamedType); !ok {
 		t.Error("Second parameter not a NamedType:", reflect.TypeOf(p[0]))
 	}
-	if p[1].ConcreteType() != ast.PrimitiveTypeInt {
+	if p[1].BaseType() != ast.PrimitiveTypeInt {
 		t.Error("Second parameter incorrect")
 	}
 	if len(context.Declarations[0].Results) != 1 {
@@ -373,6 +373,64 @@ func TestGlobalStringSavedCorrectly(t *testing.T) {
 	}
 	if v.String != "" {
 		t.Error("Default value not \"\"")
+	}
+}
+
+func TestGlobalIntArraySavedCorrectly(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    var testVar [3]int`, t)
+
+	var v *ast.Variant
+	var ok bool
+	if v, ok = context.Globals["testVar"]; !ok {
+		t.Error("Global expected")
+		t.FailNow()
+	}
+	if v.Type.BaseType().Kind() != ast.PrimitiveTypeInt {
+		t.Error("Int type for variable concrete type expected, got ", v.Type.BaseType().String())
+	}
+	if v.Type.Kind() != ast.ComplexTypeArray {
+		t.Error("Complex array variable kind expected, got ", v.Type.Kind().String())
+	}
+}
+
+func TestGlobalIntArrayArraySavedCorrectly(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    var testVar [3][9]int`, t)
+
+	var v *ast.Variant
+	var ok bool
+	if v, ok = context.Globals["testVar"]; !ok {
+		t.Error("Global expected")
+		t.FailNow()
+	}
+	if v.Type.BaseType().Kind() != ast.ComplexTypeArray {
+		t.Error("base type complex array expected, got ", v.Type.BaseType().String())
+	}
+	if v.Type.Kind() != ast.ComplexTypeArray {
+		t.Error("Complex array variable kind expected, got ", v.Type.Kind().String())
+	}
+	if v.Type.BaseType().(ast.ArrayType).BaseType().Kind() != ast.PrimitiveTypeInt {
+		t.Error("second level based type was expected to be int, got", v.Type.BaseType().(ast.ArrayType).BaseType().Kind().String())
+	}
+}
+
+func TestGlobalIntArrayInvalidLenErrors(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+		var aa int
+    var testVar [aa+1]int`, t)
+
+	if len(context.Errors) != 1 {
+		t.Error("Expected one error, got ", len(context.Errors))
+	}
+	if context.Errors[0].Class != NotStatic {
+		t.Error("Expected error class to be NotStatic")
 	}
 }
 
@@ -568,7 +626,7 @@ func TestNestedArrayLocalDeclarationProducesCorrectAST(t *testing.T) {
 	if arraySubType, ok := subType.(ast.ArrayType); !ok {
 		t.Error("ArrayType expected")
 	} else {
-		if arraySubType.ConcreteType() != ast.PrimitiveTypeInt {
+		if arraySubType.BaseType() != ast.PrimitiveTypeInt {
 			t.Error("Expected underlying int type")
 		}
 	}
@@ -674,7 +732,7 @@ func TestNestedLocalArrayInitialization(t *testing.T) {
 	if lit, ok := literals[0].(*ast.ArrayLiteral); !ok {
 		t.Error("ArrayLiteral expected")
 	} else {
-		if lit.Type.ConcreteType() != ast.PrimitiveTypeInt {
+		if lit.Type.BaseType() != ast.PrimitiveTypeInt {
 			t.Error("Expected underlying type to be PrimitiveTypeInt")
 		}
 		if intLit, ok := lit.Literal[1].(*ast.IntegerLiteral); !ok {

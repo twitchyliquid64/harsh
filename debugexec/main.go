@@ -32,6 +32,9 @@ func main() {
 	wereTypeErrors := false
 	for _, f := range context.Declarations {
 		c := &compiler.TypecheckContext{}
+		if len(f.Results) == 1 {
+			c.ReturnType = f.Results[0]
+		}
 
 		compiler.Typecheck(c, f.Code)
 		if len(c.Errors) > 0 {
@@ -50,13 +53,13 @@ func main() {
 	for i := 3; i < len(os.Args); i++ {
 		spl := strings.Split(os.Args[i], "=")
 		if len(spl) > 1 {
-			intValue, err := strconv.Atoi(spl[1])
-			if err == nil {
+			intValue, err2 := strconv.Atoi(spl[1])
+			if err2 == nil {
 				args[spl[0]] = intValue
 				continue
 			}
-			boolValue, err := strconv.ParseBool(spl[1])
-			if err == nil {
+			boolValue, err3 := strconv.ParseBool(spl[1])
+			if err3 == nil {
 				args[spl[0]] = boolValue
 				continue
 			}

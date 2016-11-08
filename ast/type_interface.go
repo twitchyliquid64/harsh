@@ -1,10 +1,12 @@
 package ast
 
+import "github.com/twitchyliquid64/harsh/ast"
+
 // TypeKind is implemented by all Types which are represented in the AST.
-// ConcreteType returns the underlying array/slice type if applicable, otherwise it returns the same value as Kind().
+// BaseType returns the underlying array/slice type if applicable, otherwise it returns the same value as Kind().
 // Kind returns a value with represents the kind of value it is: ie int/string/slice/array.
 type TypeKind interface {
-	ConcreteType() TypeDecl
+	BaseType() TypeKind
 	Kind() TypeKindDescription
 	String() string
 }
@@ -17,8 +19,8 @@ func (t TypeKindDescription) Kind() TypeKindDescription {
 	return t
 }
 
-// ConcreteType returns the same value as Kind() for TypeKindDescription.
-func (t TypeKindDescription) ConcreteType() TypeDecl {
+// BaseType returns the same value as Kind() for TypeKindDescription.
+func (t TypeKindDescription) BaseType() TypeKind {
 	return t
 }
 
@@ -28,15 +30,10 @@ const (
 	PrimitiveTypeString
 	PrimitiveTypeBool
 	ComplexTypeArray
+	ComplexTypeStruct
 	PrimitiveTypeUndefined
 	UnknownType //Used internally to signify the type could be valid but is currently unknown
 )
-
-// TypeDecl is a subset of TypeKind, but otherwise has the same meaning and semantics.
-type TypeDecl interface {
-	String() string
-	ConcreteType() TypeDecl
-}
 
 // NamedType is a kind of named primitive variable, used mainly to represent named parameters.
 type NamedType struct {
@@ -44,8 +41,8 @@ type NamedType struct {
 	Ident string
 }
 
-// ConcreteType returns the underlying type of the value.
-func (p NamedType) ConcreteType() TypeDecl {
+// BaseType returns the underlying type of the value.
+func (p NamedType) BaseType() TypeKind {
 	return p.Type
 }
 
@@ -71,7 +68,7 @@ type ArrayType struct {
 }
 
 func (a ArrayType) String() string {
-	return "[]" + a.ConcreteType().String()
+	return "[]" + a.BaseType().String()
 }
 
 // Kind returns ComplexTypeArray.
@@ -79,7 +76,26 @@ func (a ArrayType) Kind() TypeKindDescription {
 	return ComplexTypeArray
 }
 
-// ConcreteType returns the type of the underlying element primitive.
-func (a ArrayType) ConcreteType() TypeDecl {
+// BaseType returns the type of the underlying element primitive.
+func (a ArrayType) BaseType() TypeKind {
 	return a.SubType
+}
+
+// StructType represents a named set of fields contained within one structure.
+type StructType struct {
+	Fields []ast.NamedType
+}
+
+func (a StructType) String() string {
+	return "struct{???-???}"
+}
+
+// Kind returns ComplexTypeArray.
+func (a StructType) Kind() TypeKindDescription {
+	return ComplexTypeStruct
+}
+
+// BaseType returns the type of the underlying element primitive.
+func (a StructType) BaseType() TypeKind {
+	return ComplexTypeStruct //no real base type
 }

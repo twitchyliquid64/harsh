@@ -20,8 +20,8 @@ type Context struct {
 type declaration struct {
 	Identifier string
 	Code       ast.Node
-	Results    []ast.TypeDecl
-	Parameters []ast.TypeDecl
+	Results    []ast.TypeKind
+	Parameters []ast.TypeKind
 }
 
 type conType int
@@ -42,6 +42,8 @@ const (
 	NotYetSupported
 	// TypeErrorFound indicates translate type typechecking failed.
 	TypeErrorFound
+	// NotStatic indicates that an expression was not able to be resolved at compiletime, when such a condition must exist.
+	NotStatic
 )
 
 // TranslateError represents any issue translating the go.ast format into harsh's native AST format.

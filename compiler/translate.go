@@ -16,7 +16,7 @@ func translateGoAST(fset *token.FileSet, inp *goast.File) (ast.Node, *Context) {
 	context := &Context{
 		ConType: ContextAdhoc,
 		Globals: ns,
-		//Debug:   true,
+		Debug:   true,
 	}
 	return translateGoNode(fset, context, reflect.ValueOf(inp)), context
 }
@@ -323,18 +323,25 @@ func convertTypeToTypeKind(fset *token.FileSet, t goast.Expr, context *Context) 
 				}
 			}
 		}
-	} else {
-		context.Errors = append(context.Errors, TranslateError{
-			Class: NotSupported,
-			Pos:   fset.Position(t.Pos()),
-			Text:  "Cannot convert go/ast node to TypeKind: " + reflect.TypeOf(t).String(),
-		})
+	} else if node, ok := t.(*goast.StructType); ok {
+		structRet := ast.StructType{}
+		for _, field := range node.Fields.List {
+			ft := translateType(fset, field, context)
+			structRet.Fields = append(structRet.Fields, ft.(*ast.NamedType))
+		}
+		return structRet
 	}
+
+	context.Errors = append(context.Errors, TranslateError{
+		Class: NotSupported,
+		Pos:   fset.Position(t.Pos()),
+		Text:  "Cannot convert go/ast node to TypeKind: " + reflect.TypeOf(t).String(),
+	})
 	return ast.PrimitiveTypeUndefined
 }
 
-func translateType(fset *token.FileSet, typ *goast.Field, context *Context) []ast.TypeDecl {
-	var output []ast.TypeDecl
+func translateType(fset *token.FileSet, typ *goast.Field, context *Context) []ast.TypeKind {
+	var output []ast.TypeKind
 	switch typ.Type.(type) {
 	case *goast.Ident:
 		kind := convertTypeToTypeKind(fset, typ.Type, context)
@@ -409,6 +416,36 @@ func translateGoGenDecl(fset *token.FileSet, context *Context, node *goast.GenDe
 							Text:  "Unknown global type: " + t.Name,
 						})
 					}
+				case *goast.StructType:
+					tk := convertTypeToTypeKind(fset, t, context)
+					v, err := ast.DefaultVariantValue(tk)
+					if err != nil {
+						context.Errors = append(context.Errors, TranslateError{
+							Class: NotStatic,
+							Pos:   fset.Position(spec.Pos()),
+							Text:  "Could not calculated default value for global: " + err.Error(),
+						})
+					} else {
+						context.Globals.Save(name.Name, v)
+					}
+				case *goast.ArrayType:
+					tk := convertTypeToTypeKind(fset, t, context)
+					v, err := ast.DefaultVariantValue(tk)
+					if err != nil {
+						context.Errors = append(context.Errors, TranslateError{
+							Class: NotStatic,
+							Pos:   fset.Position(spec.Pos()),
+							Text:  "Could not calculated default value for global: " + err.Error(),
+						})
+					} else {
+						context.Globals.Save(name.Name, v)
+					}
+				default:
+					context.Errors = append(context.Errors, TranslateError{
+						Class: NotYetSupported,
+						Pos:   fset.Position(node.Pos()),
+						Text:  "Cannot understand type of global " + name.Name + " - " + reflect.TypeOf(n.Type).String(),
+					})
 				}
 			}
 		default:
@@ -420,8 +457,8 @@ func translateGoGenDecl(fset *token.FileSet, context *Context, node *goast.GenDe
 }
 
 func translateGoFuncDecl(fset *token.FileSet, context *Context, node *goast.FuncDecl) declaration {
-	var returnVars []ast.TypeDecl
-	var parameters []ast.TypeDecl
+	var returnVars []ast.TypeKind
+	var parameters []ast.TypeKind
 
 	if node.Type.Results != nil {
 		for _, ret := range node.Type.Results.List {
