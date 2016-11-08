@@ -327,7 +327,15 @@ func convertTypeToTypeKind(fset *token.FileSet, t goast.Expr, context *Context) 
 		structRet := ast.StructType{}
 		for _, field := range node.Fields.List {
 			ft := translateType(fset, field, context)
-			structRet.Fields = append(structRet.Fields, ft.(*ast.NamedType))
+			if len(ft) != 1 {
+				context.Errors = append(context.Errors, TranslateError{
+					Class: InternalErr,
+					Pos:   fset.Position(t.Pos()),
+					Text:  "Struct field resolves to more than one TypeKind",
+				})
+				return ast.PrimitiveTypeUndefined
+			}
+			structRet.Fields = append(structRet.Fields, ft[0].(*ast.NamedType))
 		}
 		return structRet
 	}

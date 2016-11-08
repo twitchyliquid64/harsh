@@ -44,6 +44,8 @@ const (
 	TypeErrorFound
 	// NotStatic indicates that an expression was not able to be resolved at compiletime, when such a condition must exist.
 	NotStatic
+	//InternalErr indicates something that should never happen
+	InternalErr
 )
 
 // TranslateError represents any issue translating the go.ast format into harsh's native AST format.

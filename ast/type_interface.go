@@ -81,7 +81,7 @@ func (a ArrayType) BaseType() TypeKind {
 
 // StructType represents a named set of fields contained within one structure.
 type StructType struct {
-	Fields []NamedType
+	Fields []*NamedType
 }
 
 func (a StructType) String() string {
