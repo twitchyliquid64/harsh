@@ -33,7 +33,7 @@ func (n *NilLiteral) Exec(context *ExecContext) *Variant {
 
 // Exec carries out node-specific logic, which may include evaluation of subnodes and primitive operations depending on the nodes type.
 func (n *ArrayLiteral) Exec(context *ExecContext) *Variant {
-	sizeNode := n.Type.(ArrayType).Len.Exec(context)
+	sizeNode := n.Type.Len.Exec(context)
 	if sizeNode.Type != PrimitiveTypeInt {
 		context.Errors = append(context.Errors, ExecutionError{
 			Class:        TypeErr,
@@ -65,6 +65,30 @@ func (n *ArrayLiteral) Exec(context *ExecContext) *Variant {
 		Type:       ComplexTypeArray,
 		VectorData: values,
 	}
+}
+
+// Exec resolves the values for the literals specified (if any).
+func (n *StructLiteral) Exec(context *ExecContext) *Variant {
+	o := &Variant{
+		Type:      ComplexTypeStruct,
+		NamedData: map[string]*Variant{},
+	}
+	for _, field := range n.Type.Fields {
+		if n.Values != nil && n.Values[field.Ident] != nil {
+			o.NamedData[field.Ident] = n.Values[field.Ident].Exec(context)
+		} else {
+			var err error
+			o.NamedData[field.Ident], err = DefaultVariantValue(field.Type)
+			if err != nil {
+				context.Errors = append(context.Errors, ExecutionError{
+					Class:        InternalErr,
+					CreatingNode: n,
+					Text:         "Failed to create default value to populate field '" + field.Ident + "' with type: " + field.Type.String(),
+				})
+			}
+		}
+	}
+	return o
 }
 
 // Exec carries out node-specific logic, which may include evaluation of subnodes and primitive operations depending on the nodes type.

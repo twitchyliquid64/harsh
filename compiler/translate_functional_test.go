@@ -419,6 +419,312 @@ func TestGlobalIntArrayArraySavedCorrectly(t *testing.T) {
 	}
 }
 
+func TestGlobalStructSavedCorrectly(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    var testVar struct{
+			Bro string
+			Cuzz int
+		}`, t)
+
+	var v *ast.Variant
+	var ok bool
+	if v, ok = context.Globals["testVar"]; !ok {
+		t.Error("Global expected")
+		t.FailNow()
+	}
+	if v.Type.Kind() != ast.ComplexTypeStruct {
+		t.Error("ComplexTypeStruct type for variable kind expected, got ", v.Type.String())
+	}
+	if len(v.Type.(ast.StructType).Fields) != 2 {
+		t.Error("Expected 2 fields")
+	}
+	if v.Type.(ast.StructType).Fields[0].Ident != "Bro" {
+		t.Error("First field named incorrectly")
+	}
+	if v.Type.(ast.StructType).Fields[0].Type != ast.PrimitiveTypeString {
+		t.Error("First field typed incorrectly")
+	}
+	if v.Type.(ast.StructType).Fields[1].Ident != "Cuzz" {
+		t.Error("Second field named incorrectly")
+	}
+	if v.Type.(ast.StructType).Fields[1].Type != ast.PrimitiveTypeInt {
+		t.Error("Second field typed incorrectly")
+	}
+}
+
+func TestGlobalStructWithArraySavedCorrectly(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    var testVar struct{
+			MajorLazorArrayBro [3][3]int
+			Crap 							 [1111111]string
+		}`, t)
+
+	var v *ast.Variant
+	var ok bool
+	if v, ok = context.Globals["testVar"]; !ok {
+		t.Error("Global expected")
+		t.FailNow()
+	}
+	if v.Type.Kind() != ast.ComplexTypeStruct {
+		t.Error("ComplexTypeStruct type for variable kind expected, got ", v.Type.String())
+	}
+	if _, ok := v.Type.(ast.StructType); !ok {
+		t.Error("Variable is not struct type, got " + reflect.TypeOf(v.Type).String())
+		t.FailNow()
+	}
+	if len(v.Type.(ast.StructType).Fields) != 2 {
+		t.Error("Expected 2 fields")
+	}
+	if v.Type.(ast.StructType).Fields[0].Ident != "MajorLazorArrayBro" {
+		t.Error("First field named incorrectly")
+	}
+	if v.Type.(ast.StructType).Fields[0].Type.Kind() != ast.ComplexTypeArray {
+		t.Error("First field typed incorrectly")
+	}
+	if v.Type.(ast.StructType).Fields[0].Type.(ast.ArrayType).SubType.Kind() != ast.ComplexTypeArray {
+		t.Error("First field sub array type incorrect, got " + v.Type.(ast.StructType).Fields[0].Type.(ast.ArrayType).SubType.String())
+	}
+	if v.Type.(ast.StructType).Fields[1].Ident != "Crap" {
+		t.Error("Second field named incorrectly")
+	}
+	if v.Type.(ast.StructType).Fields[1].Type.Kind() != ast.ComplexTypeArray {
+		t.Error("Second field typed incorrectly")
+	}
+	if v.Type.(ast.StructType).Fields[1].Type.(ast.ArrayType).SubType.Kind() != ast.PrimitiveTypeString {
+		t.Error("Second field sub type incorrect, got " + v.Type.(ast.StructType).Fields[0].Type.(ast.ArrayType).SubType.String())
+	}
+}
+
+func TestGlobalStructWithStructSavedCorrectly(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    var testVar struct{
+			Crap struct{
+				Brah string
+			}
+		}`, t)
+
+	var v *ast.Variant
+	var ok bool
+	if v, ok = context.Globals["testVar"]; !ok {
+		t.Error("Global expected")
+		t.FailNow()
+	}
+	if v.Type.Kind() != ast.ComplexTypeStruct {
+		t.Error("ComplexTypeStruct type for variable kind expected, got ", v.Type.String())
+	}
+	if _, ok := v.Type.(ast.StructType); !ok {
+		t.Error("Variable is not struct type, got " + reflect.TypeOf(v.Type).String())
+		t.FailNow()
+	}
+	if len(v.Type.(ast.StructType).Fields) != 1 {
+		t.Error("Expected 1 field")
+	}
+	if v.Type.(ast.StructType).Fields[0].Ident != "Crap" {
+		t.Error("First field named incorrectly")
+	}
+	if v.Type.(ast.StructType).Fields[0].Type.Kind() != ast.ComplexTypeStruct {
+		t.Error("First field typed incorrectly")
+	}
+	subStruct := v.Type.(ast.StructType).Fields[0].Type.(ast.StructType)
+	if len(subStruct.Fields) != 1 {
+		t.Error("Expected 1 field in subStruct")
+	}
+	if subStruct.Fields[0].Ident != "Brah" {
+		t.Error("Expected name 'Brah' in sub struct first field identifier")
+	}
+	if subStruct.Fields[0].Type != ast.PrimitiveTypeString {
+		t.Error("Expected type string in field of sub struct")
+	}
+}
+
+func TestGlobalArrayWithStructSavedCorrectly(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    var testVar [43]struct{
+			Brah string
+		}`, t)
+
+	var v *ast.Variant
+	var ok bool
+	if v, ok = context.Globals["testVar"]; !ok {
+		t.Error("Global expected")
+		t.FailNow()
+	}
+	if v.Type.Kind() != ast.ComplexTypeArray {
+		t.Error("ComplexTypeArray type for variable kind expected, got ", v.Type.String())
+	}
+	if _, ok := v.Type.(ast.ArrayType); !ok {
+		t.Error("Variable is not array type, got " + reflect.TypeOf(v.Type).String())
+		t.FailNow()
+	}
+	if v.Type.(ast.ArrayType).SubType.Kind() != ast.ComplexTypeStruct {
+		t.Error("Expected struct subtype")
+		t.FailNow()
+	}
+	if len(v.Type.(ast.ArrayType).SubType.(ast.StructType).Fields) == 1 && v.Type.(ast.ArrayType).SubType.(ast.StructType).Fields[0].Ident != "Brah" {
+		t.Error("Expected 1 field with name Brah")
+	}
+}
+
+func TestLocalStructSavedCorrectly(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    func test(){
+			var testVar struct{
+				Field string
+			}
+		}`, t)
+
+	if len(context.Declarations) != 1 {
+		t.Error("Unexpected number of declarations")
+	}
+	if context.Declarations[0].Identifier != "test" {
+		t.Error("Unexpected declaration name")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList")
+	}
+	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+		t.Error("Unexpected number of declarations in root node StatementList")
+	}
+	nodes := context.Declarations[0].Code.(*ast.StatementList).Stmts
+	if _, ok := nodes[0].(*ast.StatementList).Stmts[0].(*ast.Assign); !ok {
+		t.Error("Assign node expected, got " + reflect.TypeOf(nodes[0].(*ast.StatementList).Stmts[0]).String())
+	}
+	assign := nodes[0].(*ast.StatementList).Stmts[0].(*ast.Assign)
+	if assign.Variable.(*ast.VariableReference).Name != "testVar" {
+		t.Error("Incorrect variable name")
+	}
+	if assign.Variable.(*ast.VariableReference).Type.Kind() != ast.ComplexTypeStruct {
+		t.Error("Expected variable base type to be complex struct")
+	}
+	if len(assign.Value.(*ast.StructLiteral).Type.Fields) != 1 {
+		t.Error("Expected 1 field")
+	}
+	if assign.Value.(*ast.StructLiteral).Type.Fields[0].Ident != "Field" {
+		t.Error("Field named incorrectly")
+	}
+	if assign.Value.(*ast.StructLiteral).Type.Fields[0].Type != ast.PrimitiveTypeString {
+		t.Error("Field type string expected")
+	}
+	if len(assign.Value.(*ast.StructLiteral).Values) != 0 {
+		t.Error("Expected no values")
+	}
+}
+
+func TestLocalStructDeclaredThenInitializedCorrectly(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+		func test() {
+			var testVar struct {
+				Field string
+			} = struct {
+				Field string
+			}{
+				Field: "abc",
+			}
+		}`, t)
+	if len(context.Declarations) != 1 {
+		t.Error("Unexpected number of declarations")
+	}
+	if context.Declarations[0].Identifier != "test" {
+		t.Error("Unexpected declaration name")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList")
+	}
+	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+		t.Error("Unexpected number of declarations in root node StatementList")
+	}
+	nodes := context.Declarations[0].Code.(*ast.StatementList).Stmts
+	if _, ok := nodes[0].(*ast.StatementList).Stmts[0].(*ast.Assign); !ok {
+		t.Error("Assign node expected, got " + reflect.TypeOf(nodes[0].(*ast.StatementList).Stmts[0]).String())
+	}
+	assign := nodes[0].(*ast.StatementList).Stmts[0].(*ast.Assign)
+	if assign.Variable.(*ast.VariableReference).Name != "testVar" {
+		t.Error("Incorrect variable name")
+	}
+	if assign.Variable.(*ast.VariableReference).Type.Kind() != ast.ComplexTypeStruct {
+		t.Error("Expected variable base type to be complex struct")
+	}
+	if len(assign.Value.(*ast.StructLiteral).Type.Fields) != 1 {
+		t.Error("Expected 1 field")
+	}
+	if assign.Value.(*ast.StructLiteral).Type.Fields[0].Ident != "Field" {
+		t.Error("Field named incorrectly")
+	}
+	if assign.Value.(*ast.StructLiteral).Type.Fields[0].Type != ast.PrimitiveTypeString {
+		t.Error("Field type string expected")
+	}
+	if len(assign.Value.(*ast.StructLiteral).Values) != 1 {
+		t.Error("Expected 1 value")
+	}
+	if assign.Value.(*ast.StructLiteral).Values["Field"].(*ast.StringLiteral).Str != "abc" {
+		t.Error("Literal value incorrect")
+	}
+}
+
+func TestLocalStructInitializedCorrectly(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    func test(){
+			testVar := struct{
+				Field string
+			}{
+				Field: "abc",
+			}
+		}`, t)
+
+	if len(context.Declarations) != 1 {
+		t.Error("Unexpected number of declarations")
+	}
+	if context.Declarations[0].Identifier != "test" {
+		t.Error("Unexpected declaration name")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList")
+	}
+	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+		t.Error("Unexpected number of declarations in root node StatementList")
+	}
+	nodes := context.Declarations[0].Code.(*ast.StatementList).Stmts
+	if _, ok := nodes[0].(*ast.Assign); !ok {
+		t.Error("Assign node expected, got " + reflect.TypeOf(nodes[0].(*ast.StatementList).Stmts[0]).String())
+	}
+	assign := nodes[0].(*ast.Assign)
+	if assign.Variable.(*ast.VariableReference).Name != "testVar" {
+		t.Error("Incorrect variable name")
+	}
+	if assign.Variable.(*ast.VariableReference).Type.Kind() != ast.ComplexTypeStruct {
+		t.Error("Expected variable base type to be complex struct")
+	}
+	if len(assign.Value.(*ast.StructLiteral).Type.Fields) != 1 {
+		t.Error("Expected 1 field")
+	}
+	if assign.Value.(*ast.StructLiteral).Type.Fields[0].Ident != "Field" {
+		t.Error("Field named incorrectly")
+	}
+	if assign.Value.(*ast.StructLiteral).Type.Fields[0].Type != ast.PrimitiveTypeString {
+		t.Error("Field type string expected")
+	}
+	if len(assign.Value.(*ast.StructLiteral).Values) != 1 {
+		t.Error("Expected 1 value")
+	}
+	if assign.Value.(*ast.StructLiteral).Values["Field"].(*ast.StringLiteral).Str != "abc" {
+		t.Error("Literal value incorrect")
+	}
+}
+
 func TestGlobalIntArrayInvalidLenErrors(t *testing.T) {
 	_, context := setupTestGetAST(nil, `
     package test
@@ -568,7 +874,7 @@ func TestArrayLocalDeclarationProducesCorrectAST(t *testing.T) {
 	if s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind() != ast.ComplexTypeArray {
 		t.Error("ComplexTypeArray expected, got", s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind())
 	}
-	lenNode := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.(ast.ArrayType).Len
+	lenNode := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Len
 	if lenNode == nil {
 		t.Error("Len node expected")
 	}
@@ -619,7 +925,7 @@ func TestNestedArrayLocalDeclarationProducesCorrectAST(t *testing.T) {
 	if s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind() != ast.ComplexTypeArray {
 		t.Error("ComplexTypeArray expected, got", s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.Kind())
 	}
-	subType := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.(ast.ArrayType).SubType
+	subType := s.Stmts[0].(*ast.Assign).Value.(*ast.ArrayLiteral).Type.SubType
 	if subType == nil {
 		t.Error("subType node expected")
 	}

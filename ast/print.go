@@ -2,7 +2,6 @@ package ast
 
 import (
 	"fmt"
-	"reflect"
 	"strconv"
 )
 
@@ -47,17 +46,37 @@ func (node *StringLiteral) Print(level int) {
 
 // Print writes a description of the node to standard output, at the specified indentation level.
 func (node *ArrayLiteral) Print(level int) {
-	switch n := node.Type.(type) {
-	case ArrayType:
-		printLeveled("len{", level)
-		n.Len.Print(level + 1)
-		printLeveled("}"+node.Type.String(), level)
-		return
-	default:
-		printLeveled("ERR unexpected node type: "+reflect.TypeOf(node.Type).Name(), level)
+	printLeveled("array{", level)
+	printLeveled("len{", level+1)
+	node.Type.Len.Print(level + 2)
+	printLeveled("}", level+1)
+	if len(node.Literal) > 0 {
+		printLeveled("values{", level+1)
+		for _, v := range node.Literal {
+			if v == nil {
+				printLeveled("NIL", level+2)
+			} else {
+				v.Print(level + 2)
+			}
+		}
+		printLeveled("}", level+1)
 	}
+	printLeveled("} <"+node.Type.String()+">", level)
+}
 
-	printLeveled(node.Type.String(), level)
+// Print writes a description of the struct to standard output, at the specified indentation level.
+func (node *StructLiteral) Print(level int) {
+	printLeveled("struct{", level)
+	for _, field := range node.Type.Fields {
+		if node.Values != nil && node.Values[field.Ident] != nil {
+			printLeveled("Field: '"+field.Ident+"' {", level+1)
+			node.Values[field.Ident].Print(level + 2)
+			printLeveled("} <"+field.Type.String()+">", level+1)
+		} else {
+			printLeveled("Field: '"+field.Ident+"' (nil) <"+field.Type.String()+">", level+1)
+		}
+	}
+	printLeveled("}", level)
 }
 
 // Print writes a description of the node to standard output, at the specified indentation level.
@@ -115,7 +134,11 @@ func (node *Subscript) Print(level int) {
 // Print writes a description of the node to standard output, at the specified indentation level.
 func (node *Assign) Print(level int) {
 	if _, ok := node.Variable.(*VariableReference); ok {
-		printLeveled(node.Variable.(*VariableReference).Name+" <= {", level)
+		typeStr := "<?>"
+		if node.Variable.(*VariableReference).Type != nil {
+			typeStr = "<" + node.Variable.(*VariableReference).Type.String() + ">"
+		}
+		printLeveled(node.Variable.(*VariableReference).Name+" "+typeStr+" <= {", level)
 	} else {
 		printLeveled("assign {", level)
 		node.Variable.Print(level + 1)
@@ -205,7 +228,7 @@ func printLeveled(str string, level int) {
 //Type system
 
 func (t NamedType) String() string {
-	return t.Type.String() + "{" + t.Ident + "}"
+	return t.Ident + " " + t.Type.String()
 }
 
 func (tk TypeKindDescription) String() string {

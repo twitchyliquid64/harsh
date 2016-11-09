@@ -26,7 +26,7 @@ Planned features, in various states are:
 
  - [x] Testing for new type system - arrays, array declaration, array subtype etc
  - [ ] Complete typecheck system
- - [ ] Implement structs
+ - [x] Implement structs
  - [x] Store type of VariableReference nodes in node for constant time type checking
  - [x] e2e test for new bool operators & arrays
  - [x] Testing for exec errors

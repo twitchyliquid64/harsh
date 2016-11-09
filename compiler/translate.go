@@ -23,7 +23,7 @@ func translateGoAST(fset *token.FileSet, inp *goast.File) (ast.Node, *Context) {
 
 func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast.Node {
 	if context.Debug {
-		fmt.Println("translateGoNode(): ", t.Kind())
+		fmt.Println("translateGoNode(): ", t.Kind(), t.Type().String())
 	}
 
 	switch t.Kind() {
@@ -148,17 +148,15 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 				ln := ast.StatementList{}
 				for _, spec := range d.Specs {
 					if s, ok := spec.(*goast.ValueSpec); ok {
-						for i := range s.Names {
-							assignNode := defaultValue(convertTypeToTypeKind(fset, s.Type, context))
+						for i, ident := range s.Names {
+							assignNode := defaultValue(convertTypeToTypeKind(fset, s.Type, context), context)
 							if i < len(s.Values) {
 								assignNode = translateGoNode(fset, context, reflect.ValueOf(s.Values[i]))
 							}
 							ln.Stmts = append(ln.Stmts, &ast.Assign{
 								NewLocal: true,
-								Variable: &ast.VariableReference{
-									Name: s.Names[i].Name,
-								},
-								Value: assignNode,
+								Variable: translateGoNode(fset, context, reflect.ValueOf(ident)),
+								Value:    assignNode,
 							})
 						}
 					} else {
@@ -173,13 +171,56 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 			}
 
 		case goast.CompositeLit: //composite literal: <type>{<values>...}
-			compLit := &ast.ArrayLiteral{
-				Type: convertTypeToTypeKind(fset, v.Type, context),
-			}
+			subTypeOfComposite := convertTypeToTypeKind(fset, v.Type, context)
+			orderedLiterals := []ast.Node{}
+			namedLiterals := map[string]ast.Node{}
+
+			// collect values
 			for _, n := range v.Elts {
-				compLit.Literal = append(compLit.Literal, translateGoNode(fset, context, reflect.ValueOf(n)))
+				switch valueNode := n.(type) {
+				case *goast.KeyValueExpr:
+					if _, ok := valueNode.Key.(*goast.Ident); !ok {
+						context.Errors = append(context.Errors, TranslateError{
+							Class: NotSupported,
+							Pos:   fset.Position(v.Pos()),
+							Text:  "Literal in composite with non-deterministic key is not supported: " + reflect.TypeOf(valueNode.Key).String(),
+						})
+					}
+					namedLiterals[valueNode.Key.(*goast.Ident).Name] = translateGoNode(fset, context, reflect.ValueOf(valueNode.Value))
+				default:
+					orderedLiterals = append(orderedLiterals, translateGoNode(fset, context, reflect.ValueOf(n)))
+				}
 			}
-			return compLit
+
+			if _, ok := v.Type.(*goast.StructType); ok {
+				if len(orderedLiterals) > 0 {
+					context.Errors = append(context.Errors, TranslateError{
+						Class: NotSupported,
+						Pos:   fset.Position(v.Pos()),
+						Text:  "Cannot have unnamed literals in struct composite literal",
+					})
+				}
+				return &ast.StructLiteral{
+					Type:   subTypeOfComposite.(ast.StructType),
+					Values: namedLiterals,
+				}
+			}
+			if len(namedLiterals) > 0 {
+				context.Errors = append(context.Errors, TranslateError{
+					Class: NotSupported,
+					Pos:   fset.Position(v.Pos()),
+					Text:  "Cannot have key-value pairs for non-struct composite literal of subtype: " + reflect.TypeOf(v.Type).String(),
+				})
+			}
+			return &ast.ArrayLiteral{
+				Type: ast.ArrayType{
+					SubType: subTypeOfComposite,
+					Len: &ast.IntegerLiteral{
+						Val: int64(len(orderedLiterals)),
+					},
+				},
+				Literal: orderedLiterals,
+			}
 
 		case goast.IndexExpr:
 			return &ast.Subscript{
@@ -269,23 +310,37 @@ func translateGoBinop(tok token.Token) ast.BinOpType {
 	}
 }
 
-func defaultValue(k ast.TypeKind) ast.Node {
+func defaultValue(k ast.TypeKind, context *Context) ast.Node {
 	if k == ast.PrimitiveTypeInt {
 		return &ast.IntegerLiteral{}
 	}
 	if k == ast.PrimitiveTypeString {
 		return &ast.StringLiteral{}
 	}
-	if _, ok := k.(ast.ArrayType); ok {
+	if a, ok := k.(ast.ArrayType); ok {
 		return &ast.ArrayLiteral{
-			Type:    k,
+			Type:    a,
 			Literal: nil,
 		}
 	}
+	if st, ok := k.(ast.StructType); ok {
+		return &ast.StructLiteral{
+			Type:   st,
+			Values: nil,
+		}
+	}
+	context.Errors = append(context.Errors, TranslateError{
+		Class: InternalErr,
+		Text:  "Could not generate a default value for type: " + reflect.TypeOf(k).String(),
+	})
 	return &ast.NilLiteral{}
 }
 
 func convertTypeToTypeKind(fset *token.FileSet, t goast.Expr, context *Context) ast.TypeKind {
+	if context.Debug {
+		fmt.Println("convertTypeToTypeKind(): ", reflect.TypeOf(t))
+	}
+	//TODO: Refactor this mess to use a type switch
 	if node, ok := t.(*goast.Ident); ok {
 		if node.Name == "string" {
 			return ast.PrimitiveTypeString
@@ -325,6 +380,9 @@ func convertTypeToTypeKind(fset *token.FileSet, t goast.Expr, context *Context) 
 		}
 	} else if node, ok := t.(*goast.StructType); ok {
 		structRet := ast.StructType{}
+		if context.Debug {
+			fmt.Println("Got struct", node.Fields.List)
+		}
 		for _, field := range node.Fields.List {
 			ft := translateType(fset, field, context)
 			if len(ft) != 1 {
@@ -335,7 +393,7 @@ func convertTypeToTypeKind(fset *token.FileSet, t goast.Expr, context *Context) 
 				})
 				return ast.PrimitiveTypeUndefined
 			}
-			structRet.Fields = append(structRet.Fields, ft[0].(*ast.NamedType))
+			structRet.Fields = append(structRet.Fields, ft[0].(ast.NamedType))
 		}
 		return structRet
 	}
@@ -349,23 +407,19 @@ func convertTypeToTypeKind(fset *token.FileSet, t goast.Expr, context *Context) 
 }
 
 func translateType(fset *token.FileSet, typ *goast.Field, context *Context) []ast.TypeKind {
-	var output []ast.TypeKind
-	switch typ.Type.(type) {
-	case *goast.Ident:
-		kind := convertTypeToTypeKind(fset, typ.Type, context)
-		for _, name := range typ.Names {
-			output = append(output, ast.NamedType{Type: kind, Ident: name.Name})
-		}
-		if len(typ.Names) == 0 {
-			output = append(output, kind)
-		}
-	default:
-		context.Errors = append(context.Errors, TranslateError{
-			Class: NotSupported,
-			Pos:   fset.Position(typ.Type.Pos()),
-			Text:  "Translate type encounted unexpected type: " + reflect.TypeOf(typ.Type).String(),
-		}) //goast.Print(nil, typ.Type)
+	if context.Debug {
+		fmt.Println("translateType(): ", reflect.TypeOf(typ.Type))
 	}
+	kind := convertTypeToTypeKind(fset, typ.Type, context)
+	var output []ast.TypeKind
+
+	for _, name := range typ.Names {
+		output = append(output, ast.NamedType{Type: kind, Ident: name.Name})
+	}
+	if len(typ.Names) == 0 {
+		output = append(output, kind)
+	}
+
 	return output
 }
 

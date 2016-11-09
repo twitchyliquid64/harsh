@@ -25,7 +25,7 @@ func main() {
 	fmt.Print("Globals: {")
 	for i, name := range context.Globals.Names() {
 		v := context.Globals[name]
-		fmt.Print(name, v.Type.String())
+		fmt.Print(name, " ", v.Type.String())
 		if i+1 < len(context.Globals.Names()) {
 			fmt.Print(", ")
 		}
@@ -41,7 +41,7 @@ func main() {
 				fmt.Print(", ")
 			}
 		}
-		fmt.Println("  }")
+		fmt.Println("}")
 		if decl.Code != nil {
 			decl.Code.Print(2)
 		}

@@ -28,8 +28,14 @@ type BoolLiteral struct {
 
 // ArrayLiteral represents a composite of literals which initialize a variable.
 type ArrayLiteral struct {
-	Type    TypeKind
+	Type    ArrayType
 	Literal []Node
+}
+
+// StructLiteral represents a composite of named values which initialize a variable of type struct.
+type StructLiteral struct {
+	Type   StructType
+	Values map[string]Node
 }
 
 // NilLiteral symbolizes an invalid construct, or simply a null value.

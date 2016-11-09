@@ -32,8 +32,39 @@ func (t TypeError) Error() string {
 	return t.Msg
 }
 
+func checkStructsEqual(l ast.StructType, r ast.StructType) bool {
+	// left join with left struct -- if equal continue
+	for _, lfield := range l.Fields {
+		for _, rfield := range r.Fields {
+			if rfield.Ident == lfield.Ident {
+				if !TypeEqual(lfield.Type, rfield.Type) {
+					return false
+				}
+			}
+		}
+	}
+	//left join with right struct
+	for _, lfield := range r.Fields {
+		for _, rfield := range l.Fields {
+			if rfield.Ident == lfield.Ident {
+				if !TypeEqual(lfield.Type, rfield.Type) {
+					return false
+				}
+			}
+		}
+	}
+	return true
+}
+
 // TypeEqual returns true if the given types are equivalent and can be operated without promotion.
 func TypeEqual(l ast.TypeKind, r ast.TypeKind) bool {
+	if l.Kind() == ast.ComplexTypeStruct && r.Kind() == ast.ComplexTypeStruct {
+		return checkStructsEqual(l.(ast.StructType), r.(ast.StructType))
+	}
+	if l.Kind() == ast.ComplexTypeArray && r.Kind() == ast.ComplexTypeArray {
+		return TypeEqual(l.(ast.ArrayType).SubType, r.(ast.ArrayType).SubType)
+	}
+
 	return l == r
 }
 
@@ -76,6 +107,34 @@ func Typecheck(context *TypecheckContext, node ast.Node) ast.TypeKind {
 			return ast.UnknownType
 		}
 		return l
+
+	case *ast.StructLiteral:
+		for _, field := range n.Type.Fields {
+			if v, ok := n.Values[field.Ident]; ok {
+				vType := Typecheck(context, v)
+				if !TypeEqual(vType, field.Type) {
+					context.Errors = append(context.Errors, TypeError{
+						Kind: TypeErrorIncompatibleTypesErr,
+						Msg:  "Invalid struct literal - cannot have value of type " + vType.String() + " when the field is typed " + field.Type.String(),
+					})
+					return ast.UnknownType
+				}
+			}
+		}
+		return n.Type
+
+	case *ast.ArrayLiteral:
+		for _, element := range n.Literal {
+			eType := Typecheck(context, element)
+			if !TypeEqual(eType, n.Type.SubType) {
+				context.Errors = append(context.Errors, TypeError{
+					Kind: TypeErrorIncompatibleTypesErr,
+					Msg:  "Invalid array literal - cannot have value of type " + eType.String() + " when the array contains elements of type " + n.Type.SubType.String(),
+				})
+				return ast.UnknownType
+			}
+		}
+		return n.Type
 
 	case *ast.Assign:
 		l := Typecheck(context, n.Value)

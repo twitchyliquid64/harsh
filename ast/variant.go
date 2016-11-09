@@ -11,6 +11,7 @@ type Variant struct {
 	IsReturn                bool
 	VariableReferenceFailed bool
 	VectorData              []*Variant
+	NamedData               map[string]*Variant
 }
 
 // MakeVariant takes a value of type *Variant or a go primitive (int/int64/bool/string) and constructs a *Variant.

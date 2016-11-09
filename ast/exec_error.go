@@ -8,6 +8,7 @@ const (
 	BoundsErr
 	NotFoundErr
 	InvalidAst
+	InternalErr
 )
 
 // ExecutionError encapsulates errors encountered while executing the AST at runtime.

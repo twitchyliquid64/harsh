@@ -81,11 +81,18 @@ func (a ArrayType) BaseType() TypeKind {
 
 // StructType represents a named set of fields contained within one structure.
 type StructType struct {
-	Fields []*NamedType
+	Fields []NamedType
 }
 
 func (a StructType) String() string {
-	return "struct{???-???}"
+	out := "struct{"
+	for i, f := range a.Fields {
+		out += f.String()
+		if i+1 < len(a.Fields) {
+			out += ", "
+		}
+	}
+	return out + "}"
 }
 
 // Kind returns ComplexTypeArray.

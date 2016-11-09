@@ -297,3 +297,235 @@ func TestTypecheckSubscriptWorks(t *testing.T) {
 		t.Error("Expected bool type")
 	}
 }
+
+func TestTypecheckStructLiteralWorks(t *testing.T) {
+	node := &ast.StructLiteral{
+		Type: ast.StructType{
+			Fields: []ast.NamedType{
+				ast.NamedType{
+					Ident: "Abc",
+					Type:  ast.PrimitiveTypeInt,
+				},
+			},
+		},
+		Values: map[string]ast.Node{
+			"Abc": &ast.IntegerLiteral{
+				Val: 1234,
+			},
+		},
+	}
+	c := &TypecheckContext{ReturnType: ast.PrimitiveTypeBool}
+	ty := Typecheck(c, node)
+	if len(c.Errors) != 0 {
+		t.Error("0 Type errors expected")
+	}
+	if ty.Kind() != ast.ComplexTypeStruct {
+		t.Error("Expected struct type")
+	}
+}
+
+func TestTypecheckStructLiteralErrorsOnFieldMismatch(t *testing.T) {
+	node := &ast.StructLiteral{
+		Type: ast.StructType{
+			Fields: []ast.NamedType{
+				ast.NamedType{
+					Ident: "Abc",
+					Type:  ast.PrimitiveTypeInt,
+				},
+			},
+		},
+		Values: map[string]ast.Node{
+			"Abc": &ast.StringLiteral{
+				Str: "1234",
+			},
+		},
+	}
+	c := &TypecheckContext{ReturnType: ast.PrimitiveTypeBool}
+	ty := Typecheck(c, node)
+	if len(c.Errors) != 1 {
+		t.Error("1 Type errors expected")
+	}
+	if ty.Kind() != ast.UnknownType {
+		t.Error("Expected unknown type")
+	}
+}
+
+func TestTypeEqualStructsReturnsTrue(t *testing.T) {
+	l := ast.StructType{
+		Fields: []ast.NamedType{
+			ast.NamedType{
+				Ident: "Abc",
+				Type:  ast.PrimitiveTypeInt,
+			},
+		},
+	}
+	r := ast.StructType{
+		Fields: []ast.NamedType{
+			ast.NamedType{
+				Ident: "Abc",
+				Type:  ast.PrimitiveTypeInt,
+			},
+		},
+	}
+	if !TypeEqual(l, r) {
+		t.Error("Expected types to be equal")
+	}
+}
+
+func TestTypeEqualStructDifferentFieldTypesReturnsFalse(t *testing.T) {
+	l := ast.StructType{
+		Fields: []ast.NamedType{
+			ast.NamedType{
+				Ident: "Abc",
+				Type:  ast.PrimitiveTypeInt,
+			},
+		},
+	}
+	r := ast.StructType{
+		Fields: []ast.NamedType{
+			ast.NamedType{
+				Ident: "Abc",
+				Type:  ast.PrimitiveTypeString,
+			},
+		},
+	}
+	if TypeEqual(l, r) {
+		t.Error("Expected types to be different")
+	}
+}
+
+func TestTypeEqualStructExtraFieldsReturnsFalse1(t *testing.T) {
+	l := ast.StructType{
+		Fields: []ast.NamedType{
+			ast.NamedType{
+				Ident: "Abc",
+				Type:  ast.PrimitiveTypeInt,
+			},
+		},
+	}
+	r := ast.StructType{
+		Fields: []ast.NamedType{
+			ast.NamedType{
+				Ident: "Abc",
+				Type:  ast.PrimitiveTypeString,
+			},
+			ast.NamedType{
+				Ident: "Abcdr",
+				Type:  ast.PrimitiveTypeString,
+			},
+		},
+	}
+	if TypeEqual(l, r) {
+		t.Error("Expected types to be different")
+	}
+}
+
+func TestTypeEqualStructExtraFieldsReturnsFalse2(t *testing.T) {
+	l := ast.StructType{
+		Fields: []ast.NamedType{
+			ast.NamedType{
+				Ident: "Abc",
+				Type:  ast.PrimitiveTypeInt,
+			},
+			ast.NamedType{
+				Ident: "Abcdr",
+				Type:  ast.PrimitiveTypeString,
+			},
+		},
+	}
+	r := ast.StructType{
+		Fields: []ast.NamedType{
+			ast.NamedType{
+				Ident: "Abc",
+				Type:  ast.PrimitiveTypeString,
+			},
+		},
+	}
+	if TypeEqual(l, r) {
+		t.Error("Expected types to be different")
+	}
+}
+
+func TestTypecheckArrayLiteralWorks(t *testing.T) {
+	node := &ast.ArrayLiteral{
+		Type: ast.ArrayType{
+			SubType: ast.PrimitiveTypeInt,
+		},
+		Literal: []ast.Node{
+			&ast.IntegerLiteral{Val: 23},
+		},
+	}
+	c := &TypecheckContext{ReturnType: ast.PrimitiveTypeBool}
+	ty := Typecheck(c, node)
+	if len(c.Errors) != 0 {
+		t.Error("0 Type errors expected")
+	}
+	if ty.Kind() != ast.ComplexTypeArray {
+		t.Error("Expected array type")
+	}
+}
+
+func TestTypecheckArrayLiteralErrorsOnFieldMismatch(t *testing.T) {
+	node := &ast.ArrayLiteral{
+		Type: ast.ArrayType{
+			SubType: ast.PrimitiveTypeInt,
+		},
+		Literal: []ast.Node{
+			&ast.StringLiteral{
+				Str: "1234",
+			},
+		},
+	}
+	c := &TypecheckContext{ReturnType: ast.PrimitiveTypeBool}
+	ty := Typecheck(c, node)
+	if len(c.Errors) != 1 {
+		t.Error("1 Type errors expected")
+	}
+	if ty.Kind() != ast.UnknownType {
+		t.Error("Expected unknown type")
+	}
+}
+
+func TestTypeEqualArrayReturnsTrue(t *testing.T) {
+	l := ast.ArrayType{
+		SubType: ast.PrimitiveTypeBool,
+	}
+	r := ast.ArrayType{
+		SubType: ast.PrimitiveTypeBool,
+	}
+	if !TypeEqual(l, r) {
+		t.Error("Expected types to be equal")
+	}
+}
+
+func TestTypeEqualArrayArrayReturnsTrue(t *testing.T) {
+	l := ast.ArrayType{
+		SubType: ast.ArrayType{
+			SubType: ast.PrimitiveTypeBool,
+		},
+	}
+	r := ast.ArrayType{
+		SubType: ast.ArrayType{
+			SubType: ast.PrimitiveTypeBool,
+		},
+	}
+	if !TypeEqual(l, r) {
+		t.Error("Expected types to be equal")
+	}
+}
+
+func TestTypeEqualArrayMismatchReturnsFalse(t *testing.T) {
+	l := ast.ArrayType{
+		SubType: ast.ArrayType{
+			SubType: ast.PrimitiveTypeBool,
+		},
+	}
+	r := ast.ArrayType{
+		SubType: ast.ArrayType{
+			SubType: ast.PrimitiveTypeString,
+		},
+	}
+	if TypeEqual(l, r) {
+		t.Error("Expected types to be different")
+	}
+}

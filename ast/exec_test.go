@@ -1190,3 +1190,82 @@ func TestSubscriptErrorsWithOutOfBoundsSubscript(t *testing.T) {
 		t.Error("Incorrect error class")
 	}
 }
+
+func TestStructLiteralWorksWhenGivenValue(t *testing.T) {
+	op := &StructLiteral{
+		Type: StructType{
+			Fields: []NamedType{
+				NamedType{
+					Ident: "Lol",
+					Type:  PrimitiveTypeInt,
+				},
+			},
+		},
+		Values: map[string]Node{
+			"Lol": &IntegerLiteral{Val: 12},
+		},
+	}
+
+	ns := Namespace(map[string]*Variant{})
+	context := ExecContext{
+		IsFuncContext:     true,
+		GlobalNamespace:   ns,
+		FunctionNamespace: map[string]*Variant{},
+	}
+
+	r := op.Exec(&context)
+	if r.Type != ComplexTypeStruct {
+		t.Error("Expected ComplexTypeStruct")
+	}
+	if len(context.Errors) != 0 {
+		t.Error("0 errors expected,", len(context.Errors))
+	}
+	if lol, ok := r.NamedData["Lol"]; ok {
+		if lol.Type != PrimitiveTypeInt {
+			t.Error("Expected field Lol to be type PrimitiveTypeInt")
+		}
+		if lol.Int != 12 {
+			t.Error("Expected integer value 12")
+		}
+	} else {
+		t.Error("Field data missing in variant")
+	}
+}
+
+func TestStructLiteralWorksWhenValueOmitted(t *testing.T) {
+	op := &StructLiteral{
+		Type: StructType{
+			Fields: []NamedType{
+				NamedType{
+					Ident: "Lol",
+					Type:  PrimitiveTypeInt,
+				},
+			},
+		},
+	}
+
+	ns := Namespace(map[string]*Variant{})
+	context := ExecContext{
+		IsFuncContext:     true,
+		GlobalNamespace:   ns,
+		FunctionNamespace: map[string]*Variant{},
+	}
+
+	r := op.Exec(&context)
+	if r.Type != ComplexTypeStruct {
+		t.Error("Expected ComplexTypeStruct")
+	}
+	if len(context.Errors) != 0 {
+		t.Error("0 errors expected,", len(context.Errors))
+	}
+	if lol, ok := r.NamedData["Lol"]; ok {
+		if lol.Type != PrimitiveTypeInt {
+			t.Error("Expected field Lol to be type PrimitiveTypeInt")
+		}
+		if lol.Int != 0 {
+			t.Error("Expected integer value 0")
+		}
+	} else {
+		t.Error("Field data missing in variant")
+	}
+}
