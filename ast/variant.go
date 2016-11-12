@@ -85,6 +85,19 @@ func DefaultVariantValue(t TypeKind) (*Variant, error) {
 		} else {
 			return ret, errors.New("Resolved length of array was not an integer")
 		}
+
+	case ComplexTypeStruct:
+		ret.NamedData = map[string]*Variant{}
+		for _, field := range t.(StructType).Fields {
+			fv, err := DefaultVariantValue(field.BaseType())
+			if err != nil {
+				return ret, err
+			}
+			ret.NamedData[field.Name()] = fv
+		}
+
+	default:
+		return ret, errors.New("Internal Error: cannot do anything about: " + t.Kind().String())
 	}
 	return ret, nil
 }

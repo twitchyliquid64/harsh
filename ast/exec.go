@@ -335,3 +335,32 @@ func (n *Subscript) Exec(context *ExecContext) *Variant {
 
 	return baseVar.VectorData[subscript.Int]
 }
+
+// Exec carries out node-specific logic, which may include evaluation of subnodes and primitive operations depending on the nodes type.
+func (n *NamedSelector) Exec(context *ExecContext) *Variant {
+	baseVar := n.Expr.Exec(context)
+
+	if baseVar.Type.Kind() != ComplexTypeStruct {
+		context.Errors = append(context.Errors, ExecutionError{
+			Class:        TypeErr,
+			CreatingNode: n,
+			Text:         "Cannot perform named selection operation on type " + baseVar.Type.String(),
+		})
+		return &Variant{
+			Type: PrimitiveTypeUndefined,
+		}
+	}
+
+	if v, ok := baseVar.NamedData[n.Name]; ok {
+		return v
+	}
+
+	context.Errors = append(context.Errors, ExecutionError{
+		Class:        NotFoundErr,
+		CreatingNode: n,
+		Text:         "Cannot find named element " + n.Name,
+	})
+	return &Variant{
+		Type: PrimitiveTypeUndefined,
+	}
+}

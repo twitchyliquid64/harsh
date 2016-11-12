@@ -126,13 +126,18 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 						Variable: translateGoNode(fset, context, reflect.ValueOf(l)),
 						Value:    translateGoNode(fset, context, reflect.ValueOf(v.Rhs[0])),
 					}
-				} else {
-					context.Errors = append(context.Errors, TranslateError{
-						Class: NotSupported,
-						Pos:   fset.Position(v.Pos()),
-						Text:  "Assignment LHS unknown: " + reflect.TypeOf(l).Name(),
-					})
+				} else if _, ok := l.(*goast.SelectorExpr); ok {
+					return &ast.Assign{
+						NewLocal: false,
+						Variable: translateGoNode(fset, context, reflect.ValueOf(l)),
+						Value:    translateGoNode(fset, context, reflect.ValueOf(v.Rhs[0])),
+					}
 				}
+				context.Errors = append(context.Errors, TranslateError{
+					Class: NotSupported,
+					Pos:   fset.Position(v.Pos()),
+					Text:  "Assignment LHS unknown: " + reflect.TypeOf(l).Name(),
+				})
 			}
 		case goast.UnaryExpr:
 			if v.Op == token.NOT {
@@ -140,6 +145,12 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 					Op:   ast.UnOpNot,
 					Expr: translateGoNode(fset, context, reflect.ValueOf(v.X)),
 				}
+			}
+
+		case goast.SelectorExpr:
+			return &ast.NamedSelector{
+				Name: v.Sel.Name,
+				Expr: translateGoNode(fset, context, reflect.ValueOf(v.X)),
 			}
 
 		case goast.DeclStmt:
@@ -488,6 +499,9 @@ func translateGoGenDecl(fset *token.FileSet, context *Context, node *goast.GenDe
 							Text:  "Could not calculated default value for global: " + err.Error(),
 						})
 					} else {
+						if context.Debug {
+							fmt.Println(v)
+						}
 						context.Globals.Save(name.Name, v)
 					}
 				case *goast.ArrayType:

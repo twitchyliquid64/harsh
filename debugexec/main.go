@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/twitchyliquid64/harsh/ast"
 	"github.com/twitchyliquid64/harsh/compiler"
 )
 
@@ -34,6 +35,8 @@ func main() {
 		c := &compiler.TypecheckContext{}
 		if len(f.Results) == 1 {
 			c.ReturnType = f.Results[0]
+		} else {
+			c.ReturnType = ast.PrimitiveTypeUndefined
 		}
 
 		compiler.Typecheck(c, f.Code)

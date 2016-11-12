@@ -20,6 +20,8 @@ const (
 	TypeerrorInternalErr TypeErrorKind = iota
 	// TypeErrorIncompatibleTypesErr represents a combination of operands or operators which are invalid in respect to their types.
 	TypeErrorIncompatibleTypesErr
+	// TypeErrorNotFoundErr represents a situation where a named sub element is used which does not exist.
+	TypeErrorNotFoundErr
 )
 
 // TypeError represents an error in the AST found during Typecheck().
@@ -185,6 +187,32 @@ func Typecheck(context *TypecheckContext, node ast.Node) ast.TypeKind {
 			return ast.UnknownType
 		}
 		return RHS.BaseType()
+
+	case *ast.NamedSelector:
+		up := Typecheck(context, n.Expr)
+		if up.Kind() != ast.ComplexTypeStruct {
+			context.Errors = append(context.Errors, TypeError{
+				Kind: TypeErrorIncompatibleTypesErr,
+				Msg:  "Cannot select non-struct type " + up.String(),
+			})
+			return ast.UnknownType
+		}
+		for _, field := range up.(ast.StructType).Fields {
+			if field.Name() == n.Name {
+				return field.BaseType()
+			}
+		}
+		context.Errors = append(context.Errors, TypeError{
+			Kind: TypeErrorNotFoundErr,
+			Msg:  "Cannot find sub-element " + n.Name,
+		})
+		return ast.UnknownType
+
+	case nil:
+		context.Errors = append(context.Errors, TypeError{
+			Kind: TypeerrorInternalErr,
+			Msg:  "Cannot typecheck nil node",
+		})
 
 	default:
 		context.Errors = append(context.Errors, TypeError{

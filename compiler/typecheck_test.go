@@ -514,18 +514,88 @@ func TestTypeEqualArrayArrayReturnsTrue(t *testing.T) {
 	}
 }
 
-func TestTypeEqualArrayMismatchReturnsFalse(t *testing.T) {
-	l := ast.ArrayType{
-		SubType: ast.ArrayType{
-			SubType: ast.PrimitiveTypeBool,
+func TestTypecheckNamedSelectorWorks(t *testing.T) {
+	s := &ast.StructLiteral{
+		Type: ast.StructType{
+			Fields: []ast.NamedType{
+				ast.NamedType{
+					Ident: "Abc",
+					Type:  ast.PrimitiveTypeInt,
+				},
+			},
+		},
+		Values: map[string]ast.Node{
+			"Abc": &ast.IntegerLiteral{
+				Val: 1234,
+			},
 		},
 	}
-	r := ast.ArrayType{
-		SubType: ast.ArrayType{
-			SubType: ast.PrimitiveTypeString,
+	sel := &ast.NamedSelector{
+		Name: "Abc",
+		Expr: s,
+	}
+
+	c := &TypecheckContext{ReturnType: ast.PrimitiveTypeBool}
+	ty := Typecheck(c, sel)
+	if len(c.Errors) != 0 {
+		t.Error("0 Type errors expected")
+	}
+	if ty != ast.PrimitiveTypeInt {
+		t.Error("Expected int type")
+	}
+}
+
+func TestTypecheckNamedSelectorErrorsIfNotExists(t *testing.T) {
+	s := &ast.StructLiteral{
+		Type: ast.StructType{
+			Fields: []ast.NamedType{
+				ast.NamedType{
+					Ident: "Abc",
+					Type:  ast.PrimitiveTypeInt,
+				},
+			},
+		},
+		Values: map[string]ast.Node{
+			"Abc": &ast.IntegerLiteral{
+				Val: 1234,
+			},
 		},
 	}
-	if TypeEqual(l, r) {
-		t.Error("Expected types to be different")
+	sel := &ast.NamedSelector{
+		Name: "doesnt exist bro",
+		Expr: s,
+	}
+
+	c := &TypecheckContext{ReturnType: ast.PrimitiveTypeBool}
+	ty := Typecheck(c, sel)
+	if len(c.Errors) != 1 {
+		t.Error("1 Type error expected")
+	}
+	if c.Errors[0].Kind != TypeErrorNotFoundErr {
+		t.Error("Expected TypeErrorNotFoundErr")
+	}
+	if ty != ast.UnknownType {
+		t.Error("Expected UnknownType type")
+	}
+}
+
+func TestTypecheckNamedSelectorErrorsIfWrongUpstreamType(t *testing.T) {
+	sel := &ast.NamedSelector{
+		Name: "doesnt exist bro",
+		Expr: &ast.IntegerLiteral{
+			Val: 1234,
+		},
+	}
+
+	c := &TypecheckContext{ReturnType: ast.PrimitiveTypeBool}
+	ty := Typecheck(c, sel)
+	if len(c.Errors) != 1 {
+		t.Error("1 Type error expected")
+	}
+	if c.Errors[0].Kind != TypeErrorIncompatibleTypesErr {
+		t.Error("Expected TypeErrorIncompatibleTypesErr")
+	}
+	if ty != ast.UnknownType {
+		t.Error("Expected UnknownType type")
 	}
 }

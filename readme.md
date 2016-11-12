@@ -21,11 +21,17 @@ Planned packages, in various states are:
 * mutate - methods to mutate an existing graph or swap nodes from graphs/subgraphs (breed) [planned]
 * generate - randomly generate graphs constrained by a complexity score [planned]
 
+There are also a bunch of command line utilities to play with:
+
+ * debugprint - parses & compiles the given sourcefile, printing the AST representation to stdout along with any parse/translate/type errors.
+
+ * debugexec - attempts to execute a function in the given sourcefile, given some parameters.
 
 ### Immediate TODO
 
 #### Discrete items
 
+ - [ ] Tests for DefaultVariantValue & variant stuff
  - [ ] Implement struct access
  - [ ] Implement function calls
  - [ ] Implement function types
@@ -33,10 +39,11 @@ Planned packages, in various states are:
  - [ ] Implement end-to-end tests
  - [ ] Refactor print to arbitrary output and colours
  - [ ] SVG visualiser of basic nodes
+ - [ ] debugexec infers types of command line parameters based on parameter type - rather than guessing
 
 #### Longer term plan
 
- * Get something that is useful for local evaluation
+ * Enough features implemented for useful codegraph execution
   * Loops
   * Function calls
   * More binary operations

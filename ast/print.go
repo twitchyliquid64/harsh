@@ -35,6 +35,17 @@ func (node *ReturnStmt) Print(level int) {
 }
 
 // Print writes a description of the node to standard output, at the specified indentation level.
+func (node *NamedSelector) Print(level int) {
+	printLeveled("."+node.Name+" {", level)
+	if node.Expr == nil {
+		printLeveled("NIL", level+1)
+	} else {
+		node.Expr.Print(level + 1)
+	}
+	printLeveled("}", level)
+}
+
+// Print writes a description of the node to standard output, at the specified indentation level.
 func (node *IntegerLiteral) Print(level int) {
 	printLeveled(strconv.FormatInt(node.Val, 10)+" int64", level)
 }

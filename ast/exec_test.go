@@ -1269,3 +1269,92 @@ func TestStructLiteralWorksWhenValueOmitted(t *testing.T) {
 		t.Error("Field data missing in variant")
 	}
 }
+
+func TestNamedSelectorWorksWithStructLiteral(t *testing.T) {
+	s := &StructLiteral{
+		Type: StructType{
+			Fields: []NamedType{
+				NamedType{
+					Ident: "Lol",
+					Type:  PrimitiveTypeInt,
+				},
+			},
+		},
+	}
+	sel := &NamedSelector{
+		Name: "Lol",
+		Expr: s,
+	}
+
+	ns := Namespace(map[string]*Variant{})
+	context := ExecContext{
+		IsFuncContext:     true,
+		GlobalNamespace:   ns,
+		FunctionNamespace: map[string]*Variant{},
+	}
+
+	r := sel.Exec(&context)
+	if r.Type != PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt")
+	}
+	if len(context.Errors) != 0 {
+		t.Error("0 errors expected,", len(context.Errors))
+	}
+	if r.Int != 0 {
+		t.Error("Expected default (0) value")
+	}
+}
+
+func TestNamedSelectorErrorsIfNotFound(t *testing.T) {
+	s := &StructLiteral{
+		Type: StructType{
+			Fields: []NamedType{
+				NamedType{
+					Ident: "Lol",
+					Type:  PrimitiveTypeInt,
+				},
+			},
+		},
+	}
+	sel := &NamedSelector{
+		Name: "Bro",
+		Expr: s,
+	}
+
+	ns := Namespace(map[string]*Variant{})
+	context := ExecContext{
+		IsFuncContext:     true,
+		GlobalNamespace:   ns,
+		FunctionNamespace: map[string]*Variant{},
+	}
+
+	r := sel.Exec(&context)
+	if r.Type != PrimitiveTypeUndefined {
+		t.Error("Expected PrimitiveTypeUndefined")
+	}
+	if len(context.Errors) != 1 {
+		t.Error("1 errors expected, got", len(context.Errors))
+	}
+}
+
+func TestNamedSelectorErrorsIfWrongUpstreamType(t *testing.T) {
+	sel := &NamedSelector{
+		Name: "Bro",
+		Expr: &NilLiteral{},
+	}
+
+	ns := Namespace(map[string]*Variant{})
+	context := ExecContext{
+		IsFuncContext:     true,
+		GlobalNamespace:   ns,
+		FunctionNamespace: map[string]*Variant{},
+	}
+
+	r := sel.Exec(&context)
+	if r.Type != PrimitiveTypeUndefined {
+		t.Error("Expected PrimitiveTypeUndefined")
+	}
+	if len(context.Errors) != 1 {
+		t.Error("1 errors expected, got", len(context.Errors))
+	}
+}

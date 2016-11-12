@@ -543,6 +543,46 @@ func TestGlobalStructWithStructSavedCorrectly(t *testing.T) {
 	}
 }
 
+func TestSelectorExprTranslatesCorrectly(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    var testVar struct{
+			Crap struct{
+				Brah string
+			}
+		}
+
+		func test() string {
+			return testVar.Crap
+		}`, t)
+
+	if len(context.Declarations) != 1 {
+		t.Error("Unexpected number of declarations")
+	}
+	if context.Declarations[0].Identifier != "test" {
+		t.Error("Unexpected declaration name")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList")
+	}
+	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+		t.Error("Unexpected number of declarations in root node StatementList")
+	}
+	nodes := context.Declarations[0].Code.(*ast.StatementList).Stmts
+
+	if _, ok := nodes[0].(*ast.ReturnStmt).Expr.(*ast.NamedSelector); !ok {
+		t.Error("Expected node to be NamedSelector, got", reflect.TypeOf(nodes[0]))
+		t.FailNow()
+	}
+	if nodes[0].(*ast.ReturnStmt).Expr.(*ast.NamedSelector).Name != "Crap" {
+		t.Error("Expected selector to be brah")
+	}
+	if nodes[0].(*ast.ReturnStmt).Expr.(*ast.NamedSelector).Expr.(*ast.VariableReference).Name != "testVar" {
+		t.Error("Expected variable to be testVar")
+	}
+}
+
 func TestGlobalArrayWithStructSavedCorrectly(t *testing.T) {
 	_, context := setupTestGetAST(nil, `
     package test

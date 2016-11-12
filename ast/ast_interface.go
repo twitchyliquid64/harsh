@@ -47,6 +47,12 @@ type ReturnStmt struct {
 	Expr Node
 }
 
+// NamedSelector represents the fetch of a named set of data from the upstream data structure.
+type NamedSelector struct {
+	Expr Node
+	Name string
+}
+
 // IfStmt represents conditional branching, evaluating a condition then taking various actions based on the result.
 type IfStmt struct {
 	Conditional Node
