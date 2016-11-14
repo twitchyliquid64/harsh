@@ -80,7 +80,7 @@ func DefaultVariantValue(t TypeKind) (*Variant, error) {
 				}
 				ret.VectorData[i] = v
 			}
-		} else if len(context.Errors) != 0 {
+		} else if len(context.Errors) > 0 || lenEval.VariableReferenceFailed {
 			return ret, errors.New("Could not statically resolve the length of the given array")
 		} else {
 			return ret, errors.New("Resolved length of array was not an integer")

@@ -31,8 +31,8 @@ There are also a bunch of command line utilities to play with:
 
 #### Discrete items
 
- - [ ] Tests for DefaultVariantValue & variant stuff
- - [ ] Implement struct access
+ - [x] Tests for DefaultVariantValue & variant stuff
+ - [x] Implement struct access
  - [ ] Implement function calls
  - [ ] Implement function types
  - [ ] Implement loops
