@@ -32,16 +32,15 @@ func main() {
 
 	wereTypeErrors := false
 	for _, f := range context.Declarations {
-		c := &compiler.TypecheckContext{}
-		if len(f.Results) == 1 {
-			c.ReturnType = f.Results[0]
-		} else {
-			c.ReturnType = ast.PrimitiveTypeUndefined
+		if _, ok := f.Type.(ast.FunctionType); !ok {
+			continue
 		}
+		c := &compiler.TypecheckContext{}
+		c.ReturnType = f.Type.(ast.FunctionType).ReturnType
 
-		compiler.Typecheck(c, f.Code)
+		compiler.Typecheck(c, f.Type.(ast.FunctionType).Code)
 		if len(c.Errors) > 0 {
-			fmt.Println("Type errors in " + f.Identifier + ":")
+			fmt.Println("Type errors in " + f.Ident + ":")
 			for i, e := range c.Errors {
 				fmt.Printf("%02d: %s (%d)\r\n", i+1, e.Msg, e.Kind)
 			}

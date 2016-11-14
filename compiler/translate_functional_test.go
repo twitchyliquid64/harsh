@@ -47,22 +47,22 @@ func TestLiteralReturnASTStructure(t *testing.T) {
 	if len(context.Declarations) != 1 {
 		t.Error("Unexpected number of declarations")
 	}
-	if context.Declarations[0].Identifier != "testLiteralReturn" {
+	if context.Declarations[0].Ident != "testLiteralReturn" {
 		t.Error("Unexpected declaration name")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
 		t.Error("Expected root node for declaration to be StatementList")
 	}
-	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+	if len(context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts) != 1 {
 		t.Error("Unexpected number of declarations in root node StatementList")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt); !ok {
 		t.Error("ReturnStmt node expected")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.IntegerLiteral); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.IntegerLiteral); !ok {
 		t.Error("IntegerLiteral node expected")
 	}
-	if context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.IntegerLiteral).Val != 3 {
+	if context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.IntegerLiteral).Val != 3 {
 		t.Error("Incorrect literal value, expected 3")
 	}
 }
@@ -78,22 +78,22 @@ func TestFuncParamReturnASTStructure(t *testing.T) {
 	if len(context.Declarations) != 1 {
 		t.Error("Unexpected number of declarations")
 	}
-	if context.Declarations[0].Identifier != "testParamReturn" {
+	if context.Declarations[0].Ident != "testParamReturn" {
 		t.Error("Unexpected declaration name")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
 		t.Error("Expected root node for declaration to be StatementList")
 	}
-	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+	if len(context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts) != 1 {
 		t.Error("Unexpected number of declarations in root node StatementList")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt); !ok {
 		t.Error("ReturnStmt node expected")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.VariableReference); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.VariableReference); !ok {
 		t.Error("VariableReference node expected")
 	}
-	if context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.VariableReference).Name != "in" {
+	if context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.VariableReference).Name != "in" {
 		t.Error("Incorrect ident value, expected \"in\"")
 	}
 }
@@ -109,22 +109,22 @@ func TestBasicArithmeticASTStructureCorrectness(t *testing.T) {
 	if len(context.Declarations) != 1 {
 		t.Error("Unexpected number of declarations")
 	}
-	if context.Declarations[0].Identifier != "TestBasicArithmetic" {
+	if context.Declarations[0].Ident != "TestBasicArithmetic" {
 		t.Error("Unexpected declaration name")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
 		t.Error("Expected root node for declaration to be StatementList")
 	}
-	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+	if len(context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts) != 1 {
 		t.Error("Unexpected number of declarations in root node StatementList")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt); !ok {
 		t.Error("ReturnStmt node expected")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.BinaryOp); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.BinaryOp); !ok {
 		t.Error("BinaryOp node expected")
 	}
-	op := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.BinaryOp)
+	op := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.BinaryOp)
 	if op.Op != ast.BinOpAdd {
 		t.Error("Addition operation expected")
 	}
@@ -150,22 +150,22 @@ func TestComplexArithmeticASTStructureCorrectness(t *testing.T) {
 	if len(context.Declarations) != 1 {
 		t.Error("Unexpected number of declarations")
 	}
-	if context.Declarations[0].Identifier != "TestComplexArithmetic" {
+	if context.Declarations[0].Ident != "TestComplexArithmetic" {
 		t.Error("Unexpected declaration name")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
 		t.Error("Expected root node for declaration to be StatementList")
 	}
-	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+	if len(context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts) != 1 {
 		t.Error("Unexpected number of declarations in root node StatementList")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt); !ok {
 		t.Error("ReturnStmt node expected")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.BinaryOp); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.BinaryOp); !ok {
 		t.Error("BinaryOp node expected")
 	}
-	op := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.BinaryOp)
+	op := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.BinaryOp)
 	if op.Op != ast.BinOpSub {
 		t.Error("Subtraction operation expected")
 	}
@@ -219,13 +219,13 @@ func TestFunctionParamsAndResultsAreTypedAndNamedCorrectly(t *testing.T) {
 	if len(context.Declarations) != 1 {
 		t.Error("Unexpected number of declarations")
 	}
-	if context.Declarations[0].Identifier != "testParamResultsDefinition" {
+	if context.Declarations[0].Ident != "testParamResultsDefinition" {
 		t.Error("Unexpected declaration name")
 	}
-	if len(context.Declarations[0].Parameters) != 2 {
+	if len(context.Declarations[0].Type.(ast.FunctionType).Parameters) != 2 {
 		t.Error("Expected 2 parameters")
 	}
-	p := context.Declarations[0].Parameters
+	p := context.Declarations[0].Type.(ast.FunctionType).Parameters
 	if _, ok := p[0].(ast.NamedType); !ok {
 		t.Error("First parameter not a NamedType:", reflect.TypeOf(p[0]))
 	}
@@ -253,14 +253,11 @@ func TestFunctionParamsAndResultsAreTypedAndNamedCorrectly(t *testing.T) {
 	if p[1].BaseType() != ast.PrimitiveTypeInt {
 		t.Error("Second parameter incorrect")
 	}
-	if len(context.Declarations[0].Results) != 1 {
-		t.Error("Incorrect number of results")
-	}
-	if _, ok := context.Declarations[0].Results[0].(ast.TypeKindDescription); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).ReturnType.(ast.TypeKindDescription); !ok {
 		t.Error("Unexpected return type")
 	}
-	r := context.Declarations[0].Results
-	if r[0] != ast.PrimitiveTypeString {
+	r := context.Declarations[0].Type.(ast.FunctionType).ReturnType
+	if r != ast.PrimitiveTypeString {
 		t.Error("Return incorrect")
 	}
 }
@@ -305,7 +302,7 @@ func TestFileContextCorrectness(t *testing.T) {
 	if len(context.ChildContexts[0].Declarations) != 2 {
 		t.Error("Incorrect number of declarations in child context")
 	}
-	if context.ChildContexts[0].Declarations[0].Identifier != "testCrap" || context.ChildContexts[0].Declarations[1].Identifier != "testCrap2" {
+	if context.ChildContexts[0].Declarations[0].Ident != "testCrap" || context.ChildContexts[0].Declarations[1].Ident != "testCrap2" {
 		t.Error("Declarations in child context named incorrectly")
 	}
 
@@ -331,7 +328,7 @@ func TestFileContextCorrectness(t *testing.T) {
 	if len(context.ChildContexts[1].Declarations) != 2 {
 		t.Error("Incorrect number of declarations in child context")
 	}
-	if context.ChildContexts[1].Declarations[0].Identifier != "test2Crap" || context.ChildContexts[1].Declarations[1].Identifier != "test2Crap2" {
+	if context.ChildContexts[1].Declarations[0].Ident != "test2Crap" || context.ChildContexts[1].Declarations[1].Ident != "test2Crap2" {
 		t.Error("Declarations in child context named incorrectly")
 	}
 }
@@ -557,19 +554,16 @@ func TestSelectorExprTranslatesCorrectly(t *testing.T) {
 			return testVar.Crap
 		}`, t)
 
-	if len(context.Declarations) != 1 {
-		t.Error("Unexpected number of declarations")
-	}
-	if context.Declarations[0].Identifier != "test" {
+	if context.Declarations[1].Ident != "test" {
 		t.Error("Unexpected declaration name")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+	if _, ok := context.Declarations[1].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
 		t.Error("Expected root node for declaration to be StatementList")
 	}
-	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+	if len(context.Declarations[1].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts) != 1 {
 		t.Error("Unexpected number of declarations in root node StatementList")
 	}
-	nodes := context.Declarations[0].Code.(*ast.StatementList).Stmts
+	nodes := context.Declarations[1].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts
 
 	if _, ok := nodes[0].(*ast.ReturnStmt).Expr.(*ast.NamedSelector); !ok {
 		t.Error("Expected node to be NamedSelector, got", reflect.TypeOf(nodes[0]))
@@ -626,16 +620,16 @@ func TestLocalStructSavedCorrectly(t *testing.T) {
 	if len(context.Declarations) != 1 {
 		t.Error("Unexpected number of declarations")
 	}
-	if context.Declarations[0].Identifier != "test" {
+	if context.Declarations[0].Ident != "test" {
 		t.Error("Unexpected declaration name")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
 		t.Error("Expected root node for declaration to be StatementList")
 	}
-	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+	if len(context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts) != 1 {
 		t.Error("Unexpected number of declarations in root node StatementList")
 	}
-	nodes := context.Declarations[0].Code.(*ast.StatementList).Stmts
+	nodes := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts
 	if _, ok := nodes[0].(*ast.StatementList).Stmts[0].(*ast.Assign); !ok {
 		t.Error("Assign node expected, got " + reflect.TypeOf(nodes[0].(*ast.StatementList).Stmts[0]).String())
 	}
@@ -676,16 +670,16 @@ func TestLocalStructDeclaredThenInitializedCorrectly(t *testing.T) {
 	if len(context.Declarations) != 1 {
 		t.Error("Unexpected number of declarations")
 	}
-	if context.Declarations[0].Identifier != "test" {
+	if context.Declarations[0].Ident != "test" {
 		t.Error("Unexpected declaration name")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
 		t.Error("Expected root node for declaration to be StatementList")
 	}
-	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+	if len(context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts) != 1 {
 		t.Error("Unexpected number of declarations in root node StatementList")
 	}
-	nodes := context.Declarations[0].Code.(*ast.StatementList).Stmts
+	nodes := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts
 	if _, ok := nodes[0].(*ast.StatementList).Stmts[0].(*ast.Assign); !ok {
 		t.Error("Assign node expected, got " + reflect.TypeOf(nodes[0].(*ast.StatementList).Stmts[0]).String())
 	}
@@ -728,16 +722,16 @@ func TestLocalStructInitializedCorrectly(t *testing.T) {
 	if len(context.Declarations) != 1 {
 		t.Error("Unexpected number of declarations")
 	}
-	if context.Declarations[0].Identifier != "test" {
+	if context.Declarations[0].Ident != "test" {
 		t.Error("Unexpected declaration name")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
 		t.Error("Expected root node for declaration to be StatementList")
 	}
-	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+	if len(context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts) != 1 {
 		t.Error("Unexpected number of declarations in root node StatementList")
 	}
-	nodes := context.Declarations[0].Code.(*ast.StatementList).Stmts
+	nodes := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts
 	if _, ok := nodes[0].(*ast.Assign); !ok {
 		t.Error("Assign node expected, got " + reflect.TypeOf(nodes[0].(*ast.StatementList).Stmts[0]).String())
 	}
@@ -784,36 +778,33 @@ func TestAssignReturnsASTStructure(t *testing.T) {
 	_, context := setupTestGetAST(nil, `
     package test
 
-		var a int
-
     func test(){
       a = 3
-    }`, t)
+    }
 
-	if len(context.Declarations) != 1 {
-		t.Error("Unexpected number of declarations")
-	}
-	if context.Declarations[0].Identifier != "test" {
+		var a int`, t)
+
+	if context.Declarations[0].Ident != "test" {
 		t.Error("Unexpected declaration name")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
 		t.Error("Expected root node for declaration to be StatementList")
 	}
-	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+	if len(context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts) != 1 {
 		t.Error("Unexpected number of declarations in root node StatementList")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.Assign); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.Assign); !ok {
 		t.Error("Assign node expected")
 	}
 
-	if context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.Assign).NewLocal == true {
+	if context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.Assign).NewLocal == true {
 		t.Error("NewLocal flag truth expected")
 	}
 
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.Assign).Value.(*ast.IntegerLiteral); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.Assign).Value.(*ast.IntegerLiteral); !ok {
 		t.Error("IntegerLiteral node expected")
 	}
-	if context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.Assign).Value.(*ast.IntegerLiteral).Val != 3 {
+	if context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.Assign).Value.(*ast.IntegerLiteral).Val != 3 {
 		t.Error("Incorrect literal value, expected 3")
 	}
 }
@@ -830,18 +821,18 @@ func TestLocalDeclarationProducesAssignNodeSimple(t *testing.T) {
 	if len(context.Declarations) != 1 {
 		t.Error("Unexpected number of declarations")
 	}
-	if context.Declarations[0].Identifier != "test" {
+	if context.Declarations[0].Ident != "test" {
 		t.Error("Unexpected declaration name")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
 		t.Error("Expected root node for declaration to be StatementList")
 	}
-	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 2 {
+	if len(context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts) != 2 {
 		t.Error("Unexpected number of declarations in root node StatementList")
 	}
 	var s *ast.StatementList
 	var ok bool
-	if s, ok = context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.StatementList); !ok {
+	if s, ok = context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.StatementList); !ok {
 		t.Error("StatementList node expected")
 	}
 
@@ -858,7 +849,7 @@ func TestLocalDeclarationProducesAssignNodeSimple(t *testing.T) {
 		t.Error("Default value expected")
 	}
 
-	if s, ok = context.Declarations[0].Code.(*ast.StatementList).Stmts[1].(*ast.StatementList); !ok {
+	if s, ok = context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[1].(*ast.StatementList); !ok {
 		t.Error("StatementList node expected")
 	}
 
@@ -887,18 +878,18 @@ func TestArrayLocalDeclarationProducesCorrectAST(t *testing.T) {
 	if len(context.Declarations) != 1 {
 		t.Error("Unexpected number of declarations")
 	}
-	if context.Declarations[0].Identifier != "test" {
+	if context.Declarations[0].Ident != "test" {
 		t.Error("Unexpected declaration name")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
 		t.Error("Expected root node for declaration to be StatementList")
 	}
-	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+	if len(context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts) != 1 {
 		t.Error("Unexpected number of declarations in root node StatementList")
 	}
 	var s *ast.StatementList
 	var ok bool
-	if s, ok = context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.StatementList); !ok {
+	if s, ok = context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.StatementList); !ok {
 		t.Error("StatementList node expected")
 	}
 
@@ -938,18 +929,18 @@ func TestNestedArrayLocalDeclarationProducesCorrectAST(t *testing.T) {
 	if len(context.Declarations) != 1 {
 		t.Error("Unexpected number of declarations")
 	}
-	if context.Declarations[0].Identifier != "test" {
+	if context.Declarations[0].Ident != "test" {
 		t.Error("Unexpected declaration name")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
 		t.Error("Expected root node for declaration to be StatementList")
 	}
-	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+	if len(context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts) != 1 {
 		t.Error("Unexpected number of declarations in root node StatementList")
 	}
 	var s *ast.StatementList
 	var ok bool
-	if s, ok = context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.StatementList); !ok {
+	if s, ok = context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.StatementList); !ok {
 		t.Error("StatementList node expected")
 	}
 
@@ -989,18 +980,18 @@ func TestLocalArrayInitialization(t *testing.T) {
 	if len(context.Declarations) != 1 {
 		t.Error("Unexpected number of declarations")
 	}
-	if context.Declarations[0].Identifier != "test" {
+	if context.Declarations[0].Ident != "test" {
 		t.Error("Unexpected declaration name")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
 		t.Error("Expected root node for declaration to be StatementList")
 	}
-	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+	if len(context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts) != 1 {
 		t.Error("Unexpected number of declarations in root node StatementList")
 	}
 	var s *ast.StatementList
 	var ok bool
-	if s, ok = context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.StatementList); !ok {
+	if s, ok = context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.StatementList); !ok {
 		t.Error("StatementList node expected")
 	}
 
@@ -1047,18 +1038,18 @@ func TestNestedLocalArrayInitialization(t *testing.T) {
 	if len(context.Declarations) != 1 {
 		t.Error("Unexpected number of declarations")
 	}
-	if context.Declarations[0].Identifier != "test" {
+	if context.Declarations[0].Ident != "test" {
 		t.Error("Unexpected declaration name")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
 		t.Error("Expected root node for declaration to be StatementList")
 	}
-	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+	if len(context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts) != 1 {
 		t.Error("Unexpected number of declarations in root node StatementList")
 	}
 	var s *ast.StatementList
 	var ok bool
-	if s, ok = context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.StatementList); !ok {
+	if s, ok = context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.StatementList); !ok {
 		t.Error("StatementList node expected")
 	}
 
@@ -1100,18 +1091,18 @@ func TestLocalDeclarationInitialization(t *testing.T) {
 	if len(context.Declarations) != 1 {
 		t.Error("Unexpected number of declarations")
 	}
-	if context.Declarations[0].Identifier != "test" {
+	if context.Declarations[0].Ident != "test" {
 		t.Error("Unexpected declaration name")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
 		t.Error("Expected root node for declaration to be StatementList")
 	}
-	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts) != 1 {
+	if len(context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts) != 1 {
 		t.Error("Unexpected number of declarations in root node StatementList")
 	}
 	var s *ast.StatementList
 	var ok bool
-	if s, ok = context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.StatementList); !ok {
+	if s, ok = context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.StatementList); !ok {
 		t.Error("StatementList node expected")
 	}
 
@@ -1144,17 +1135,17 @@ func TestIfStatementASTStructureGeneratedCorrectly(t *testing.T) {
 	if len(context.Declarations) != 1 {
 		t.Error("Unexpected number of declarations")
 	}
-	if context.Declarations[0].Identifier != "test" {
+	if context.Declarations[0].Ident != "test" {
 		t.Error("Unexpected declaration name")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
-		t.Error("Expected root node for declaration to be StatementList, got ", reflect.TypeOf(context.Declarations[0].Code))
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList, got ", reflect.TypeOf(context.Declarations[0].Type.(ast.FunctionType).Code))
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.IfStmt); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.IfStmt); !ok {
 		t.Error("Expected root node for declaration to be IfStmt")
 		t.FailNow()
 	}
-	ifNode := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.IfStmt)
+	ifNode := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.IfStmt)
 	if ifNode.Init != nil {
 		t.Error("No init node expected")
 	}
@@ -1180,17 +1171,17 @@ func TestUnaryNotASTStructureGeneratedCorrectly(t *testing.T) {
 	if len(context.Declarations) != 1 {
 		t.Error("Unexpected number of declarations")
 	}
-	if context.Declarations[0].Identifier != "test" {
+	if context.Declarations[0].Ident != "test" {
 		t.Error("Unexpected declaration name")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
-		t.Error("Expected root node for declaration to be StatementList, got ", reflect.TypeOf(context.Declarations[0].Code))
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList, got ", reflect.TypeOf(context.Declarations[0].Type.(ast.FunctionType).Code))
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt); !ok {
 		t.Error("Expected next node for declaration to be ReturnStmt")
 		t.FailNow()
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.UnaryOp); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.UnaryOp); !ok {
 		t.Error("Expected next node for declaration to be UnaryOp")
 		t.FailNow()
 	}
@@ -1200,43 +1191,40 @@ func TestFunctionCallTranslatesCorrectly(t *testing.T) {
 	_, context := setupTestGetAST(nil, `
 		package test
 
-		var mate int
-
 		func test() int {
 			mate(7, 4)
-		}`, t)
+		}
 
-	if len(context.Declarations) != 1 {
-		t.Error("Unexpected number of declarations")
-	}
-	if context.Declarations[0].Identifier != "test" {
+		var mate int`, t)
+
+	if context.Declarations[0].Ident != "test" {
 		t.Error("Unexpected declaration name")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
-		t.Error("Expected root node for declaration to be StatementList, got ", reflect.TypeOf(context.Declarations[0].Code))
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList, got ", reflect.TypeOf(context.Declarations[0].Type.(ast.FunctionType).Code))
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall); !ok {
 		t.Error("Expected next node for declaration to be FunctionCall")
 		t.FailNow()
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall).Function.(*ast.VariableReference); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall).Function.(*ast.VariableReference); !ok {
 		t.Error("Expected function call to be VariableReference")
 	}
-	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall).Args) != 2 {
+	if len(context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall).Args) != 2 {
 		t.Error("Expected 2 arguments")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall).Args[0].(*ast.IntegerLiteral); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall).Args[0].(*ast.IntegerLiteral); !ok {
 		t.Error("Expected argument 1 to be type IntegerLiteral")
 		t.FailNow()
 	}
-	if context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall).Args[0].(*ast.IntegerLiteral).Val != 7 {
+	if context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall).Args[0].(*ast.IntegerLiteral).Val != 7 {
 		t.Error("Expected Argument 1 to be equal to 7")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall).Args[1].(*ast.IntegerLiteral); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall).Args[1].(*ast.IntegerLiteral); !ok {
 		t.Error("Expected argument 2 to be type IntegerLiteral")
 		t.FailNow()
 	}
-	if context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall).Args[1].(*ast.IntegerLiteral).Val != 4 {
+	if context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall).Args[1].(*ast.IntegerLiteral).Val != 4 {
 		t.Error("Expected Argument 2 to be equal to 7")
 	}
 }
@@ -1252,17 +1240,17 @@ func TestEmptyReturnProducesCorrectASTStructure(t *testing.T) {
 	if len(context.Declarations) != 1 {
 		t.Error("Unexpected number of declarations")
 	}
-	if context.Declarations[0].Identifier != "test" {
+	if context.Declarations[0].Ident != "test" {
 		t.Error("Unexpected declaration name")
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
-		t.Error("Expected root node for declaration to be StatementList, got ", reflect.TypeOf(context.Declarations[0].Code))
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList, got ", reflect.TypeOf(context.Declarations[0].Type.(ast.FunctionType).Code))
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt); !ok {
 		t.Error("Expected next node for declaration to be ReturnStmt")
 		t.FailNow()
 	}
-	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.NilLiteral); !ok {
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.NilLiteral); !ok {
 		t.Error("Expected next node for declaration to be NilLiteral")
 		t.FailNow()
 	}

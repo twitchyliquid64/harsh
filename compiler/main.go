@@ -64,7 +64,7 @@ func (e ExecutionError) Error() string {
 // or execution raises an error, an error is returned.
 func (c *Context) CallFunc(name string, args map[string]interface{}) (*ast.Variant, error) {
 	for _, decl := range c.Declarations {
-		if decl.Identifier == name {
+		if decl.Ident == name {
 			execContext := &ast.ExecContext{
 				IsFuncContext:     true,
 				FunctionNamespace: map[string]*ast.Variant{},
@@ -76,7 +76,11 @@ func (c *Context) CallFunc(name string, args map[string]interface{}) (*ast.Varia
 				}
 			}
 
-			retValue := decl.Code.Exec(execContext)
+			if _, ok := decl.Type.(ast.FunctionType); !ok {
+				return &ast.Variant{Type: ast.PrimitiveTypeUndefined}, errors.New("Declaration is not a function")
+			}
+
+			retValue := decl.Type.(ast.FunctionType).Code.Exec(execContext)
 			if len(execContext.Errors) == 0 {
 				return retValue, nil
 			}

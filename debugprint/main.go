@@ -7,6 +7,7 @@ import (
 	"go/token"
 	"os"
 
+	myast "github.com/twitchyliquid64/harsh/ast"
 	"github.com/twitchyliquid64/harsh/compiler"
 )
 
@@ -22,43 +23,34 @@ func main() {
 		return
 	}
 
-	fmt.Print("Globals: {")
-	for i, name := range context.Globals.Names() {
-		v := context.Globals[name]
-		fmt.Print(name, " ", v.Type.String())
-		if i+1 < len(context.Globals.Names()) {
-			fmt.Print(", ")
-		}
-	}
-	fmt.Println("}")
-
 	for _, decl := range context.Declarations {
-		fmt.Println("FUNCTION: ", decl.Identifier)
-		fmt.Print("  Params: {")
-		for i, param := range decl.Parameters {
-			fmt.Print(param.String())
-			if i+1 < len(decl.Parameters) {
-				fmt.Print(", ")
+		if fType, ok := decl.Type.(myast.FunctionType); ok {
+			fmt.Println("FUNCTION: ", decl.Ident)
+			fmt.Print("  Params: {")
+			for i, param := range fType.Parameters {
+				fmt.Print(param.String())
+				if i+1 < len(fType.Parameters) {
+					fmt.Print(", ")
+				}
 			}
-		}
-		fmt.Println("}")
-		if decl.Code != nil {
-			decl.Code.Print(2)
-		}
-		for _, ret := range decl.Results {
-			fmt.Println("  -", ret.String(), "(return)")
-		}
+			fmt.Println("}")
+			if fType.Code != nil {
+				fType.Code.Print(2)
+			}
+			fmt.Println("  -", fType.ReturnType.String(), "(return)")
 
-		c := &compiler.TypecheckContext{}
-		if len(decl.Results) == 1 {
-			c.ReturnType = decl.Results[0]
-		}
-		compiler.Typecheck(c, decl.Code)
-		if len(c.Errors) > 0 {
-			fmt.Println("  Type errors:")
-			for i, e := range c.Errors {
-				fmt.Printf("   %02d: %s (%d)\r\n", i+1, e.Msg, e.Kind)
+			c := &compiler.TypecheckContext{}
+			c.ReturnType = fType.ReturnType
+			compiler.Typecheck(c, fType.Code)
+			if len(c.Errors) > 0 {
+				fmt.Println("  Type errors:")
+				for i, e := range c.Errors {
+					fmt.Printf("   %02d: %s (%d)\r\n", i+1, e.Msg, e.Kind)
+				}
 			}
+		} else {
+			fmt.Println("DECLARATION: ", decl.Ident)
+			fmt.Println("\tType: ", decl.Type.String())
 		}
 	}
 

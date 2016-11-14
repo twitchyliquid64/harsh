@@ -29,6 +29,7 @@ const (
 	PrimitiveTypeBool
 	ComplexTypeArray
 	ComplexTypeStruct
+	ComplexTypeFunction
 	PrimitiveTypeUndefined
 	UnknownType //Used internally to signify the type could be valid but is currently unknown
 )
@@ -100,7 +101,24 @@ func (a StructType) Kind() TypeKindDescription {
 	return ComplexTypeStruct
 }
 
-// BaseType returns the type of the underlying element primitive.
+// BaseType returns ComplexTypeStruct as there is no real base type.
 func (a StructType) BaseType() TypeKind {
 	return ComplexTypeStruct //no real base type
+}
+
+// FunctionType represents the parameters, return type and code node of a function.
+type FunctionType struct {
+	Parameters []TypeKind
+	ReturnType TypeKind
+	Code       Node
+}
+
+// Kind returns ComplexTypeFunction.
+func (a FunctionType) Kind() TypeKindDescription {
+	return ComplexTypeFunction
+}
+
+// BaseType returns ComplexTypeFunction as there is no real base type.
+func (a FunctionType) BaseType() TypeKind {
+	return ComplexTypeFunction //no real base type
 }

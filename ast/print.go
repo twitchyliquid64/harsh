@@ -262,6 +262,17 @@ func (t NamedType) String() string {
 	return t.Ident + " " + t.Type.String()
 }
 
+func (t FunctionType) String() string {
+	paramList := ""
+	for i, p := range t.Parameters {
+		paramList += p.String()
+		if i+1 < len(t.Parameters) {
+			paramList += ", "
+		}
+	}
+	return "(" + paramList + ")" + t.ReturnType.String()
+}
+
 func (tk TypeKindDescription) String() string {
 	switch tk {
 	case PrimitiveTypeInt:

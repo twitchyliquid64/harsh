@@ -10,7 +10,7 @@ import (
 type Context struct {
 	Name          string
 	ConType       conType
-	Declarations  []declaration
+	Declarations  []ast.NamedType
 	ChildContexts []*Context
 	Debug         bool
 	Globals       ast.Namespace

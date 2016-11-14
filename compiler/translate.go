@@ -466,14 +466,15 @@ func translateGoDecl(fset *token.FileSet, context *Context, decls []goast.Decl) 
 			if context.Debug {
 				fmt.Println("GEN DECL: ", node)
 			}
-			translateGoGenDecl(fset, context, node)
+			newDecl := translateGoGenDecl(fset, context, node)
+			context.Declarations = append(context.Declarations, newDecl)
 		default:
 			fmt.Println("Unknown ast.Decl: ", reflect.TypeOf(decl))
 		}
 	}
 }
 
-func translateGoGenDecl(fset *token.FileSet, context *Context, node *goast.GenDecl) declaration {
+func translateGoGenDecl(fset *token.FileSet, context *Context, node *goast.GenDecl) ast.NamedType {
 	for _, spec := range node.Specs {
 		switch n := spec.(type) {
 		case *goast.ImportSpec:
@@ -496,10 +497,22 @@ func translateGoGenDecl(fset *token.FileSet, context *Context, node *goast.GenDe
 					switch t.Name {
 					case "int":
 						context.Globals.Save(name.Name, 0)
+						return ast.NamedType{
+							Ident: name.Name,
+							Type:  ast.PrimitiveTypeInt,
+						}
 					case "bool":
 						context.Globals.Save(name.Name, false)
+						return ast.NamedType{
+							Ident: name.Name,
+							Type:  ast.PrimitiveTypeBool,
+						}
 					case "string":
 						context.Globals.Save(name.Name, "")
+						return ast.NamedType{
+							Ident: name.Name,
+							Type:  ast.PrimitiveTypeString,
+						}
 					default:
 						context.Globals.Save(name.Name, ast.PrimitiveTypeUndefined)
 						context.Errors = append(context.Errors, TranslateError{
@@ -522,6 +535,10 @@ func translateGoGenDecl(fset *token.FileSet, context *Context, node *goast.GenDe
 							fmt.Println(v)
 						}
 						context.Globals.Save(name.Name, v)
+						return ast.NamedType{
+							Ident: name.Name,
+							Type:  tk,
+						}
 					}
 				case *goast.ArrayType:
 					tk := convertTypeToTypeKind(fset, t, context)
@@ -534,6 +551,10 @@ func translateGoGenDecl(fset *token.FileSet, context *Context, node *goast.GenDe
 						})
 					} else {
 						context.Globals.Save(name.Name, v)
+						return ast.NamedType{
+							Ident: name.Name,
+							Type:  tk,
+						}
 					}
 				default:
 					context.Errors = append(context.Errors, TranslateError{
@@ -548,20 +569,29 @@ func translateGoGenDecl(fset *token.FileSet, context *Context, node *goast.GenDe
 		}
 	}
 
-	return declaration{}
+	return ast.NamedType{
+		Ident: "",
+		Type:  ast.PrimitiveTypeUndefined,
+	}
 }
 
-func translateGoFuncDecl(fset *token.FileSet, context *Context, node *goast.FuncDecl) declaration {
-	var returnVars []ast.TypeKind
+func translateGoFuncDecl(fset *token.FileSet, context *Context, node *goast.FuncDecl) ast.NamedType {
+	var returnType ast.TypeKind = ast.PrimitiveTypeUndefined
 	var parameters []ast.TypeKind
 
 	if node.Type.Results != nil {
-		for _, ret := range node.Type.Results.List {
-			if t := translateType(fset, ret, context); t != nil {
-				for _, ret := range t {
-					returnVars = append(returnVars, ret)
+		if len(node.Type.Results.List) == 1 {
+			if t := translateType(fset, node.Type.Results.List[0], context); t != nil {
+				if len(t) == 1 {
+					returnType = t[0]
 				}
 			}
+		} else if len(node.Type.Results.List) > 1 {
+			context.Errors = append(context.Errors, TranslateError{
+				Class: NotYetSupported,
+				Pos:   fset.Position(node.Pos()),
+				Text:  "Functions with more than one result are not supported",
+			})
 		}
 	}
 	if node.Type.Params != nil {
@@ -574,10 +604,12 @@ func translateGoFuncDecl(fset *token.FileSet, context *Context, node *goast.Func
 		}
 	}
 
-	return declaration{
-		Identifier: node.Name.Name,
-		Code:       translateGoNode(fset, context, reflect.ValueOf(node.Body)),
-		Results:    returnVars,
-		Parameters: parameters,
+	return ast.NamedType{
+		Ident: node.Name.Name,
+		Type: ast.FunctionType{
+			Parameters: parameters,
+			Code:       translateGoNode(fset, context, reflect.ValueOf(node.Body)),
+			ReturnType: returnType,
+		},
 	}
 }
