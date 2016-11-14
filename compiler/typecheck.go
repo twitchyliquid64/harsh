@@ -79,6 +79,14 @@ func Typecheck(context *TypecheckContext, node ast.Node) ast.TypeKind {
 			Typecheck(context, subNode)
 		}
 
+	case *ast.FunctionCall:
+		//TODO(twitchyliquid64): Proper type checking
+		context.Errors = append(context.Errors, TypeError{
+			Kind: TypeerrorInternalErr,
+			Msg:  "Type checking ast.FunctionCall is not yet supported.",
+		})
+		return ast.UnknownType
+
 	case *ast.VariableReference:
 		if n.Type == nil {
 			context.Errors = append(context.Errors, TypeError{
