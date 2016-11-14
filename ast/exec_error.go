@@ -9,6 +9,7 @@ const (
 	NotFoundErr
 	InvalidAst
 	InternalErr
+	NotImplementedErr
 )
 
 // ExecutionError encapsulates errors encountered while executing the AST at runtime.

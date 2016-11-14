@@ -119,3 +119,9 @@ type Assign struct {
 	Variable Node
 	NewLocal bool
 }
+
+// FunctionCall represents an invocation of a function type variant, with given values as arguments (or none).
+type FunctionCall struct {
+	Function Node
+	Args     []Node
+}

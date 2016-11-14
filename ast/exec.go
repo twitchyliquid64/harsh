@@ -364,3 +364,15 @@ func (n *NamedSelector) Exec(context *ExecContext) *Variant {
 		Type: PrimitiveTypeUndefined,
 	}
 }
+
+// Exec represents the invocation of the FunctionCall - with the function pointer and arguments resolved from the contained nodes.
+func (n *FunctionCall) Exec(context *ExecContext) *Variant {
+	context.Errors = append(context.Errors, ExecutionError{
+		Class:        NotImplementedErr,
+		CreatingNode: n,
+		Text:         "FunctionCall.Exec() is not yet implemented",
+	})
+	return &Variant{
+		Type: PrimitiveTypeUndefined,
+	}
+}

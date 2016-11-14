@@ -69,34 +69,40 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 					Val: b,
 				}
 			}
-			var t ast.TypeKind = ast.UnknownType
-			switch n := v.Obj.Decl.(type) {
-			case *goast.ValueSpec:
-				t = convertTypeToTypeKind(fset, n.Type, context)
-			case *goast.AssignStmt:
-				//try inferring type by typechecking the RHS of the assignment.
-				assignRHSNode := translateGoNode(fset, context, reflect.ValueOf(n.Rhs[0]))
-				tc := &TypecheckContext{}
-				t = Typecheck(tc, assignRHSNode)
-				if len(tc.Errors) > 0 {
+			if v.Obj != nil {
+				var t ast.TypeKind = ast.UnknownType
+				switch n := v.Obj.Decl.(type) {
+				case *goast.ValueSpec:
+					t = convertTypeToTypeKind(fset, n.Type, context)
+				case *goast.AssignStmt:
+					//try inferring type by typechecking the RHS of the assignment.
+					assignRHSNode := translateGoNode(fset, context, reflect.ValueOf(n.Rhs[0]))
+					tc := &TypecheckContext{}
+					t = Typecheck(tc, assignRHSNode)
+					if len(tc.Errors) > 0 {
+						context.Errors = append(context.Errors, TranslateError{
+							Class: TypeErrorFound,
+							Pos:   fset.Position(v.Pos()),
+							Text:  "Could not typecheck RHS of assignment to " + v.Name,
+						})
+					}
+				case *goast.Field:
+					t = convertTypeToTypeKind(fset, n.Type, context)
+				default:
 					context.Errors = append(context.Errors, TranslateError{
-						Class: TypeErrorFound,
+						Class: NotSupported,
 						Pos:   fset.Position(v.Pos()),
-						Text:  "Could not typecheck RHS of assignment to " + v.Name,
+						Text:  "ast.Ident.Obj.Decl type unknown: " + v.Name + " (" + reflect.TypeOf(n).Name() + ")",
 					})
 				}
-			case *goast.Field:
-				t = convertTypeToTypeKind(fset, n.Type, context)
-			default:
-				context.Errors = append(context.Errors, TranslateError{
-					Class: NotSupported,
-					Pos:   fset.Position(v.Pos()),
-					Text:  "ast.Ident.Obj.Decl type unknown: " + v.Name + " (" + reflect.TypeOf(n).Name() + ")",
-				})
+				return &ast.VariableReference{
+					Name: v.Name,
+					Type: t,
+				}
 			}
 			return &ast.VariableReference{
 				Name: v.Name,
-				Type: t,
+				Type: ast.PrimitiveTypeUndefined,
 			}
 
 		case goast.AssignStmt:
@@ -179,6 +185,19 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 					}
 				}
 				return &ln
+			}
+
+		case goast.ExprStmt:
+			if function, ok := v.X.(*goast.CallExpr); ok {
+				fmt.Println(function)
+				var args []ast.Node
+				for _, astArg := range function.Args {
+					args = append(args, translateGoNode(fset, context, reflect.ValueOf(astArg)))
+				}
+				return &ast.FunctionCall{
+					Function: translateGoNode(fset, context, reflect.ValueOf(function.Fun)),
+					Args:     args,
+				}
 			}
 
 		case goast.CompositeLit: //composite literal: <type>{<values>...}

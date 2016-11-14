@@ -45,6 +45,26 @@ func (node *NamedSelector) Print(level int) {
 	printLeveled("}", level)
 }
 
+// Print writes a description of the function call to standard output.
+func (node *FunctionCall) Print(level int) {
+	printLeveled("INVOCATION {", level)
+	if node.Function == nil {
+		printLeveled("NIL", level+1)
+	} else {
+		node.Function.Print(level + 1)
+	}
+	printLeveled("Args {", level+1)
+	for _, arg := range node.Args {
+		if arg == nil {
+			printLeveled("NIL", level+2)
+		} else {
+			arg.Print(level + 2)
+		}
+	}
+	printLeveled("}", level+1)
+	printLeveled("}", level)
+}
+
 // Print writes a description of the node to standard output, at the specified indentation level.
 func (node *IntegerLiteral) Print(level int) {
 	printLeveled(strconv.FormatInt(node.Val, 10)+" int64", level)

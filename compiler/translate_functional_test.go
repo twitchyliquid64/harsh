@@ -1196,6 +1196,51 @@ func TestUnaryNotASTStructureGeneratedCorrectly(t *testing.T) {
 	}
 }
 
+func TestFunctionCallTranslatesCorrectly(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+		package test
+
+		var mate int
+
+		func test() int {
+			mate(7, 4)
+		}`, t)
+
+	if len(context.Declarations) != 1 {
+		t.Error("Unexpected number of declarations")
+	}
+	if context.Declarations[0].Identifier != "test" {
+		t.Error("Unexpected declaration name")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList, got ", reflect.TypeOf(context.Declarations[0].Code))
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall); !ok {
+		t.Error("Expected next node for declaration to be FunctionCall")
+		t.FailNow()
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall).Function.(*ast.VariableReference); !ok {
+		t.Error("Expected function call to be VariableReference")
+	}
+	if len(context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall).Args) != 2 {
+		t.Error("Expected 2 arguments")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall).Args[0].(*ast.IntegerLiteral); !ok {
+		t.Error("Expected argument 1 to be type IntegerLiteral")
+		t.FailNow()
+	}
+	if context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall).Args[0].(*ast.IntegerLiteral).Val != 7 {
+		t.Error("Expected Argument 1 to be equal to 7")
+	}
+	if _, ok := context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall).Args[1].(*ast.IntegerLiteral); !ok {
+		t.Error("Expected argument 2 to be type IntegerLiteral")
+		t.FailNow()
+	}
+	if context.Declarations[0].Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall).Args[1].(*ast.IntegerLiteral).Val != 4 {
+		t.Error("Expected Argument 2 to be equal to 7")
+	}
+}
+
 func TestEmptyReturnProducesCorrectASTStructure(t *testing.T) {
 	_, context := setupTestGetAST(nil, `
     package test
