@@ -66,6 +66,7 @@ func TypeEqual(l ast.TypeKind, r ast.TypeKind) bool {
 	if l.Kind() == ast.ComplexTypeArray && r.Kind() == ast.ComplexTypeArray {
 		return TypeEqual(l.(ast.ArrayType).SubType, r.(ast.ArrayType).SubType)
 	}
+	//TODO(twitchyliquid64): Check for function and check return/args individually
 
 	return l == r
 }
@@ -80,12 +81,31 @@ func Typecheck(context *TypecheckContext, node ast.Node) ast.TypeKind {
 		}
 
 	case *ast.FunctionCall:
-		//TODO(twitchyliquid64): Proper type checking
-		context.Errors = append(context.Errors, TypeError{
-			Kind: TypeerrorInternalErr,
-			Msg:  "Type checking ast.FunctionCall is not yet supported.",
-		})
-		return ast.UnknownType
+		funcNodeType := Typecheck(context, n.Function)
+		if funcNodeType.Kind() != ast.ComplexTypeFunction {
+			context.Errors = append(context.Errors, TypeError{
+				Kind: TypeErrorIncompatibleTypesErr,
+				Msg:  "Cannot perform function invocation on type " + funcNodeType.String(),
+			})
+			return ast.UnknownType
+		}
+		if len(funcNodeType.(ast.FunctionType).Parameters) != len(n.Args) {
+			context.Errors = append(context.Errors, TypeError{
+				Kind: TypeErrorIncompatibleTypesErr,
+				Msg:  "Cannot perform function invocation - incorrect number of parameters",
+			})
+			return ast.UnknownType
+		}
+		for i, param := range funcNodeType.(ast.FunctionType).Parameters {
+			paramType := Typecheck(context, n.Args[i])
+			if !TypeEqual(paramType, param) {
+				context.Errors = append(context.Errors, TypeError{
+					Kind: TypeErrorIncompatibleTypesErr,
+					Msg:  "Parameter type mismatch: parameter has type " + param.String() + " but was called with " + paramType.String(),
+				})
+			}
+		}
+		return funcNodeType.(ast.FunctionType).ReturnType
 
 	case *ast.VariableReference:
 		if n.Type == nil {
@@ -219,7 +239,7 @@ func Typecheck(context *TypecheckContext, node ast.Node) ast.TypeKind {
 	case nil:
 		context.Errors = append(context.Errors, TypeError{
 			Kind: TypeerrorInternalErr,
-			Msg:  "Cannot typecheck nil node",
+			Msg:  "Cannot typecheck nil node - translate error?",
 		})
 
 	default:

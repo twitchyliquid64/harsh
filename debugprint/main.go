@@ -25,15 +25,7 @@ func main() {
 
 	for _, decl := range context.Declarations {
 		if fType, ok := decl.Type.(myast.FunctionType); ok {
-			fmt.Println("FUNCTION: ", decl.Ident)
-			fmt.Print("  Params: {")
-			for i, param := range fType.Parameters {
-				fmt.Print(param.String())
-				if i+1 < len(fType.Parameters) {
-					fmt.Print(", ")
-				}
-			}
-			fmt.Println("}")
+			fmt.Println("FUNCTION: ", decl.String())
 			if fType.Code != nil {
 				fType.Code.Print(2)
 			}
@@ -49,8 +41,7 @@ func main() {
 				}
 			}
 		} else {
-			fmt.Println("DECLARATION: ", decl.Ident)
-			fmt.Println("\tType: ", decl.Type.String())
+			fmt.Println("DECLARATION: ", decl.String())
 		}
 	}
 

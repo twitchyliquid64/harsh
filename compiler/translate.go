@@ -88,6 +88,9 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 					}
 				case *goast.Field:
 					t = convertTypeToTypeKind(fset, n.Type, context)
+				case *goast.FuncDecl:
+					nt := translateGoFuncDecl(fset, context, n)
+					t = nt.Type //unwrap Named node - all we want is the function type
 				default:
 					context.Errors = append(context.Errors, TranslateError{
 						Class: NotSupported,
@@ -189,15 +192,17 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 
 		case goast.ExprStmt:
 			if function, ok := v.X.(*goast.CallExpr); ok {
-				fmt.Println(function)
-				var args []ast.Node
-				for _, astArg := range function.Args {
-					args = append(args, translateGoNode(fset, context, reflect.ValueOf(astArg)))
-				}
-				return &ast.FunctionCall{
-					Function: translateGoNode(fset, context, reflect.ValueOf(function.Fun)),
-					Args:     args,
-				}
+				return translateGoNode(fset, context, reflect.ValueOf(function))
+			}
+
+		case goast.CallExpr:
+			var args []ast.Node
+			for _, astArg := range v.Args {
+				args = append(args, translateGoNode(fset, context, reflect.ValueOf(astArg)))
+			}
+			return &ast.FunctionCall{
+				Function: translateGoNode(fset, context, reflect.ValueOf(v.Fun)),
+				Args:     args,
 			}
 
 		case goast.CompositeLit: //composite literal: <type>{<values>...}
