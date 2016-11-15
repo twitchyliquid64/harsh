@@ -31,15 +31,13 @@ There are also a bunch of command line utilities to play with:
 
 #### Discrete items
 
- - [x] Tests for DefaultVariantValue & variant stuff
- - [x] Implement struct access
- - [ ] Implement function calls
- - [ ] Implement function types
+ - [ ] Implement function type comparison in TypeEqual
+ - [ ] Implement functionCall tests for Typechecking
+ - [ ] Implement exec for FunctionCall node
  - [ ] Implement loops
- - [ ] Implement end-to-end tests
  - [ ] Refactor print to arbitrary output and colours
  - [ ] SVG visualiser of basic nodes
- - [ ] debugexec infers types of command line parameters based on parameter type - rather than guessing
+ - [x] debugexec infers types of command line parameters based on parameter type - rather than guessing
 
 #### Longer term plan
 

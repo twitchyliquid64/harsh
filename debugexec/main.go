@@ -16,12 +16,12 @@ func main() {
 		return
 	}
 
+	// Parse & translate the file
 	_, context, err := compiler.ParseFile(os.Args[1])
 	if err != nil {
 		fmt.Println("Error: ", err)
 		return
 	}
-
 	if len(context.Errors) > 0 {
 		fmt.Println("Parse Errors:")
 		for i, err := range context.Errors {
@@ -30,6 +30,7 @@ func main() {
 		return
 	}
 
+	// Type check all the functional declarations
 	wereTypeErrors := false
 	for _, f := range context.Declarations {
 		if _, ok := f.Type.(ast.FunctionType); !ok {
@@ -47,27 +48,50 @@ func main() {
 			wereTypeErrors = true
 		}
 	}
-	if wereTypeErrors {
+	if wereTypeErrors { //abort execution if there were type errors
+		return
+	}
+
+	//Find the function we will execute - so we can match input parameters
+	var funcDecl ast.NamedType
+	for _, f := range context.Declarations {
+		if _, ok := f.Type.(ast.FunctionType); ok && f.Ident == os.Args[2] {
+			funcDecl = f
+			break
+		}
+	}
+	if funcDecl.Ident == "" {
+		fmt.Println("A function with the name '" + os.Args[2] + "' does not exist")
 		return
 	}
 
 	args := map[string]interface{}{}
-	for i := 3; i < len(os.Args); i++ {
+	for i := 3; i < len(os.Args); i++ { //read in any args
 		spl := strings.Split(os.Args[i], "=")
 		if len(spl) > 1 {
-			intValue, err2 := strconv.Atoi(spl[1])
-			if err2 == nil {
+			switch findFuncType(funcDecl.Type.(ast.FunctionType), spl[0]) {
+			case "int":
+				intValue, e := strconv.Atoi(spl[1])
+				if e != nil {
+					fmt.Println("Failed converting parameter '" + spl[0] + "' to int: " + e.Error())
+					fmt.Println("Defaulting to 0.")
+				}
 				args[spl[0]] = intValue
-				continue
-			}
-			boolValue, err3 := strconv.ParseBool(spl[1])
-			if err3 == nil {
+			case "bool":
+				boolValue, e := strconv.ParseBool(spl[1])
+				if e != nil {
+					fmt.Println("Failed converting parameter '" + spl[0] + "' to bool: " + e.Error())
+					fmt.Println("Defaulting to false.")
+				}
 				args[spl[0]] = boolValue
-				continue
+			case "string":
+				args[spl[0]] = spl[1]
+			default:
+				fmt.Println("Failed aligning input parameter '" + spl[0] + "' with function parameter definition.")
 			}
-			args[spl[0]] = spl[1]
 		}
 	}
+
 	ret, err := context.CallFunc(os.Args[2], args)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -80,4 +104,13 @@ func main() {
 	} else {
 		fmt.Println("Return Value: ", ret)
 	}
+}
+
+func findFuncType(function ast.FunctionType, paramName string) string {
+	for _, p := range function.Parameters {
+		if p.(ast.NamedType).Ident == paramName {
+			return p.(ast.NamedType).Type.String()
+		}
+	}
+	return "?"
 }
