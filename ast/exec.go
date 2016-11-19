@@ -1,5 +1,7 @@
 package ast
 
+import "fmt"
+
 // Exec carries out node-specific logic, which may include evaluation of subnodes and primitive operations depending on the nodes type.
 func (n *IntegerLiteral) Exec(context *ExecContext) *Variant {
 	return &Variant{
@@ -367,12 +369,32 @@ func (n *NamedSelector) Exec(context *ExecContext) *Variant {
 
 // Exec represents the invocation of the FunctionCall - with the function pointer and arguments resolved from the contained nodes.
 func (n *FunctionCall) Exec(context *ExecContext) *Variant {
-	context.Errors = append(context.Errors, ExecutionError{
-		Class:        NotImplementedErr,
-		CreatingNode: n,
-		Text:         "FunctionCall.Exec() is not yet implemented",
-	})
-	return &Variant{
-		Type: PrimitiveTypeUndefined,
+	fmt.Println(context.GlobalNamespace)
+
+	functionPointer := n.Function.Exec(context)
+	if functionPointer.Type.Kind() != ComplexTypeFunction {
+		context.Errors = append(context.Errors, ExecutionError{
+			Class:        TypeErr,
+			CreatingNode: n,
+			Text:         "Cannot call non-function type: " + functionPointer.Type.String(),
+		})
+		return &Variant{
+			Type: PrimitiveTypeUndefined,
+		}
 	}
+
+	fn := map[string]*Variant{}
+	execContext := &ExecContext{
+		IsFuncContext:     true,
+		FunctionNamespace: fn,
+		GlobalNamespace:   context.GlobalNamespace,
+	}
+
+	for i, paramNode := range functionPointer.Type.(FunctionType).Parameters {
+		pn := n.Args[i].Exec(context)
+		nt := paramNode.(NamedType)
+		fn[nt.Ident] = pn
+	}
+
+	return functionPointer.Type.(FunctionType).Code.Exec(execContext)
 }

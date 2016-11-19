@@ -58,15 +58,39 @@ func checkStructsEqual(l ast.StructType, r ast.StructType) bool {
 	return true
 }
 
+func funcEqual(l ast.FunctionType, r ast.FunctionType) bool {
+	if !TypeEqual(l.ReturnType, r.ReturnType) {
+		return false
+	}
+	if len(l.Parameters) != len(r.Parameters) {
+		return false
+	}
+	for i := range l.Parameters {
+		if !TypeEqual(l.Parameters[i], r.Parameters[i]) {
+			return false
+		}
+	}
+	return true
+}
+
 // TypeEqual returns true if the given types are equivalent and can be operated without promotion.
 func TypeEqual(l ast.TypeKind, r ast.TypeKind) bool {
+	if _, isNamedType := l.(ast.NamedType); isNamedType {
+		return TypeEqual(l.BaseType(), r)
+	}
+	if _, isNamedType := r.(ast.NamedType); isNamedType {
+		return TypeEqual(l, r.BaseType())
+	}
+
 	if l.Kind() == ast.ComplexTypeStruct && r.Kind() == ast.ComplexTypeStruct {
 		return checkStructsEqual(l.(ast.StructType), r.(ast.StructType))
 	}
 	if l.Kind() == ast.ComplexTypeArray && r.Kind() == ast.ComplexTypeArray {
 		return TypeEqual(l.(ast.ArrayType).SubType, r.(ast.ArrayType).SubType)
 	}
-	//TODO(twitchyliquid64): Check for function and check return/args individually
+	if l.Kind() == ast.ComplexTypeFunction && r.Kind() == ast.ComplexTypeFunction {
+		return funcEqual(l.(ast.FunctionType), r.(ast.FunctionType))
+	}
 
 	return l == r
 }
@@ -135,6 +159,9 @@ func Typecheck(context *TypecheckContext, node ast.Node) ast.TypeKind {
 				Msg:  "Cannot perform binary operation " + n.Op.String() + " on operands with type " + l.String() + " and " + r.String(),
 			})
 			return ast.UnknownType
+		}
+		if isEqualityOrLogicalOp(n.Op) {
+			return ast.PrimitiveTypeBool
 		}
 		return l
 
@@ -249,4 +276,16 @@ func Typecheck(context *TypecheckContext, node ast.Node) ast.TypeKind {
 		})
 	}
 	return ast.UnknownType
+}
+
+func isEqualityOrLogicalOp(op ast.BinOpType) bool {
+	switch op {
+	case ast.BinOpLAnd:
+		return true
+	case ast.BinOpLOr:
+		return true
+	case ast.BinOpEquality:
+		return true
+	}
+	return false
 }

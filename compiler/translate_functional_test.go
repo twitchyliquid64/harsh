@@ -18,7 +18,7 @@ func setupTestGetAST(context *Context, inCode string, t *testing.T) (ast.Node, *
 		t.FailNow()
 	}
 	if context == nil {
-		ns := ast.Namespace(map[string]*ast.Variant{})
+		ns := map[string]*ast.Variant{}
 		context = &Context{
 			ConType: ContextAdhoc,
 			Globals: ns,
@@ -1253,5 +1253,29 @@ func TestEmptyReturnProducesCorrectASTStructure(t *testing.T) {
 	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ReturnStmt).Expr.(*ast.NilLiteral); !ok {
 		t.Error("Expected next node for declaration to be NilLiteral")
 		t.FailNow()
+	}
+}
+
+func TestFuncDeclarationProducesGlobal(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    func test(){
+		}`, t)
+
+	if len(context.Declarations) != 1 {
+		t.Error("Unexpected number of declarations")
+	}
+	if context.Declarations[0].Ident != "test" {
+		t.Error("Unexpected declaration name")
+	}
+	if len(context.Globals) != 1 {
+		t.Error("Expected one global")
+	}
+	if context.Globals["test"].Type.Kind() != ast.ComplexTypeFunction {
+		t.Error("Expected global to be type function")
+	}
+	if context.Globals["test"].Type.(ast.FunctionType).ReturnType != ast.PrimitiveTypeUndefined {
+		t.Error("Expected undefined return type")
 	}
 }

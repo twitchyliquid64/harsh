@@ -31,9 +31,10 @@ There are also a bunch of command line utilities to play with:
 
 #### Discrete items
 
- - [ ] Implement function type comparison in TypeEqual
- - [ ] Implement functionCall tests for Typechecking
- - [ ] Implement exec for FunctionCall node
+ - [x] Implement function type comparison in TypeEqual
+ - [x] Support string/int equality operators in typecheck
+ - [x] Implement functionCall tests for Typechecking
+ - [x] Implement exec for FunctionCall node
  - [ ] Implement loops
  - [ ] Refactor print to arbitrary output and colours
  - [ ] SVG visualiser of basic nodes

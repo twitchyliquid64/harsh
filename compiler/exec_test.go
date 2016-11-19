@@ -762,7 +762,42 @@ func TestUnaryNotBooleanReturnsCorrect(t *testing.T) {
 		t.Error("Errors when executing")
 	}
 	if r.Type != ast.PrimitiveTypeBool {
-		t.Error("Expected PrimitiveTypeInt")
+		t.Error("Expected PrimitiveTypeBool")
+	}
+	if r.Bool != true {
+		t.Error("Incorrect value")
+	}
+}
+
+func TestMultiFunctionDeclAndCall(t *testing.T) {
+	c, err := ParseLiteral("test.go", `
+    package test
+
+		func testSub2(in2, in1 int) bool {
+			return (2*in2) == in1
+		}
+
+		func testSub(in1 int) bool {
+			return testSub2(in1, 8)
+		}
+
+    func Test() bool{
+			return testSub(4)
+    }
+    `)
+
+	if err != nil {
+		t.Error("ParseLiteral(): Error")
+		t.Error(err)
+		t.FailNow()
+	}
+
+	r, er := c.CallFunc("Test", map[string]interface{}{})
+	if er != nil {
+		t.Error("Errors when executing")
+	}
+	if r.Type != ast.PrimitiveTypeBool {
+		t.Error("Expected PrimitiveTypeBool")
 	}
 	if r.Bool != true {
 		t.Error("Incorrect value")

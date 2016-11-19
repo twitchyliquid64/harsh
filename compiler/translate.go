@@ -38,6 +38,7 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 				// do nothing - filecontext is the current context as it should be
 			} else {
 				fileContext = &Context{}
+				fileContext.Globals = map[string]*ast.Variant{}
 				context.ChildContexts = append(context.ChildContexts, fileContext)
 			}
 			fileContext.Name = v.Name.Name
@@ -467,6 +468,7 @@ func translateGoDecl(fset *token.FileSet, context *Context, decls []goast.Decl) 
 			}
 			newDecl := translateGoFuncDecl(fset, context, node)
 			context.Declarations = append(context.Declarations, newDecl)
+			context.Globals.Save(newDecl.Ident, newDecl.Type)
 		case *goast.GenDecl:
 			if context.Debug {
 				fmt.Println("GEN DECL: ", node)

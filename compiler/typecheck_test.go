@@ -71,6 +71,54 @@ func TestTypecheckBinaryOpMatches(t *testing.T) {
 	}
 }
 
+func TestTypecheckBinaryOpEquality(t *testing.T) {
+	node := &ast.BinaryOp{
+		LHS: &ast.IntegerLiteral{},
+		RHS: &ast.IntegerLiteral{},
+		Op:  ast.BinOpEquality,
+	}
+	c := &TypecheckContext{}
+	ty := Typecheck(c, node)
+	if len(c.Errors) != 0 {
+		t.Error("Type errors not expected")
+	}
+	if ty != ast.PrimitiveTypeBool {
+		t.Error("Expected bool type")
+	}
+}
+
+func TestTypecheckBinaryOpLAnd(t *testing.T) {
+	node := &ast.BinaryOp{
+		LHS: &ast.IntegerLiteral{},
+		RHS: &ast.IntegerLiteral{},
+		Op:  ast.BinOpLAnd,
+	}
+	c := &TypecheckContext{}
+	ty := Typecheck(c, node)
+	if len(c.Errors) != 0 {
+		t.Error("Type errors not expected")
+	}
+	if ty != ast.PrimitiveTypeBool {
+		t.Error("Expected bool type")
+	}
+}
+
+func TestTypecheckBinaryOpLOr(t *testing.T) {
+	node := &ast.BinaryOp{
+		LHS: &ast.IntegerLiteral{},
+		RHS: &ast.IntegerLiteral{},
+		Op:  ast.BinOpLOr,
+	}
+	c := &TypecheckContext{}
+	ty := Typecheck(c, node)
+	if len(c.Errors) != 0 {
+		t.Error("Type errors not expected")
+	}
+	if ty != ast.PrimitiveTypeBool {
+		t.Error("Expected bool type")
+	}
+}
+
 func TestTypecheckBinaryOpMismatchCausesError(t *testing.T) {
 	node := &ast.BinaryOp{
 		LHS: &ast.IntegerLiteral{},
@@ -597,5 +645,56 @@ func TestTypecheckNamedSelectorErrorsIfWrongUpstreamType(t *testing.T) {
 	}
 	if ty != ast.UnknownType {
 		t.Error("Expected UnknownType type")
+	}
+}
+
+func TestTypeEqualFuncTypeReturnsTrue(t *testing.T) {
+	l := ast.FunctionType{
+		ReturnType: ast.PrimitiveTypeInt,
+	}
+	r := ast.FunctionType{
+		ReturnType: ast.PrimitiveTypeInt,
+	}
+	if !TypeEqual(l, r) {
+		t.Error("Expected types to be equal")
+	}
+}
+
+func TestTypeEqualFuncTypeWithDiffReturnReturnsFalse(t *testing.T) {
+	l := ast.FunctionType{
+		ReturnType: ast.PrimitiveTypeInt,
+	}
+	r := ast.FunctionType{
+		ReturnType: ast.PrimitiveTypeBool,
+	}
+	if TypeEqual(l, r) {
+		t.Error("Expected types to not be equal")
+	}
+}
+
+func TestTypeEqualFuncTypeWithDiffNumberParamsReturnsFalse(t *testing.T) {
+	l := ast.FunctionType{
+		ReturnType: ast.PrimitiveTypeInt,
+		Parameters: []ast.TypeKind{ast.PrimitiveTypeString},
+	}
+	r := ast.FunctionType{
+		ReturnType: ast.PrimitiveTypeInt,
+	}
+	if TypeEqual(l, r) {
+		t.Error("Expected types to not be equal")
+	}
+}
+
+func TestTypeEqualFuncTypeWithDiffParamsReturnsFalse(t *testing.T) {
+	l := ast.FunctionType{
+		ReturnType: ast.PrimitiveTypeInt,
+		Parameters: []ast.TypeKind{ast.PrimitiveTypeString},
+	}
+	r := ast.FunctionType{
+		ReturnType: ast.PrimitiveTypeInt,
+		Parameters: []ast.TypeKind{ast.PrimitiveTypeInt},
+	}
+	if TypeEqual(l, r) {
+		t.Error("Expected types to not be equal")
 	}
 }
