@@ -98,7 +98,7 @@ func main() {
 		if errs, ok := err.(compiler.ExecutionError); ok {
 			for i, err := range errs.Errors {
 				fmt.Printf("%02d: %s (%d)\r\n", i+1, err.Error(), err.Class)
-				err.CreatingNode.Print(4)
+				err.CreatingNode.Print(4, &ast.PrintContext{Output: os.Stdout, Color: true})
 			}
 		}
 	} else {

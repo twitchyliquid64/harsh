@@ -1,8 +1,16 @@
 package ast
 
+import "io"
+
+// PrintContext stores options used when printing a representation of an AST
+type PrintContext struct {
+	Output io.Writer
+	Color  bool
+}
+
 // Node represents any component of the AST, such as literals, operations, variables, loops, etc.
 type Node interface {
-	Print(level int)
+	Print(level int, printContext *PrintContext)
 	Exec(context *ExecContext) *Variant
 }
 

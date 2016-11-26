@@ -27,7 +27,7 @@ func main() {
 		if fType, ok := decl.Type.(myast.FunctionType); ok {
 			fmt.Println("FUNCTION: ", decl.String())
 			if fType.Code != nil {
-				fType.Code.Print(2)
+				fType.Code.Print(2, &myast.PrintContext{Output: os.Stdout, Color: true})
 			}
 			fmt.Println("  -", fType.ReturnType.String(), "(return)")
 
