@@ -148,6 +148,9 @@ func (n *BinaryOp) Exec(context *ExecContext) *Variant {
 		case BinOpEquality:
 			ret.Type = PrimitiveTypeBool
 			ret.Bool = l.Int == r.Int
+		case BinOpNotEquality:
+			ret.Type = PrimitiveTypeBool
+			ret.Bool = l.Int != r.Int
 		}
 	} else if l.Type == PrimitiveTypeString && r.Type == PrimitiveTypeString {
 		ret.Type = PrimitiveTypeString
@@ -157,6 +160,9 @@ func (n *BinaryOp) Exec(context *ExecContext) *Variant {
 		case BinOpEquality:
 			ret.Type = PrimitiveTypeBool
 			ret.Bool = l.String == r.String
+		case BinOpNotEquality:
+			ret.Type = PrimitiveTypeBool
+			ret.Bool = l.String != r.String
 		default:
 			ret.Type = PrimitiveTypeUndefined
 			context.Errors = append(context.Errors, ExecutionError{
@@ -170,6 +176,8 @@ func (n *BinaryOp) Exec(context *ExecContext) *Variant {
 		switch n.Op {
 		case BinOpEquality:
 			ret.Bool = l.Bool && r.Bool
+		case BinOpNotEquality:
+			ret.Bool = l.Bool != r.Bool
 		case BinOpLAnd:
 			ret.Bool = l.Bool && r.Bool
 		case BinOpLOr:
@@ -252,6 +260,40 @@ func (n *IfStmt) Exec(context *ExecContext) *Variant {
 		return n.Code.Exec(context)
 	} else if n.Else != nil {
 		return n.Else.Exec(context)
+	}
+
+	return &Variant{
+		Type: PrimitiveTypeUndefined,
+	}
+}
+
+// Exec carries out node-specific logic, which may include evaluation of subnodes and primitive operations depending on the nodes type.
+func (n *ForStmt) Exec(context *ExecContext) *Variant {
+	if n.Init != nil {
+		n.Init.Exec(context)
+	}
+
+	conditionResult := n.Conditional.Exec(context)
+	for true {
+		if conditionResult.Type != PrimitiveTypeBool {
+			context.Errors = append(context.Errors, ExecutionError{
+				Class:        TypeErr,
+				CreatingNode: n,
+				Text:         "Non-bool used as loop conditional: " + conditionResult.Type.String(),
+			})
+			return &Variant{
+				Type: PrimitiveTypeUndefined,
+			}
+		}
+		if conditionResult.Bool {
+			n.Code.Exec(context)
+			if n.PostIteration != nil {
+				n.PostIteration.Exec(context)
+			}
+		} else {
+			break
+		}
+		conditionResult = n.Conditional.Exec(context)
 	}
 
 	return &Variant{

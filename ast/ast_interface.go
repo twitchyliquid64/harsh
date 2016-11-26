@@ -61,6 +61,14 @@ type IfStmt struct {
 	Else        Node
 }
 
+// ForStmt represents a loop, including an initializer, post-iteration code, and conditional.
+type ForStmt struct {
+	Conditional   Node
+	Code          Node
+	Init          Node
+	PostIteration Node
+}
+
 // VariableReference represents the fetching of a value at runtime from a variable. If possible the runtime type
 // is inferred and stored in the structure for the sake of typechecking.
 type VariableReference struct {
@@ -110,6 +118,7 @@ const (
 	BinOpLOr
 
 	BinOpEquality
+	BinOpNotEquality
 	BinOpUnknown
 )
 

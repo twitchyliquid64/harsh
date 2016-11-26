@@ -217,6 +217,36 @@ func (node *IfStmt) Print(level int) {
 	printLeveled("}", level)
 }
 
+// Print writes a description of the node to standard output, at the specified indentation level.
+func (node *ForStmt) Print(level int) {
+	printLeveled("for {", level)
+	if node.Init != nil {
+		printLeveled("init {", level+2)
+		node.Init.Print(level + 3)
+		printLeveled("}", level+2)
+	}
+	printLeveled("condition {", level+2)
+	if node.Conditional != nil {
+		node.Conditional.Print(level + 3)
+	} else {
+		printLeveled("NIL", level+3)
+	}
+	printLeveled("}", level+2)
+	printLeveled("code {", level+2)
+	if node.Code != nil {
+		node.Code.Print(level + 3)
+	} else {
+		printLeveled("NIL", level+3)
+	}
+	printLeveled("}", level+2)
+	if node.PostIteration != nil {
+		printLeveled("PostIteration {", level+2)
+		node.PostIteration.Print(level + 3)
+		printLeveled("}", level+2)
+	}
+	printLeveled("}", level)
+}
+
 func (op *UnOpType) String() string {
 	switch *op {
 	case UnOpNot:
@@ -245,6 +275,8 @@ func (op *BinOpType) String() string {
 		return "&&"
 	case BinOpLOr:
 		return "||"
+	case BinOpNotEquality:
+		return "!="
 	}
 	return "BINOP?"
 }

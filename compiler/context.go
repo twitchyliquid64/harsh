@@ -46,6 +46,8 @@ const (
 	NotStatic
 	//InternalErr indicates something that should never happen
 	InternalErr
+	//NotDeclared
+	NotDeclaredErr
 )
 
 // TranslateError represents any issue translating the go.ast format into harsh's native AST format.

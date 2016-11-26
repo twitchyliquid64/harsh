@@ -35,7 +35,7 @@ There are also a bunch of command line utilities to play with:
  - [x] Support string/int equality operators in typecheck
  - [x] Implement functionCall tests for Typechecking
  - [x] Implement exec for FunctionCall node
- - [ ] Implement loops
+ - [x] Implement loops
  - [ ] Refactor print to arbitrary output and colours
  - [ ] SVG visualiser of basic nodes
  - [x] debugexec infers types of command line parameters based on parameter type - rather than guessing

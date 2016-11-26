@@ -1358,3 +1358,129 @@ func TestNamedSelectorErrorsIfWrongUpstreamType(t *testing.T) {
 		t.Error("1 errors expected, got", len(context.Errors))
 	}
 }
+
+func TestForStatementInitializerNoBodyExec(t *testing.T) {
+	forNode := ForStmt{
+		Conditional: &BoolLiteral{},
+		Code: &Assign{
+			Variable: &VariableReference{
+				Name: "testVar",
+			},
+			Value: &StringLiteral{
+				Str: "main",
+			},
+		},
+		Init: &Assign{
+			Variable: &VariableReference{
+				Name: "testVar",
+			},
+			Value: &StringLiteral{
+				Str: "init",
+			},
+		},
+	}
+	context := ExecContext{
+		IsFuncContext:     false,
+		FunctionNamespace: Namespace(map[string]*Variant{}),
+		GlobalNamespace:   Namespace(map[string]*Variant{}),
+	}
+
+	forNode.Exec(&context)
+	v := context.GlobalNamespace["testVar"]
+	if v.Type != PrimitiveTypeString {
+		t.Error("Expected PrimitiveTypeString return, got " + v.Type.String())
+	}
+	if v.String != "init" {
+		t.Error("Incorrect value")
+	}
+}
+
+func TestForStatementInitializerBodyExec(t *testing.T) {
+	forNode := ForStmt{
+		Conditional: &BinaryOp{
+			LHS: &IntegerLiteral{Val: 0},
+			RHS: &VariableReference{Name: "counter"},
+			Op:  BinOpEquality,
+		},
+		Code: &Assign{
+			Variable: &VariableReference{
+				Name: "counter",
+			},
+			Value: &IntegerLiteral{
+				Val: 6,
+			},
+		},
+		Init: &Assign{
+			Variable: &VariableReference{
+				Name: "testVar",
+			},
+			Value: &StringLiteral{
+				Str: "init",
+			},
+		},
+	}
+	context := ExecContext{
+		IsFuncContext:     false,
+		FunctionNamespace: Namespace(map[string]*Variant{}),
+		GlobalNamespace: Namespace(map[string]*Variant{
+			"counter": &Variant{
+				Type: PrimitiveTypeInt,
+				Int:  0,
+			},
+		}),
+	}
+
+	forNode.Exec(&context)
+	v := context.GlobalNamespace["counter"]
+	if v.Type != PrimitiveTypeInt {
+		t.Error("Expected PrimitiveTypeInt return, got " + v.Type.String())
+	}
+	if v.Int != 6 {
+		t.Error("Incorrect value")
+	}
+}
+
+func TestForStatementPostIteratorBodyExec(t *testing.T) {
+	forNode := ForStmt{
+		Conditional: &BinaryOp{
+			LHS: &IntegerLiteral{Val: 0},
+			RHS: &VariableReference{Name: "counter"},
+			Op:  BinOpEquality,
+		},
+		Code: &Assign{
+			Variable: &VariableReference{
+				Name: "counter",
+			},
+			Value: &IntegerLiteral{
+				Val: 6,
+			},
+		},
+		PostIteration: &Assign{
+			Variable: &VariableReference{
+				Name: "testVar",
+			},
+			Value: &StringLiteral{
+				Str: "post",
+			},
+		},
+	}
+	context := ExecContext{
+		IsFuncContext:     false,
+		FunctionNamespace: Namespace(map[string]*Variant{}),
+		GlobalNamespace: Namespace(map[string]*Variant{
+			"counter": &Variant{
+				Type: PrimitiveTypeInt,
+				Int:  0,
+			},
+		}),
+	}
+
+	forNode.Exec(&context)
+	v := context.GlobalNamespace["testVar"]
+	if v.Type != PrimitiveTypeString {
+		t.Error("Expected PrimitiveTypeString return, got " + v.Type.String())
+	}
+	if v.String != "post" {
+		t.Error("Incorrect value")
+	}
+}

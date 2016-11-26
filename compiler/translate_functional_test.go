@@ -1279,3 +1279,100 @@ func TestFuncDeclarationProducesGlobal(t *testing.T) {
 		t.Error("Expected undefined return type")
 	}
 }
+
+func TestForLoopNormal(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    func test(){
+			for true{
+
+			}
+		}`, t)
+
+	if len(context.Declarations) != 1 {
+		t.Error("Unexpected number of declarations")
+	}
+	if context.Declarations[0].Ident != "test" {
+		t.Error("Unexpected declaration name")
+	}
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ForStmt); !ok {
+		t.Error("Expected next node for declaration to be ForStmt")
+		t.FailNow()
+	}
+	forNode := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ForStmt)
+	if _, ok := forNode.Conditional.(*ast.BoolLiteral); !ok {
+		t.Error("Expected boolean literal for loop conditional")
+	}
+	if forNode.PostIteration != nil {
+		t.Error("Did not expect PostIteration node")
+	}
+	if forNode.Init != nil {
+		t.Error("Did not expect Init node")
+	}
+}
+
+func TestForLoopInitializer(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    func test(){
+			for i := 55; true; i = i{
+				b()
+			}
+		}`, t)
+
+	if len(context.Declarations) != 1 {
+		t.Error("Unexpected number of declarations")
+	}
+	if context.Declarations[0].Ident != "test" {
+		t.Error("Unexpected declaration name")
+	}
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ForStmt); !ok {
+		t.Error("Expected next node for declaration to be ForStmt")
+		t.FailNow()
+	}
+	forNode := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.ForStmt)
+	if _, ok := forNode.Conditional.(*ast.BoolLiteral); !ok {
+		t.Error("Expected boolean literal for loop conditional")
+	}
+
+	if forNode.Init == nil {
+		t.Error("Init node expected")
+		t.FailNow()
+	}
+	if _, ok := forNode.Init.(*ast.Assign); !ok {
+		t.Error("Assign node expected in Init")
+	}
+	if _, ok := forNode.Init.(*ast.Assign).Value.(*ast.IntegerLiteral); !ok {
+		t.Error("Integer node expected in Init")
+	}
+	if forNode.Init.(*ast.Assign).Value.(*ast.IntegerLiteral).Val != 55 {
+		t.Error("Expected 55")
+	}
+
+	if forNode.PostIteration == nil {
+		t.Error("PostIteration node expected")
+		t.FailNow()
+	}
+	if _, ok := forNode.PostIteration.(*ast.Assign); !ok {
+		t.Error("Assign node expected in PostIteration")
+	}
+	if _, ok := forNode.PostIteration.(*ast.Assign).Value.(*ast.VariableReference); !ok {
+		t.Error("VariableReference node expected in PostIteration")
+	}
+	if forNode.PostIteration.(*ast.Assign).Value.(*ast.VariableReference).Name != "i" {
+		t.Error("Expected variable named i")
+	}
+
+	if forNode.Code == nil {
+		t.Error("Code node expected")
+		t.FailNow()
+	}
+	if _, ok := forNode.Code.(*ast.StatementList); !ok {
+		t.Error("StatementList node expected in Code")
+	}
+	if _, ok := forNode.Code.(*ast.StatementList).Stmts[0].(*ast.FunctionCall); !ok {
+		t.Error("FunctionCall node expected in Code")
+	}
+}

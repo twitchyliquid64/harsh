@@ -648,6 +648,36 @@ func TestTypecheckNamedSelectorErrorsIfWrongUpstreamType(t *testing.T) {
 	}
 }
 
+func TestTypecheckForStmtWorks(t *testing.T) {
+	s := &ast.ForStmt{
+		Conditional: &ast.BoolLiteral{},
+	}
+
+	c := &TypecheckContext{ReturnType: ast.PrimitiveTypeBool}
+	ty := Typecheck(c, s)
+	if len(c.Errors) != 0 {
+		t.Error("0 Type errors expected")
+	}
+	if ty != ast.UnknownType {
+		t.Error("Expected UnknownType")
+	}
+}
+
+func TestTypecheckForStmtErrorsIfNotBooleanConditional(t *testing.T) {
+	s := &ast.ForStmt{
+		Conditional: &ast.IntegerLiteral{},
+	}
+
+	c := &TypecheckContext{ReturnType: ast.PrimitiveTypeBool}
+	Typecheck(c, s)
+	if len(c.Errors) != 1 {
+		t.Error("1 Type errors expected")
+	}
+	if c.Errors[0].Kind != TypeErrorIncompatibleTypesErr {
+		t.Error("Expected TypeErrorIncompatibleTypesErr")
+	}
+}
+
 func TestTypeEqualFuncTypeReturnsTrue(t *testing.T) {
 	l := ast.FunctionType{
 		ReturnType: ast.PrimitiveTypeInt,

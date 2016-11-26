@@ -112,7 +112,13 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 		case goast.AssignStmt:
 			for _, l := range v.Lhs {
 				if ident, ok := l.(*goast.Ident); ok {
-					if _, ok := ident.Obj.Decl.(*goast.AssignStmt); ok { //new local variable
+					if ident.Obj == nil {
+						context.Errors = append(context.Errors, TranslateError{
+							Class: NotDeclaredErr,
+							Pos:   fset.Position(v.Pos()),
+							Text:  "Variable not declared.",
+						})
+					} else if _, ok := ident.Obj.Decl.(*goast.AssignStmt); ok { //new local variable
 						return &ast.Assign{
 							NewLocal: true,
 							Variable: translateGoNode(fset, context, reflect.ValueOf(l)),
@@ -128,7 +134,7 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 					context.Errors = append(context.Errors, TranslateError{
 						Class: NotSupported,
 						Pos:   fset.Position(v.Pos()),
-						Text:  "Assignment object unknown: " + ident.Name + " (" + reflect.TypeOf(ident.Obj.Decl).Name() + ")",
+						Text:  "Assignment object unknown: " + ident.Name,
 					})
 				} else if _, ok := l.(*goast.IndexExpr); ok {
 					return &ast.Assign{
@@ -308,6 +314,19 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 				Conditional: translateGoNode(fset, context, reflect.ValueOf(v.Cond)),
 			}
 
+		case goast.ForStmt:
+			forOut := &ast.ForStmt{
+				Code:        translateGoNode(fset, context, reflect.ValueOf(v.Body)),
+				Conditional: translateGoNode(fset, context, reflect.ValueOf(v.Cond)),
+			}
+			if v.Init != nil {
+				forOut.Init = translateGoNode(fset, context, reflect.ValueOf(v.Init))
+			}
+			if v.Post != nil {
+				forOut.PostIteration = translateGoNode(fset, context, reflect.ValueOf(v.Post))
+			}
+			return forOut
+
 		case goast.SwitchStmt:
 			fmt.Println("Not implemented - SWITCH: ", len(v.Body.List))
 
@@ -340,6 +359,8 @@ func translateGoBinop(tok token.Token) ast.BinOpType {
 		return ast.BinOpLOr
 	case token.EQL:
 		return ast.BinOpEquality
+	case token.NEQ:
+		return ast.BinOpNotEquality
 	default:
 		fmt.Println("Unknown binop token.Token: ", tok.String())
 		return ast.BinOpUnknown
