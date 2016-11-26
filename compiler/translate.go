@@ -307,12 +307,17 @@ func translateGoNode(fset *token.FileSet, context *Context, t reflect.Value) ast
 			}
 
 		case goast.IfStmt:
-			return &ast.IfStmt{
-				Init:        translateGoNode(fset, context, reflect.ValueOf(v.Init)),
+			ifOut := &ast.IfStmt{
 				Code:        translateGoNode(fset, context, reflect.ValueOf(v.Body)),
-				Else:        translateGoNode(fset, context, reflect.ValueOf(v.Else)),
 				Conditional: translateGoNode(fset, context, reflect.ValueOf(v.Cond)),
 			}
+			if v.Init != nil {
+				ifOut.Init = translateGoNode(fset, context, reflect.ValueOf(v.Init))
+			}
+			if v.Else != nil {
+				ifOut.Else = translateGoNode(fset, context, reflect.ValueOf(v.Else))
+			}
+			return ifOut
 
 		case goast.ForStmt:
 			forOut := &ast.ForStmt{

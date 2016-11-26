@@ -31,11 +31,8 @@ There are also a bunch of command line utilities to play with:
 
 #### Discrete items
 
- - [x] Implement function type comparison in TypeEqual
- - [x] Support string/int equality operators in typecheck
- - [x] Implement functionCall tests for Typechecking
- - [x] Implement exec for FunctionCall node
  - [x] Implement loops
+ - [ ] Tests for functionCall exec
  - [ ] Refactor print to arbitrary output and colours
  - [ ] SVG visualiser of basic nodes
  - [x] debugexec infers types of command line parameters based on parameter type - rather than guessing

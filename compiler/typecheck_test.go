@@ -648,9 +648,48 @@ func TestTypecheckNamedSelectorErrorsIfWrongUpstreamType(t *testing.T) {
 	}
 }
 
+func TestTypecheckIfStmtWorks(t *testing.T) {
+	s := &ast.IfStmt{
+		Conditional: &ast.BoolLiteral{},
+		Code:        &ast.BoolLiteral{},
+		Init:        &ast.BoolLiteral{},
+		Else:        &ast.BoolLiteral{},
+	}
+
+	c := &TypecheckContext{ReturnType: ast.PrimitiveTypeBool}
+	ty := Typecheck(c, s)
+	if len(c.Errors) != 0 {
+		t.Error("0 Type errors expected")
+	}
+	if ty != ast.UnknownType {
+		t.Error("Expected UnknownType")
+	}
+}
+
+func TestTypecheckIfStmtErrorsOnNonBooleanConditional(t *testing.T) {
+	s := &ast.IfStmt{
+		Conditional: &ast.StringLiteral{},
+		Code:        &ast.BoolLiteral{},
+		Init:        &ast.BoolLiteral{},
+		Else:        &ast.BoolLiteral{},
+	}
+
+	c := &TypecheckContext{ReturnType: ast.PrimitiveTypeBool}
+	Typecheck(c, s)
+	if len(c.Errors) != 1 {
+		t.Error("1 Type errors expected")
+	}
+	if c.Errors[0].Kind != TypeErrorIncompatibleTypesErr {
+		t.Error("Expected TypeErrorIncompatibleTypesErr")
+	}
+}
+
 func TestTypecheckForStmtWorks(t *testing.T) {
 	s := &ast.ForStmt{
-		Conditional: &ast.BoolLiteral{},
+		Conditional:   &ast.BoolLiteral{},
+		Code:          &ast.BoolLiteral{},
+		Init:          &ast.BoolLiteral{},
+		PostIteration: &ast.BoolLiteral{},
 	}
 
 	c := &TypecheckContext{ReturnType: ast.PrimitiveTypeBool}

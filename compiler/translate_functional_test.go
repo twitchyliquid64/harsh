@@ -1160,6 +1160,38 @@ func TestIfStatementASTStructureGeneratedCorrectly(t *testing.T) {
 	}
 }
 
+func TestIfStatementInitializerASTStructureGeneratedCorrectly(t *testing.T) {
+	_, context := setupTestGetAST(nil, `
+    package test
+
+    func test()bool{
+			if i := 0; true {
+				return true
+			}
+		}`, t)
+
+	if len(context.Declarations) != 1 {
+		t.Error("Unexpected number of declarations")
+	}
+	if context.Declarations[0].Ident != "test" {
+		t.Error("Unexpected declaration name")
+	}
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList); !ok {
+		t.Error("Expected root node for declaration to be StatementList, got ", reflect.TypeOf(context.Declarations[0].Type.(ast.FunctionType).Code))
+	}
+	if _, ok := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.IfStmt); !ok {
+		t.Error("Expected root node for declaration to be IfStmt")
+		t.FailNow()
+	}
+	ifNode := context.Declarations[0].Type.(ast.FunctionType).Code.(*ast.StatementList).Stmts[0].(*ast.IfStmt)
+	if _, ok := ifNode.Init.(*ast.Assign); !ok {
+		t.Error("Assign node expected, got", reflect.TypeOf(ifNode.Init))
+	}
+	if _, ok := ifNode.Conditional.(*ast.BoolLiteral); !ok {
+		t.Error("Expected boolean literal condition")
+	}
+}
+
 func TestUnaryNotASTStructureGeneratedCorrectly(t *testing.T) {
 	_, context := setupTestGetAST(nil, `
     package test

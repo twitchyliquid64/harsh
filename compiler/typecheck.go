@@ -263,6 +263,26 @@ func Typecheck(context *TypecheckContext, node ast.Node) ast.TypeKind {
 		}
 		return ast.UnknownType
 
+	case *ast.IfStmt:
+		conditional := Typecheck(context, n.Conditional)
+		if conditional.Kind() != ast.PrimitiveTypeBool {
+			context.Errors = append(context.Errors, TypeError{
+				Kind: TypeErrorIncompatibleTypesErr,
+				Msg:  "Cannot have loop conditional expression of type: " + conditional.String(),
+			})
+			return ast.UnknownType
+		}
+		if n.Code != nil {
+			Typecheck(context, n.Code)
+		}
+		if n.Init != nil {
+			Typecheck(context, n.Init)
+		}
+		if n.Else != nil {
+			Typecheck(context, n.Else)
+		}
+		return ast.UnknownType
+
 	case *ast.NamedSelector:
 		up := Typecheck(context, n.Expr)
 		if up.Kind() != ast.ComplexTypeStruct {
